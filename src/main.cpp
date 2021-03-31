@@ -3,6 +3,7 @@
 #include <iostream>
 
 int main() {
-    std::cout << NUM_SQUARES << "   " << NUM_RANKS << "   " << NUM_FILES << std::endl;
+    bb_init();
+    std::cout << bb_string(BB_SQUARES[G4]);
     return 0;
 }
