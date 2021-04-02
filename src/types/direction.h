@@ -21,15 +21,15 @@
 //   a    b    c   d    e    f    g    h
 
 enum Direction : char {
-    DOWN_LEFT = -9,
-    DOWN = -8,
-    DOWN_RIGHT = -7,
-    LEFT = -1,
-    NO_DIRECTION = 0,
-    RIGHT = 1,
-    UP_LEFT = 7,
-    UP = 8,
-    UP_RIGHT = 9
+	DOWN_LEFT = -9,
+	DOWN = -8,
+	DOWN_RIGHT = -7,
+	LEFT = -1,
+	NO_DIRECTION = 0,
+	RIGHT = 1,
+	UP_LEFT = 7,
+	UP = 8,
+	UP_RIGHT = 9
 };
 
 #endif

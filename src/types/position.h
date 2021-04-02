@@ -6,11 +6,11 @@
 
 class Position {
 public:
-    Position() = default;
-    Position(const Position&) = delete;
-    Position& operator=(const Position&) = delete;
+	Position() = default;
+	Position(const Position&) = delete;
+	Position& operator=(const Position&) = delete;
 private:
-    Bitboard pieces[NUM_COLORS][NUM_PIECES];
+	Bitboard pieces[NUM_COLORS][NUM_PIECES];
 };
 
 #endif
