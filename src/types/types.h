@@ -4,5 +4,8 @@
 #include "board.h"
 #include "bitboard.h"
 #include "direction.h"
+#include "piece.h"
+#include "move.h"
+#include "position.h"
 
 #endif

@@ -12,7 +12,7 @@ TARGET := main
 .PHONY: all clean
 
 SOURCES = $(shell find $(SDIR)/ -type f -name "*.cpp")
-OBJECTS = $(patsubst $(SDIR)/%.c, $(ODIR)/%.o, $(SOURCES))
+OBJECTS = $(patsubst $(SDIR)/%.cpp, $(ODIR)/%.o, $(SOURCES))
 
 all: $(OBJECTS)
 	$(CC) $(FLAGS) $(OBJECTS) $(LIBPATH) $(LIBS) -o $(TARGET)
