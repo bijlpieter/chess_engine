@@ -10,6 +10,7 @@ public:
 	Position(const Position&) = delete;
 	Position& operator=(const Position&) = delete;
 private:
+	Piece board[NUM_SQUARES];
 	Bitboard pieces[NUM_COLORS][NUM_PIECES];
 };
 
