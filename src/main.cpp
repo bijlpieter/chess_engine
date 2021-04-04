@@ -6,7 +6,9 @@
 int main() {
 	bb_init();
 	init_all();
+	int sum = 0;
 	for (Square s = A1; s <= H8; s++)
-		std::cout << bb_string(BISHOP_MASKS[s]) << std::endl;
+		sum += (1 << popcount(BISHOP_MASKS[s]));
+	std::cout << sum << std::endl;
 	return 0;
 }

@@ -1,6 +1,7 @@
 #include "move_generation.h"
 
-Bitboard ROOK_MOVES[1];
+Bitboard ROOK_DATABASE[102400];
+Bitboard* ROOK_MOVES[NUM_SQUARES];
 Bitboard ROOK_MASKS[NUM_SQUARES] = {0};
 
 void init_rook_masks() {

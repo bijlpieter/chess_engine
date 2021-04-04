@@ -3,36 +3,35 @@
 
 #include <cstdint>
 #include <string>
+#include <x86intrin.h>
 
 #include "board.h"
 #include "direction.h"
 
 typedef uint64_t Bitboard;
 
-extern Bitboard BB_EMPTY;
-extern Bitboard BB_UNIVERSE;
 extern Bitboard BB_RANKS[NUM_RANKS];
 extern Bitboard BB_FILES[NUM_FILES];
 extern Bitboard BB_SQUARES[NUM_SQUARES];
 
-inline Square popcount(Bitboard b) {
-	return Square(__builtin_popcountll(b));
+inline int popcount(Bitboard b) {
+	return _popcnt64(b);
 }
 
 inline Square lsb(Bitboard b) {
-	return Square(__builtin_ctzll(b));
+	return Square(_tzcnt_u64(b));
 }
 
 inline Square msb(Bitboard b) {
-	return Square(__builtin_clzll(b) ^ 63);
+	return Square(_lzcnt_u64(b) ^ 63);
 }
 
-inline constexpr Bitboard flip(Bitboard bb, FlipDirection D){
+inline constexpr Bitboard flip(Bitboard bb, FlipDirection D) {
 	switch (D) {
 	case VERTICALLY:
-		return (bb << 56) | ((bb << 40) & (0x00ff000000000000ULL)) | ((bb << 24) & (0x0000ff0000000000ULL)) | ((bb << 8) & (0x000000ff00000000ULL)) | ( (bb >> 8) & (0x00000000ff000000ULL) ) | ( (bb >> 24) & (0x0000000000ff0000ULL) ) | ( (bb >> 40) & (0x000000000000ff00ULL) ) | (bb >> 56);
+		return _bswap64(bb);
 	case HORIZONTALLY:
-		return bb ^ 7; // This flips a square, not a whole bitboard.
+		return bb;
 	}
 	return bb;
 }

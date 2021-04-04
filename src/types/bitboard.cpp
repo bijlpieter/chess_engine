@@ -1,8 +1,6 @@
 #include "bitboard.h"
 #include "direction.h"
 
-Bitboard BB_EMPTY = 0;
-Bitboard BB_UNIVERSE = -1;
 Bitboard BB_RANKS[NUM_RANKS];
 Bitboard BB_FILES[NUM_FILES];
 Bitboard BB_SQUARES[NUM_SQUARES];

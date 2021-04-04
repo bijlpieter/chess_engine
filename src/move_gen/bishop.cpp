@@ -1,6 +1,7 @@
 #include "move_generation.h"
 
-Bitboard BISHOP_MOVES[1];
+Bitboard BISHOP_DATABASE[5248];
+Bitboard* BISHOP_MOVES[NUM_SQUARES];
 Bitboard BISHOP_MASKS[NUM_SQUARES] = {0};
 
 void init_bishop_masks() {
