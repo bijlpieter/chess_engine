@@ -32,7 +32,7 @@ inline constexpr Bitboard flip(Bitboard bb, FlipDirection D){
 	case VERTICALLY:
 		return (bb << 56) | ((bb << 40) & (0x00ff000000000000ULL)) | ((bb << 24) & (0x0000ff0000000000ULL)) | ((bb << 8) & (0x000000ff00000000ULL)) | ( (bb >> 8) & (0x00000000ff000000ULL) ) | ( (bb >> 24) & (0x0000000000ff0000ULL) ) | ( (bb >> 40) & (0x000000000000ff00ULL) ) | (bb >> 56);
 	case HORIZONTALLY:
-		return bb ^ 7;
+		return bb ^ 7; // This flips a square, not a whole bitboard.
 	}
 	return bb;
 }
