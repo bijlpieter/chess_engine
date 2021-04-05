@@ -14,8 +14,12 @@ extern Bitboard BB_RANKS[NUM_RANKS];
 extern Bitboard BB_FILES[NUM_FILES];
 extern Bitboard BB_SQUARES[NUM_SQUARES];
 
-inline int popcount(Bitboard b) {
+inline uint64_t popcount(Bitboard b) {
 	return _popcnt64(b);
+}
+
+inline uint64_t pext(Bitboard occ, Bitboard mask) {
+	return _pext_u64(occ, mask);
 }
 
 inline Square lsb(Bitboard b) {
@@ -36,28 +40,44 @@ inline constexpr Bitboard flip(Bitboard bb, FlipDirection D) {
 	return bb;
 }
 
+inline Bitboard operator|(Bitboard bb, Square s) { return bb | BB_SQUARES[s]; }
+inline Bitboard operator|(Bitboard bb, Rank r) { return bb | BB_RANKS[r]; }
+inline Bitboard operator|(Bitboard bb, File f) { return bb | BB_FILES[f]; }
+
+inline Bitboard operator&(Bitboard bb, Square s) { return bb & BB_SQUARES[s]; }
+inline Bitboard operator&(Bitboard bb, Rank r) { return bb & BB_RANKS[r]; }
+inline Bitboard operator&(Bitboard bb, File f) { return bb & BB_FILES[f]; }
+
+inline Bitboard operator|(Rank r1, Rank r2) { return BB_RANKS[r1] | BB_RANKS[r2]; }
+inline Bitboard operator|(Rank r, File f) { return BB_RANKS[r] | BB_FILES[f]; }
+inline Bitboard operator|(File f, Rank r) { return BB_RANKS[r] | BB_FILES[f]; }
+inline Bitboard operator|(File f1, File f2) { return BB_FILES[f1] | BB_FILES[f2]; }
+
+inline Bitboard operator~(Rank r) { return ~BB_RANKS[r]; }
+inline Bitboard operator~(File f) { return ~BB_FILES[f]; }
+
 inline constexpr Bitboard shift(Bitboard bb, Direction D) {
 	switch(D) {
 	case UP:
 		return bb << UP;
 	case UP_LEFT:
-		return (bb << UP_LEFT) & ~BB_FILES[FILE_H];
+		return (bb << UP_LEFT) & ~FILE_H;
 	case UP_RIGHT:
-		return (bb << UP_RIGHT) & ~BB_FILES[FILE_A];
+		return (bb << UP_RIGHT) & ~FILE_A;
 	case RIGHT:
-		return (bb << RIGHT) & ~BB_FILES[FILE_A];
+		return (bb << RIGHT) & ~FILE_A;
 
 	case NO_DIRECTION:
 		return bb;
 
 	case LEFT:
-		return (bb >> -LEFT) & ~BB_FILES[FILE_H];
+		return (bb >> -LEFT) & ~FILE_H;
 	case DOWN_RIGHT:
-		return (bb >> -DOWN_RIGHT) & ~BB_FILES[FILE_A];
+		return (bb >> -DOWN_RIGHT) & ~FILE_A;
 	case DOWN:
 		return (bb >> -DOWN);
 	case DOWN_LEFT:
-		return (bb >> -DOWN_LEFT) & ~BB_FILES[FILE_H];
+		return (bb >> -DOWN_LEFT) & ~FILE_H;
 
 	case UP_UP:
 		return bb << UP_UP;
@@ -65,22 +85,22 @@ inline constexpr Bitboard shift(Bitboard bb, Direction D) {
 		return bb >> -DOWN_DOWN;
 
 	case UP_UP_RIGHT:
-		return (bb << UP_UP_RIGHT) & ~BB_FILES[FILE_A];
+		return (bb << UP_UP_RIGHT) & ~FILE_A;
 	case UP_UP_LEFT:
-		return (bb << UP_UP_LEFT) & ~BB_FILES[FILE_H];
+		return (bb << UP_UP_LEFT) & ~FILE_H;
 	case UP_RIGHT_RIGHT:
-		return (bb << UP_RIGHT_RIGHT) & ~(BB_FILES[FILE_A] | BB_FILES[FILE_B]);
+		return (bb << UP_RIGHT_RIGHT) & ~(FILE_A | FILE_B);
 	case UP_LEFT_LEFT:
-		return (bb << UP_LEFT_LEFT) & ~(BB_FILES[FILE_G] | BB_FILES[FILE_H]);
+		return (bb << UP_LEFT_LEFT) & ~(FILE_G | FILE_H);
 
 	case DOWN_DOWN_RIGHT:
-		return (bb >> -DOWN_DOWN_RIGHT) & ~BB_FILES[FILE_A];
+		return (bb >> -DOWN_DOWN_RIGHT) & ~FILE_A;
 	case DOWN_DOWN_LEFT:
-		return (bb >> -DOWN_DOWN_LEFT) & ~BB_FILES[FILE_H];
+		return (bb >> -DOWN_DOWN_LEFT) & ~FILE_H;
 	case DOWN_RIGHT_RIGHT:
-		return (bb >> -DOWN_RIGHT_RIGHT) & ~(BB_FILES[FILE_A] | BB_FILES[FILE_B]);
+		return (bb >> -DOWN_RIGHT_RIGHT) & ~(FILE_A | FILE_B);
 	case DOWN_LEFT_LEFT:
-		return (bb >> -DOWN_LEFT_LEFT) & ~(BB_FILES[FILE_G] | BB_FILES[FILE_H]);
+		return (bb >> -DOWN_LEFT_LEFT) & ~(FILE_G | FILE_H);
 	}
 	return bb;
 }

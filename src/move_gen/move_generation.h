@@ -1,26 +1,38 @@
 #ifndef _MOVE_GENERATION_H_
 #define _MOVE_GENERATION_H_
 
-#include "../types/types.h"
-#include "magic.h"
-
-// Simple pieces
-extern Bitboard KING_MOVES[NUM_SQUARES];
-extern Bitboard PAWN_MOVES[NUM_COLORS][NUM_SQUARES];
-extern Bitboard PAWN_ATTACKS[NUM_COLORS][NUM_SQUARES];
-extern Bitboard KNIGHT_MOVES[NUM_SQUARES];
-void init_king_moves();
-void init_pawn_moves();
-void init_knight_moves();
-
-// Sliding pieces
-extern Bitboard* ROOK_MOVES[NUM_SQUARES];
-extern Bitboard ROOK_MASKS[NUM_SQUARES];
-extern Bitboard* BISHOP_MOVES[NUM_SQUARES];
-extern Bitboard BISHOP_MASKS[NUM_SQUARES];
-void init_rook_masks();
-void init_bishop_masks();
+#include "pawn_attacks.h"
+#include "regular_piece_attacks.h"
+#include "sliding_piece_attacks.h"
 
 void init_all();
+
+inline Bitboard pawn_attacks(Square s, Color c) {
+	return PAWN_ATTACKS[c][s];
+}
+
+inline Bitboard pawn_moves(Square s, Color c) {
+	return PAWN_MOVES[c][s];
+}
+
+inline Bitboard knight_moves(Square s) {
+	return KNIGHT_MOVES[s];
+}
+
+inline Bitboard bishop_moves(Square s, Bitboard occ) {
+	return BISHOP_MOVES[s][pext(occ, BISHOP_MASKS[s])];
+}
+
+inline Bitboard rook_moves(Square s, Bitboard occ) {
+	return ROOK_MOVES[s][pext(occ, ROOK_MASKS[s])];
+}
+
+inline Bitboard queen_moves(Square s, Bitboard occ) {
+	return bishop_moves(s, occ) | rook_moves(s, occ);
+}
+
+inline Bitboard king_moves(Square s) {
+	return KING_MOVES[s];
+}
 
 #endif

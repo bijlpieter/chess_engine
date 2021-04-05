@@ -5,7 +5,7 @@ LIBPATH :=
 LIBS :=
 
 CC = g++
-FLAGS = -Wall
+FLAGS = -Wall -mbmi2
 
 TARGET := main
 

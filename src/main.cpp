@@ -6,9 +6,10 @@
 int main() {
 	bb_init();
 	init_all();
-	int sum = 0;
-	for (Square s = A1; s <= H8; s++)
-		sum += (1 << popcount(BISHOP_MASKS[s]));
-	std::cout << sum << std::endl;
+	// for (Square s = A1; s <= H8; s++)
+	// 	std::cout << bb_string(ROOK_MASKS[s]) << std::endl;
+
+	std::cout << bb_string(queen_moves(E5, RANK_2 | RANK_6 | FILE_B | FILE_F)) << std::endl;
+
 	return 0;
 }

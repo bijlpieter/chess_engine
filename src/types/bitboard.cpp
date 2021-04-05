@@ -20,7 +20,7 @@ std::string bb_string(Bitboard bb) {
 	std::string str = "";
 	for (Rank r = RANK_8; r >= RANK_1; r--) {
 		for (File f = FILE_A; f <= FILE_H; f++)
-			str += (bb & BB_SQUARES[square(r, f)] ? "1 " : ". ");
+			str += (bb & square(r, f) ? "1 " : ". ");
 		str += '\n';
 	}
 	return str;
