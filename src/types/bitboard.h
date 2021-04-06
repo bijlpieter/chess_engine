@@ -13,6 +13,7 @@ typedef uint64_t Bitboard;
 extern Bitboard BB_RANKS[NUM_RANKS];
 extern Bitboard BB_FILES[NUM_FILES];
 extern Bitboard BB_SQUARES[NUM_SQUARES];
+extern Bitboard BB_CASTLING[NUM_CASTLING];
 
 inline uint64_t popcount(Bitboard b) {
 	return _popcnt64(b);
@@ -34,6 +35,7 @@ inline constexpr Bitboard flip(Bitboard bb, FlipDirection D) {
 	switch (D) {
 	case VERTICALLY:
 		return _bswap64(bb);
+	//imp later
 	case HORIZONTALLY:
 		return bb;
 	}

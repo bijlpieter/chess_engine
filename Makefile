@@ -8,6 +8,7 @@ CC = g++
 FLAGS = -Wall -mbmi2
 
 TARGET := main
+TAR_GZ := chess.tar.gz
 
 .PHONY: all clean
 
@@ -21,6 +22,10 @@ $(ODIR)/%.o: $(SDIR)/%.cpp
 	@mkdir -p $(@D)
 	$(CC) $(FLAGS) -c $< -o $@
 
+tar: clean
+	tar -cvzf $(TAR_GZ) $(SDIR) Makefile README.md LICENSE .gitignore
+
 clean:
 	rm -rf $(ODIR)/
 	rm -f $(TARGET)
+	rm -f $(TAR_GZ)

@@ -20,7 +20,22 @@ enum Square : char {
 	A6, B6, C6, D6, E6, F6, G6, H6,
 	A7, B7, C7, D7, E7, F7, G7, H7,
 	A8, B8, C8, D8, E8, F8, G8, H8,
-	NUM_SQUARES
+	NUM_SQUARES, NO_SQUARE
+};
+
+typedef char Castling;
+enum CastlingTypes : char {
+	NO_CASTLING,
+	WHITE_KINGSIDE = 1,
+	WHITE_QUEENSIDE = 2,
+	BLACK_KINGSIDE = 4,
+	BLACK_QUEENSIDE = 8,
+
+	WHITE_BOTH = WHITE_KINGSIDE | WHITE_QUEENSIDE,
+	BLACK_BOTH = BLACK_KINGSIDE | BLACK_QUEENSIDE,
+
+	ALL_CASTLING = WHITE_BOTH | BLACK_BOTH,
+	NUM_CASTLING = 16
 };
 
 inline constexpr Rank rank(Square s) {
@@ -41,5 +56,7 @@ inline File& operator++(File& f, int) { return f = File(int(f) + 1); }
 inline File& operator--(File& f, int) { return f = File(int(f) - 1); }
 inline Square& operator++(Square& s, int) { return s = Square(int(s) + 1); }
 inline Square& operator--(Square& s, int) { return s = Square(int(s) - 1); }
+inline Square& operator+=(Square& s, int x) { return s = Square(int(s) + x); }
+inline Square operator+(Square& s, int x) { return Square(int(s) + x); }
 
 #endif
