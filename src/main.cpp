@@ -1,5 +1,5 @@
-#include "./types/types.h"
-#include "./move_gen/move_generation.h"
+#include "types.h"
+#include "move_generation.h"
 
 #include <iostream>
 

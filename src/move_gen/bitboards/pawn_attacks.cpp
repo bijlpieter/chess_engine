@@ -1,4 +1,4 @@
-#include "move_generation.h"
+#include "pawn_attacks.h"
 
 Bitboard PAWN_MOVES[NUM_COLORS][NUM_SQUARES] = {0};
 Bitboard PAWN_ATTACKS[NUM_COLORS][NUM_SQUARES] = {0};

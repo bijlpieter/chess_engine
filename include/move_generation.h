@@ -1,9 +1,9 @@
 #ifndef _MOVE_GENERATION_H_
 #define _MOVE_GENERATION_H_
 
-#include "pawn_attacks.h"
-#include "regular_piece_attacks.h"
-#include "sliding_piece_attacks.h"
+#include "../src/move_gen/bitboards/pawn_attacks.h"
+#include "../src/move_gen/bitboards/regular_piece_attacks.h"
+#include "../src/move_gen/bitboards/sliding_piece_attacks.h"
 
 void init_all();
 

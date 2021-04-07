@@ -1,7 +1,7 @@
 #ifndef _SLIDING_PIECE_ATTACKS_H_
 #define _SLIDING_PIECE_ATTACKS_H_
 
-#include "../types/types.h"
+#include "types.h"
 
 extern Bitboard* ROOK_MOVES[NUM_SQUARES];
 extern Bitboard ROOK_MASKS[NUM_SQUARES];

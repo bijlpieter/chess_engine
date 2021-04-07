@@ -12,6 +12,7 @@ public:
 	Position(std::string fen = defaultFEN);
 
 	Piece piece_on(Square s) const;
+	Bitboard attackers(Square s, Bitboard occ) const;
 // private:
 	void place_piece(Piece p, Square s);
 
@@ -20,6 +21,7 @@ public:
 	Bitboard pieces[NUM_COLORS][NUM_PIECE_TYPES] = {0};
 	Bitboard colors[NUM_COLORS] = {0};
 	Bitboard all_pieces = 0;
+	Bitboard checkers;
 
 	int fullMoves;
 	int halfMoves;

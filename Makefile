@@ -1,4 +1,5 @@
 SDIR := src
+IDIR := include
 ODIR := obj
 
 LIBPATH :=
@@ -16,11 +17,11 @@ SOURCES = $(shell find $(SDIR)/ -type f -name "*.cpp")
 OBJECTS = $(patsubst $(SDIR)/%.cpp, $(ODIR)/%.o, $(SOURCES))
 
 all: $(OBJECTS)
-	$(CC) $(FLAGS) $(OBJECTS) $(LIBPATH) $(LIBS) -o $(TARGET)
+	$(CC) $(FLAGS) $(OBJECTS) -I $(IDIR) $(LIBPATH) $(LIBS) -o $(TARGET)
 
 $(ODIR)/%.o: $(SDIR)/%.cpp
 	@mkdir -p $(@D)
-	$(CC) $(FLAGS) -c $< -o $@
+	$(CC) $(FLAGS) -c $< -I $(IDIR) -o $@
 
 tar: clean
 	tar -cvzf $(TAR_GZ) $(SDIR) Makefile README.md LICENSE .gitignore
