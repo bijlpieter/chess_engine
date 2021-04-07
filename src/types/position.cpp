@@ -178,10 +178,15 @@ Position::Position(std::string fen) {
 	}
 	//set all
 	all_pieces = colors[WHITE] | colors[BLACK];
+	checkers = attackers(square_of(KING, turn), ~turn);
 }
 
 Piece Position::piece_on(Square s) const {
 	return board[s];
+}
+
+Square Position::square_of(PieceType p, Color c) const {
+	return lsb(pieces[c][p]);
 }
 
 void Position::place_piece(Piece p, Square s) {

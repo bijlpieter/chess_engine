@@ -36,4 +36,12 @@ inline constexpr MoveType move_type(Move m) {
 	return MoveType(m & 0xC000);        // 1100000000000000
 }
 
+#define MAX_MOVES 256
+typedef uint16_t MoveCount;
+
+struct Moves {
+	Move list[MAX_MOVES];
+	MoveCount size = 0;
+};
+
 #endif

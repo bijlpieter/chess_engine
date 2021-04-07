@@ -14,21 +14,32 @@ extern Bitboard BB_RANKS[NUM_RANKS];
 extern Bitboard BB_FILES[NUM_FILES];
 extern Bitboard BB_SQUARES[NUM_SQUARES];
 extern Bitboard BB_CASTLING[NUM_CASTLING];
+extern Bitboard BB_RAYS[NUM_SQUARES][NUM_SQUARES];
 
-inline uint64_t popcount(Bitboard b) {
-	return _popcnt64(b);
+inline Bitboard bb_ray(Square from, Square to) {
+	return BB_RAYS[from][to];
+}
+
+inline uint64_t popcount(Bitboard bb) {
+	return _popcnt64(bb);
 }
 
 inline uint64_t pext(Bitboard occ, Bitboard mask) {
 	return _pext_u64(occ, mask);
 }
 
-inline Square lsb(Bitboard b) {
-	return Square(_tzcnt_u64(b));
+inline Square lsb(Bitboard bb) {
+	return Square(__builtin_ctzll(bb));
+}
+
+inline Square pop_lsb(Bitboard& bb) {
+	Square s = lsb(bb);
+	bb &= (bb - 1);
+	return s;
 }
 
 inline Square msb(Bitboard b) {
-	return Square(_lzcnt_u64(b) ^ 63);
+	return Square(__builtin_clzll(b) ^ 63);
 }
 
 inline constexpr Bitboard flip(Bitboard bb, FlipDirection D) {
@@ -57,6 +68,7 @@ inline Bitboard operator|(File f1, File f2) { return BB_FILES[f1] | BB_FILES[f2]
 
 inline Bitboard operator~(Rank r) { return ~BB_RANKS[r]; }
 inline Bitboard operator~(File f) { return ~BB_FILES[f]; }
+inline Bitboard operator~(Square s) { return ~BB_SQUARES[s]; }
 
 inline constexpr Bitboard shift(Bitboard bb, Direction D) {
 	switch(D) {
@@ -108,6 +120,7 @@ inline constexpr Bitboard shift(Bitboard bb, Direction D) {
 }
 
 void bb_init();
+void bb_rays_init();
 std::string bb_string(Bitboard bb);
 
 #endif

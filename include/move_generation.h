@@ -5,7 +5,7 @@
 #include "../src/move_gen/bitboards/regular_piece_attacks.h"
 #include "../src/move_gen/bitboards/sliding_piece_attacks.h"
 
-void init_all();
+void bb_moves_init();
 
 inline Bitboard pawn_attacks(Square s, Color c) {
 	return PAWN_ATTACKS[c][s];

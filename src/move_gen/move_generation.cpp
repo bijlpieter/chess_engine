@@ -1,6 +1,6 @@
 #include "move_generation.h"
 
-void init_all() {
+void bb_moves_init() {
 	init_king_moves();
 	init_pawn_moves();
 	init_knight_moves();

@@ -1,10 +1,12 @@
 #include "bitboard.h"
 #include "direction.h"
+#include "move_generation.h"
 
 Bitboard BB_RANKS[NUM_RANKS];
 Bitboard BB_FILES[NUM_FILES];
 Bitboard BB_SQUARES[NUM_SQUARES];
 Bitboard BB_CASTLING[NUM_CASTLING] = {0};
+Bitboard BB_RAYS[NUM_SQUARES][NUM_SQUARES];
 
 void bb_init() {
 	for (Rank r = RANK_1; r <= RANK_8; r++)
@@ -30,6 +32,15 @@ void bb_init() {
 			BB_CASTLING[i] |= black_kingside;
 		if (i & BLACK_QUEENSIDE)
 			BB_CASTLING[i] |= black_queenside;
+	}
+}
+
+void bb_rays_init() {
+	for (Square s1 = A1; s1 <= H8; s1++) for (Square s2 = A1; s2 <= H8; s2++) {
+		if (rook_moves(s1, 0) & s2)
+			BB_RAYS[s1][s2] = (rook_moves(s1, BB_SQUARES[s2]) & rook_moves(s2, BB_SQUARES[s1])) | s2;
+		if (bishop_moves(s1, 0) & s2)
+			BB_RAYS[s1][s2] = (bishop_moves(s1, BB_SQUARES[s2]) & bishop_moves(s2, BB_SQUARES[s1])) | s2;
 	}
 }
 
