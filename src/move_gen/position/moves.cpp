@@ -22,10 +22,10 @@ Bitboard Position::blockers(Square s, Color blocking, Color attacking) const {
 
 	while (sliding_attackers) {
 		Square sniper = pop_lsb(sliding_attackers);
-		Bitboard ray_blockers = bb_ray(sniper, s) & ~s & colors[blocking];
+		Bitboard ray_blockers = bb_ray(sniper, s) & ~s & all_pieces;
 		// std::cout << bb_string(ray_blockers) << std::endl;
 		if (ray_blockers && popcount(ray_blockers) == 1)
-			blocks |= ray_blockers;
+			blocks |= ray_blockers & colors[blocking];
 	}
 
 	return blocks;

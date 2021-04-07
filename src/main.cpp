@@ -17,7 +17,7 @@ int main() {
 	// for (int i = 0; i < NUM_CASTLING; i++)
 	// 	std::cout << bb_string(BB_CASTLING[i]) << std::endl;
 
-	Position pos = Position("6k1/5p2/8/8/2B5/8/8/1K6 w KQkq - 0 1");
+	Position pos = Position("6k1/8/2b5/3P4/2B5/8/8/7K w KQkq - 0 1");
 	std::cout << pos << std::endl;
 
 	// for (Color c : {WHITE, BLACK})
@@ -28,7 +28,7 @@ int main() {
 	// for (Color c : {WHITE, BLACK})
 	// 	std::cout << bb_string(p.colors[c]) << std::endl;
 
-	std::cout << bb_string(pos.blockers(G8, BLACK, WHITE)) << std::endl;
+	std::cout << bb_string(pos.blockers(H1, WHITE, BLACK)) << std::endl;
 
 	return 0;
 }
