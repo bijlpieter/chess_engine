@@ -11,7 +11,7 @@ inline constexpr Square move_to(Move m) {
 }
 
 inline constexpr Square move_from(Move m) {
-	return Square(m & 0xFC0);           // 0000111111000000
+	return Square((m & 0xFC0) >> 6);    // 0000111111000000
 }
 
 enum PromotionPiece {
@@ -34,6 +34,10 @@ enum MoveType {
 
 inline constexpr MoveType move_type(Move m) {
 	return MoveType(m & 0xC000);        // 1100000000000000
+}
+
+inline constexpr Move move_init(Square from, Square to) {
+	return to | (from << 6);
 }
 
 #define MAX_MOVES 256

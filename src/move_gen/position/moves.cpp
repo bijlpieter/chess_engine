@@ -18,12 +18,10 @@ Bitboard Position::attackers(Square s, Color c) const {
 Bitboard Position::blockers(Square s, Color blocking, Color attacking) const {
 	Bitboard blocks = 0;
 	Bitboard sliding_attackers = (rook_moves(s, 0) & (pieces[attacking][ROOK] | pieces[attacking][QUEEN])) | (bishop_moves(s, 0) & (pieces[attacking][BISHOP] | pieces[attacking][QUEEN]));
-	// std::cout << bb_string(sliding_attackers) << std::endl;
 
 	while (sliding_attackers) {
 		Square sniper = pop_lsb(sliding_attackers);
 		Bitboard ray_blockers = bb_ray(sniper, s) & ~s & all_pieces;
-		// std::cout << bb_string(ray_blockers) << std::endl;
 		if (ray_blockers && popcount(ray_blockers) == 1)
 			blocks |= ray_blockers & colors[blocking];
 	}
@@ -38,6 +36,78 @@ Moves Position::generate_blockers() const {
 
 Moves Position::generate_moves() const {
 	Moves moves;
+	Square king = lsb(pieces[turn][KING]);
+	Bitboard pinned = blockers(king, turn, ~turn);
+	
+	// TODO: Do all pawn moves at once + Promotions + EN PEASANT
+
+	Bitboard bb = pieces[turn][KNIGHT] & ~pinned;
+	while (bb) {
+		Square knight = pop_lsb(bb);
+		Bitboard attacks = knight_moves(knight) & ~colors[turn];
+		std::cout << bb_string(attacks) << std::endl;
+		while (attacks)
+			moves.list[moves.size++] = move_init(knight, pop_lsb(attacks));
+	}
+
+	bb = pieces[turn][BISHOP] & ~pinned;
+	while (bb) {
+		Square bishop = pop_lsb(bb);
+		Bitboard attacks = bishop_moves(bishop, all_pieces) & ~colors[turn];
+		std::cout << bb_string(attacks) << std::endl;
+		while (attacks)
+			moves.list[moves.size++] = move_init(bishop, pop_lsb(attacks));
+	}
+
+	bb = pieces[turn][BISHOP] & pinned;
+	while (bb) {
+		Square bishop = pop_lsb(bb);
+		Bitboard attacks = bishop_moves(bishop, all_pieces) & ~colors[turn] & bb_line(king, bishop);
+		std::cout << bb_string(attacks) << std::endl;
+		while (attacks)
+			moves.list[moves.size++] = move_init(bishop, pop_lsb(attacks));
+	}
+
+	bb = pieces[turn][ROOK] & ~pinned;
+	while (bb) {
+		Square rook = pop_lsb(bb);
+		Bitboard attacks = rook_moves(rook, all_pieces) & ~colors[turn];
+		std::cout << bb_string(attacks) << std::endl;
+		while (attacks)
+			moves.list[moves.size++] = move_init(rook, pop_lsb(attacks));
+	}
+
+	bb = pieces[turn][ROOK] & pinned;
+	while (bb) {
+		Square rook = pop_lsb(bb);
+		Bitboard attacks = rook_moves(rook, all_pieces) & ~colors[turn] & bb_line(king, rook);
+		std::cout << bb_string(attacks) << std::endl;
+		while (attacks)
+			moves.list[moves.size++] = move_init(rook, pop_lsb(attacks));
+	}
+
+	bb = pieces[turn][QUEEN] & ~pinned;
+	while (bb) {
+		Square queen = pop_lsb(bb);
+		Bitboard attacks = queen_moves(queen, all_pieces) & ~colors[turn];
+		std::cout << bb_string(attacks) << std::endl;
+		while (attacks)
+			moves.list[moves.size++] = move_init(queen, pop_lsb(attacks));
+	}
+
+	bb = pieces[turn][QUEEN] & pinned;
+	while (bb) {
+		Square queen = pop_lsb(bb);
+		Bitboard attacks = queen_moves(queen, all_pieces) & ~colors[turn] & bb_line(king, queen);
+		std::cout << bb_string(attacks) << std::endl;
+		while (attacks)
+			moves.list[moves.size++] = move_init(queen, pop_lsb(attacks));
+	}
+
+	// TODO: King moves such that you aren't in check
+
+	// TODO: Castling
+
 	return moves;
 }
 

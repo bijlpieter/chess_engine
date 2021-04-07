@@ -15,9 +15,14 @@ extern Bitboard BB_FILES[NUM_FILES];
 extern Bitboard BB_SQUARES[NUM_SQUARES];
 extern Bitboard BB_CASTLING[NUM_CASTLING];
 extern Bitboard BB_RAYS[NUM_SQUARES][NUM_SQUARES];
+extern Bitboard BB_LINES[NUM_SQUARES][NUM_SQUARES];
 
 inline Bitboard bb_ray(Square from, Square to) {
 	return BB_RAYS[from][to];
+}
+
+inline Bitboard bb_line(Square from, Square to) {
+	return BB_LINES[from][to];
 }
 
 inline uint64_t popcount(Bitboard bb) {
