@@ -26,10 +26,10 @@ inline constexpr PromotionPiece move_promo(Move m) {
 }
 
 enum MoveType {
-	S_MOVE_NONE,
-	S_MOVE_PROMOTION,
-	S_MOVE_EN_PASSANT,
-	S_MOVE_CASTLING
+	S_MOVE_NONE = 0,
+	S_MOVE_PROMOTION = 1 << 14,
+	S_MOVE_EN_PASSANT = 2 << 14,
+	S_MOVE_CASTLING = 3 << 14
 };
 
 inline constexpr MoveType move_type(Move m) {

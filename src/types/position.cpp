@@ -1,105 +1,132 @@
 #include "position.h"
 #include <iostream>
 #include <string>
+#include <regex>
 
-// bool validateFEN(std::string fen) {
-// 	let fields = fen.split(/\s+/)
-// 	let positions = fields[0].split('/')
-// 	// FEN consists of 6 fields
-// 	if (fields.length !== 6){
-// 		console.log("FEN Must have 6 fields.")
-// 		return false;
-// 	}
-// 	//first field (positions field) must be 8 ranks long.
-// 	if (positions.length !== 8) {
-// 		console.log("Positions field (seperated by '/' must be of length 8.")
-// 		return false;
-// 	}
-// 	//second field (move field) must be w or b
-// 	if (!/^(w|b)$/.test(fields[1])) {
-// 		console.log ("move field must be 'w' or 'b'")
-// 		return false;
-// 	}
-// 	//third field (castling field) must be - or K/Q/k/q or any combination
-// 	if (!/^(KQ?k?q?|Qk?q?|kq?|q|-)$/.test(fields[2])) {
-// 		console.log("Castling field must be either - or a combination of K Q q k.")
-// 		return false;
-// 	}
-// 	//fourth field (en passant) may be - or any coordinate
-// 	if (!/^(-|[abcdefgh][36])$/.test(fields[3])) {
-// 		console.log("En pessant field must be either - or a coordinate.")
-// 		return false;
-// 	}
-// 	//en passant for the right turn?
-// 	if ((fields[3][1] == '3' && fields[1] == 'w') || (fields[3][1] == '6' && fields[1] == 'b')) {
-// 		console.log("En pessant field does not match the current turn")
-// 		return false;
-// 	}
-// 	//fifth field (halfmove field) must be an integer > 0
-// 	if (isNaN(fields[4]) || 0 > parseInt(fields[5], 10)) {
-// 		console.log("Halfmove number must be an integer that is > 0.")
-// 		return false;
-// 	}
-	
-// 	//sixth field (fullmove field) must be an integer > 0
-// 	if (isNaN(fields[5]) || 0 > parseInt(fields[4], 10)) {
-// 		console.log("Move number must be an integer that is > 0.")
-// 		return false;
-// 	}
-// 	let whiteKing = false
-// 	let blackKing = false
-// 	let kings = 0
-// 	//positions are valid
-// 	for (let i = 0; i < positions.length; i++) {
-// 		//sum ranks and no 2 consecutive numbers
-// 		let sumRank = 0
-// 		let prev_num = false
-		
-// 		for (let j = 0; j < positions[i].length; j++) {
-// 			if (!isNaN(positions[i][j])) {
-// 				if (prev_num) {
-// 					console.log("FEN positions may not have 2 consecutive numbers")
-// 					return false
-// 				}
-// 				sumRank += parseInt(positions[i][j], 10)
-// 				prev_num = true
-// 			}
-// 			else {
-// 				if (!/^[prnbqkPRNBQK]$/.test(positions[i][j])) {
-// 					console.log("FEN pieces must be represented using the letters prnbqk(or uppercase)")
-// 					return false
-// 				}
-// 				if (positions[i][j] == 'k') {
-// 					blackKing = true;
-// 					kings++
-// 				}
-// 				if (positions[i][j] == 'K') {
-// 					whiteKing = true;
-// 					kings++
-// 				}
-// 				sumRank += 1
-// 				prev_num = false
-// 			}
-// 			if (sumRank > 8 || sumRank < 0){
-// 				console.log("FEN rank sums up to > 8 or < 0")
-// 				return false
-// 			}
-// 		}
-// 	}
-// 	//must have kings
-// 	if (!(whiteKing && blackKing && (kings == 2))) {
-// 		console.log("FEN must contain exactly one white and one black king")
-// 		return false
-// 	}
-// 	console.log("Valid fen!")
-// 	return true;
-// }
-// // Clock
-// }
-
-
+bool validateFEN(std::string fen) {
+	std::string fields[6];
+	int ls = 0, index = 0;
+	for (unsigned int i = 0; i < fen.length() + 1; i++){
+		if (fen[i] == ' ' || i == fen.length()){
+			fields[index] = fen.substr(ls, i - ls);
+			index++;
+			ls = i + 1;
+		}
+	}
+    //total fields
+    if (index != 6){
+        std::cout << "FEN must have 6 fields separated by a single space."<< std::endl;
+        return false;
+    }
+    //positions field
+    int bs = 0;
+    for (char c : fields[0]){
+        if (c == '/') bs++;
+    }
+    if (bs != 7){
+        std::cout << "Positions field must have 8 fields seperated by a /. Found: "<< bs <<  std::endl;
+        return false;
+    }
+    // move field
+    std::regex wb("^(w|b)$");
+	if (!std::regex_match(fields[1],wb)){
+        std::cout << "Move field must be either 'w' or 'b'."<< std::endl;
+        return false;
+    }
+    // castle rights field
+    std::regex castle("^(KQ?k?q?|Qk?q?|kq?|q|-)$");
+    if (!std::regex_match(fields[2],castle )){
+        std::cout << "Castling field must be either - or any of K Q q k in that specific order."<< std::endl;
+        return false;
+    }
+    // en peasant field
+    std::regex peasant("^(-|[abcdefgh][36])$");
+    if (!std::regex_match(fields[3],castle )){
+        std::cout << "En pessant field must be either - or a coordinate."<< std::endl;
+        return false;
+    }
+    // en peasant matches current turn
+	if ((fields[3][1] == '3' && fields[1] == "w") || (fields[3][1] == '6' && fields[1] == "b")) {
+		std::cout << "En pessant field does not match the current turn"<< std::endl;
+		return false;
+	}
+    // halfmove field
+    for (char& c : fields[4]){
+        if (std::isdigit(c) == 0){
+            std::cout << "halfmove field may not contain characters."<< std::endl;
+		    return false;
+        }
+    }
+    if (stoi(fields[4]) < 0){
+        std::cout << "halfmove field must be positive."<< std::endl;
+		return false;
+    }
+    // fullmove field
+	for (char& c : fields[5]){
+        if (std::isdigit(c) == 0){
+            std::cout << "fullmove field may not contain characters."<< std::endl;
+		    return false;
+        }
+    }
+    if (stoi(fields[5]) < 0){
+        std::cout << "fullmove field must be positive"<< std::endl;
+		return false;
+    }
+    bool white = false, black = false, num = false;
+	int k = 0, sum = 0;
+    std::regex pieces("^[prnbqkPRNBQK]$");
+    for (char& c : fields[0]){
+        if (c == '/' ){
+            if (sum != 8){
+                std::cout << "Positions field: the sum of a rank must be 8 squares."<< std::endl;
+                return false;
+            }
+            sum = 0;
+            num = false;
+        }
+        else if (std::isdigit(c) != 0){
+            if (num){
+                std::cout << "FEN positions may not have 2 consecutive numbers"<< std::endl;
+                return false;
+            }
+            sum += c - '0';
+            num = true;
+        }
+        else{
+            std::string s(1,c);
+            if (!std::regex_match(s,pieces)){
+                std::cout << "FEN pieces must be represented using the letters prnbqkPRNBQK. Found: "<< s << std::endl;
+                return false;
+            }
+            if (c == 'K'){
+                white = true;
+                k++;
+            }
+            if (c == 'k'){
+                black = true;
+                k++;
+            }
+            sum++;
+            num = false;
+        }
+    }
+    if (sum != 8){
+        std::cout << "Positions field: the sum of a rank must be 8 squares.(final)"<< std::endl;
+        return false;
+    }
+	if (!(white && black && (k == 2))) {
+		std::cout << "FEN must contain exactly one white and one black king" << std::endl;
+		return false;
+	}
+	std::cout << "Valid FEN."<< std::endl;
+	return true;
+}
 //  rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
 Position::Position(std::string fen) {
+    if (!validateFEN(fen)) {
+        std::cout << "FEN was not valid, returning." << std::endl;
+        return;
+    }
 	std::string fields[6];
 	int ls = 0, index = 0;
 	for (unsigned int i = 0; i < fen.length() + 1; i++){
@@ -109,9 +136,6 @@ Position::Position(std::string fen) {
 			ls = i + 1;
 		} 
 	}
-    for (int i = 0; i < 6; i++){
-        std::cout << fields[i] << fields[i].length() << std::endl;
-    }
 	turn = (fields[1] == "w") ? WHITE : BLACK;
 	//castling
 	if (fields[2].find('k') != std::string::npos) castling |= BLACK_KINGSIDE;
@@ -178,7 +202,7 @@ Position::Position(std::string fen) {
 	}
 	//set all
 	all_pieces = colors[WHITE] | colors[BLACK];
-	checkers = attackers(square_of(KING, turn), ~turn);
+	checkers = attackers_to_sq(square_of(KING, turn), ~turn);
 }
 
 Piece Position::piece_on(Square s) const {

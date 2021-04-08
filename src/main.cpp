@@ -16,9 +16,12 @@ int main() {
 	// std::cout << bb_string(queen_moves(A1, 0)) << std::endl;
 
 	// for (int i = 0; i < NUM_CASTLING; i++)
-	// 	std::cout << bb_string(BB_CASTLING[i]) << std::endl;
+	// 	std::cout << bb_string(BB_CASTLING_ROOK[i]) << std::endl;
+	std::string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+	std::string fen1 = "r3k2r/pppp1ppp/4p3/6B1/8/8/PPPPPPPP/R3K2R b KQkq - 0 1";
+	Position pos = Position(fen1);
 
-	Position pos = Position("6k1/8/2b5/3Q4/2B5/5N2/8/7K w KQkq - 0 1");
+
 	std::cout << pos << std::endl;
 
 	// for (Color c : {WHITE, BLACK})

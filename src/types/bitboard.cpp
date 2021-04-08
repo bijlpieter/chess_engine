@@ -5,7 +5,8 @@
 Bitboard BB_RANKS[NUM_RANKS];
 Bitboard BB_FILES[NUM_FILES];
 Bitboard BB_SQUARES[NUM_SQUARES];
-Bitboard BB_CASTLING[NUM_CASTLING] = {0};
+Bitboard BB_CASTLING_KING[NUM_CASTLING] = {0};
+Bitboard BB_CASTLING_ROOK[NUM_CASTLING] = {0};
 Bitboard BB_RAYS[NUM_SQUARES][NUM_SQUARES];
 Bitboard BB_LINES[NUM_SQUARES][NUM_SQUARES];
 
@@ -19,20 +20,33 @@ void bb_init() {
 	for (Square s = A1; s <= H8; s++)
 		BB_SQUARES[s] = 0x1ULL << (s * RIGHT);
 
-	Bitboard white_kingside = 0x70ULL;
-	Bitboard white_queenside = 0x1CULL;
-	Bitboard black_kingside = 0x70ULL << 56;
-	Bitboard black_queenside = 0x1CULL << 56;
+	Bitboard white_kingside_king = 0x70ULL;
+	Bitboard white_queenside_king = 0x1CULL;
+	Bitboard black_kingside_king = 0x70ULL << 56;
+	Bitboard black_queenside_king = 0x1CULL << 56;
+
+	Bitboard white_kingside_rook = 0x60ULL;
+	Bitboard white_queenside_rook = 0xEULL;
+	Bitboard black_kingside_rook = 0x60ULL << 56;
+	Bitboard black_queenside_rook = 0xEULL << 56;
 
 	for (int i = 0; i < NUM_CASTLING; i++) {
-		if (i & WHITE_KINGSIDE)
-			BB_CASTLING[i] |= white_kingside;
-		if (i & WHITE_QUEENSIDE)
-			BB_CASTLING[i] |= white_queenside;
-		if (i & BLACK_KINGSIDE)
-			BB_CASTLING[i] |= black_kingside;
-		if (i & BLACK_QUEENSIDE)
-			BB_CASTLING[i] |= black_queenside;
+		if (i & WHITE_KINGSIDE) {
+			BB_CASTLING_KING[i] |= white_kingside_king;
+			BB_CASTLING_ROOK[i] |= white_kingside_rook;
+		}
+		if (i & WHITE_QUEENSIDE) {
+			BB_CASTLING_KING[i] |= white_queenside_king;
+			BB_CASTLING_ROOK[i] |= white_queenside_rook;
+		}
+		if (i & BLACK_KINGSIDE) {
+			BB_CASTLING_KING[i] |= black_kingside_king;
+			BB_CASTLING_ROOK[i] |= black_kingside_rook;
+		}
+		if (i & BLACK_QUEENSIDE) {
+			BB_CASTLING_KING[i] |= black_queenside_king;
+			BB_CASTLING_ROOK[i] |= black_queenside_rook;
+		}
 	}
 }
 

@@ -13,7 +13,8 @@ typedef uint64_t Bitboard;
 extern Bitboard BB_RANKS[NUM_RANKS];
 extern Bitboard BB_FILES[NUM_FILES];
 extern Bitboard BB_SQUARES[NUM_SQUARES];
-extern Bitboard BB_CASTLING[NUM_CASTLING];
+extern Bitboard BB_CASTLING_KING[NUM_CASTLING];
+extern Bitboard BB_CASTLING_ROOK[NUM_CASTLING];
 extern Bitboard BB_RAYS[NUM_SQUARES][NUM_SQUARES];
 extern Bitboard BB_LINES[NUM_SQUARES][NUM_SQUARES];
 
