@@ -45,7 +45,8 @@ typedef uint16_t MoveCount;
 
 struct Moves {
 	Move list[MAX_MOVES];
-	MoveCount size = 0;
+	Move* end = list;
+	MoveCount size() { return end - list; }
 };
 
 #endif

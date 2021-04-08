@@ -1,3 +1,8 @@
-#include "bitboard.h"
-#include "piece.h"
-#include "move.h"
+#ifndef _EVALUATION_H_
+#define _EVALUATION_H_
+
+#include "types.h"
+
+
+
+#endif 

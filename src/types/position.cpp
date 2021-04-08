@@ -203,6 +203,7 @@ Position::Position(std::string fen) {
 	//set all
 	all_pieces = colors[WHITE] | colors[BLACK];
 	checkers = attackers_to_sq(square_of(KING, turn), ~turn);
+    // phase = calculate_phase();
 }
 
 Piece Position::piece_on(Square s) const {

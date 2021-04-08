@@ -4,6 +4,7 @@
 #include "bitboard.h"
 #include "piece.h"
 #include "move.h"
+#include "score.h"
 
 #include <string>
 const std::string defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -16,6 +17,7 @@ public:
 	Square square_of(PieceType p, Color c) const;
 	Bitboard attackers_to_sq(Square s, Color c) const;
 	Bitboard controlling(Color c) const;
+	Bitboard king_safe_squares(Color c) const;
 
 	Bitboard blockers(Square s, Color blocking, Color attacking) const;
 	// Bitboard pinned_pieces(Color c) const;
@@ -24,6 +26,10 @@ public:
 	Moves legal_moves() const;
 	Moves generate_moves() const;
 	Moves generate_blockers() const;
+	//TODO legal_moves_of_piece(Color c, PIECE_TYPE p); returns 1 bb of all legal moves of piece p of color c
+
+	Phase calculate_phase();
+	Score calculate_score(Color c);
 // private:
 	void place_piece(Piece p, Square s);
 
@@ -39,6 +45,7 @@ public:
 	Color turn;
 	Square en_peasant;
 	Castling castling;
+	Phase phase;
 };
 
 std::ostream& operator<<(std::ostream& os, const Position& p);

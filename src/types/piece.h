@@ -6,6 +6,8 @@ enum PieceType : char {
 	NUM_PIECE_TYPES
 };
 
+const PieceType AllPieceTypes[] = {PAWN,KNIGHT,BISHOP,ROOK,QUEEN,KING};
+
 enum Color : char {
 	WHITE, BLACK,
 	NUM_COLORS
