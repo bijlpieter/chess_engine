@@ -62,5 +62,6 @@ inline Square operator+(Square& s, int x) { return Square(int(s) + x); }
 #include "direction.h"
 
 inline Square operator-(Square s, Direction d) { return Square(int(s) - int(d)); }
+inline Square operator+(Square s, Direction d) { return Square(int(s) + int(d)); }
 
 #endif

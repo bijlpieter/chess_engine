@@ -22,8 +22,7 @@ Bitboard Position::attackers_to_sq(Square s, Color c) const {
 		| (pawn_attacks(s, ~c) & pieces[c][PAWN]);
 }
 
-// Returns a bitboard containing all squares that are controlled by Color c.
-Bitboard Position::controlling(Color c) const {
+inline Bitboard Position::controlling_regular(Color c) const {
 	Bitboard attacked = 0;
 	attacked |= shift(pieces[c][PAWN], c ? DOWN_LEFT : UP_LEFT);
 	attacked |= shift(pieces[c][PAWN], c ? DOWN_RIGHT : UP_RIGHT);
@@ -31,15 +30,6 @@ Bitboard Position::controlling(Color c) const {
 	Bitboard pcs = pieces[c][KNIGHT];
 	while (pcs)
 		attacked |= knight_moves(pop_lsb(pcs));
-	pcs = pieces[c][BISHOP];
-	while (pcs)
-		attacked |= bishop_moves(pop_lsb(pcs), all_pieces);
-	pcs = pieces[c][ROOK];
-	while (pcs)
-		attacked |= rook_moves(pop_lsb(pcs), all_pieces);
-	pcs = pieces[c][QUEEN];
-	while (pcs)
-		attacked |= queen_moves(pop_lsb(pcs), all_pieces);
 	pcs = pieces[c][KING];
 	while (pcs)
 		attacked |= king_moves(pop_lsb(pcs));
@@ -47,32 +37,27 @@ Bitboard Position::controlling(Color c) const {
 	return attacked;
 }
 
-// Returns a bitboard containing all safe squares for the King of Color c.
-// NOTE: This function excludes our king as blocker!
-Bitboard Position::king_safe_squares(Square king, Color c) const {
+inline Bitboard Position::controlling_sliding(Color c, Bitboard occ) const {
 	Bitboard attacked = 0;
-	Color enemy = ~c;
-	attacked |= shift(pieces[enemy][PAWN], enemy ? DOWN_LEFT : UP_LEFT);
-	attacked |= shift(pieces[enemy][PAWN], enemy ? DOWN_RIGHT : UP_RIGHT);
-
-	Bitboard pcs = pieces[c][KNIGHT];
-	Bitboard occ = all_pieces & ~king; // Exclude our king
-	while (pcs)
-		attacked |= knight_moves(pop_lsb(pcs));
-	pcs = pieces[enemy][BISHOP];
+	Bitboard pcs = pieces[c][BISHOP];
 	while (pcs)
 		attacked |= bishop_moves(pop_lsb(pcs), occ);
-	pcs = pieces[enemy][ROOK];
+	pcs = pieces[c][ROOK];
 	while (pcs)
 		attacked |= rook_moves(pop_lsb(pcs), occ);
-	pcs = pieces[enemy][QUEEN];
+	pcs = pieces[c][QUEEN];
 	while (pcs)
 		attacked |= queen_moves(pop_lsb(pcs), occ);
-	pcs = pieces[enemy][KING];
-	while (pcs)
-		attacked |= king_moves(pop_lsb(pcs));
+	return attacked;
+}
 
-	return attacked & king_moves(king);
+// Returns a bitboard containing all squares that are controlled by Color c.
+// It is literally every square that is attacked by at least one piece of Color c.
+// The function does not check for legality.
+// Param Bitboard occ: occupancy to use for the sliding pieces; this is useful for checking safe squares around the king.
+// Can be used to remove unsafe squares from a bitboard.
+inline Bitboard Position::controlling(Color c, Bitboard occ) const {
+	return controlling_regular(c) | controlling_sliding(c, occ);
 }
 
 // Returns a bitboard containing all pieces that are blocking a sliding piece attack to Square s.
@@ -91,12 +76,8 @@ Bitboard Position::blockers(Square s, Color blocking, Color attacking) const {
 	return blocks;
 }
 
-Moves Position::generate_blockers() const {
-	Moves moves;
-	Square king = lsb(pieces[turn][KING]);
-	Bitboard safe_king_squares = king_safe_squares(king, turn);
-
-	Bitboard kingmoves = safe_king_squares & ~colors[turn];
+Moves Position::generate_blockers() {
+	Bitboard kingmoves = king_moves(king) & ~king_unsafe & ~colors[turn];
 	while (kingmoves)
 		*moves.end++ = move_init(king, pop_lsb(kingmoves));
 
@@ -106,7 +87,71 @@ Moves Position::generate_blockers() const {
 
 	Square checking_piece = lsb(checkers);
 	Bitboard blocks = bb_ray(king, checking_piece);
-	Bitboard pinned = blockers(king, turn, ~turn);
+
+	Bitboard promotions = turn ? BB_RANKS[RANK_1] : BB_RANKS[RANK_8];
+	Bitboard two_steps = turn ? BB_RANKS[RANK_6] : BB_RANKS[RANK_3];
+	Bitboard unpinned_pawns = pieces[turn][PAWN] & ~pinned;
+
+	Direction forward = turn ? DOWN : UP;
+	Direction forward_left = turn ? DOWN_LEFT : UP_LEFT;
+	Direction forward_right = turn ? DOWN_RIGHT : UP_RIGHT;
+	Bitboard single_push = shift(unpinned_pawns | (pieces[turn][PAWN] & file(king)), forward) & ~all_pieces;
+	Bitboard double_push = shift(single_push & two_steps, forward) & ~all_pieces & blocks;
+	Bitboard left_captures = shift(unpinned_pawns, forward_left) & colors[enemy];
+	Bitboard right_captures = shift(unpinned_pawns, forward_right) & colors[enemy];
+
+	Bitboard moves_bb = single_push & ~promotions & blocks;
+	while (moves_bb) {
+		Square to = pop_lsb(moves_bb);
+		*moves.end++ = move_init(to - forward, to);
+	}
+
+	while (double_push) {
+		Square to = pop_lsb(double_push);
+		*moves.end++ = move_init(to - forward - forward, to);
+	}
+
+	moves_bb = left_captures & ~promotions & blocks;
+	while (moves_bb) {
+		Square to = pop_lsb(moves_bb);
+		*moves.end++ = move_init(to - forward_left, to);
+	}
+
+	moves_bb = right_captures & ~promotions & blocks;
+	while (moves_bb) {
+		Square to = pop_lsb(moves_bb);
+		*moves.end++ = move_init(to - forward_right, to);
+	}
+
+	// Promotions
+	moves_bb = single_push & promotions & blocks;
+	while (moves_bb) {
+		Square to = pop_lsb(moves_bb);
+		add_promotions(moves.end, to - forward, to);
+	}
+
+	moves_bb = left_captures & promotions & blocks;
+	while (moves_bb) {
+		Square to = pop_lsb(moves_bb);
+		add_promotions(moves.end, to - forward_left, to);
+	}
+
+	moves_bb = right_captures & promotions & blocks;
+	while (moves_bb) {
+		Square to = pop_lsb(moves_bb);
+		add_promotions(moves.end, to - forward_right, to);
+	}
+
+	if (en_peasant != NO_SQUARE) {	
+		moves_bb = unpinned_pawns & PAWN_ATTACKS[enemy][en_peasant] & blocks;
+		while (moves_bb) {
+			Square from = pop_lsb(moves_bb);
+			Bitboard new_occ = (all_pieces ^ from ^ (en_peasant - forward)) | en_peasant;
+			// Make sure our king is not in check after the move is played
+			if (!(rook_moves(king, new_occ) & (pieces[enemy][ROOK] | pieces[enemy][QUEEN])) && !(bishop_moves(king, new_occ) & (pieces[enemy][BISHOP] | pieces[enemy][QUEEN])))
+				*moves.end++ = move_init(pop_lsb(moves_bb), en_peasant) | S_MOVE_EN_PASSANT;
+		}
+	}
 
 	Bitboard bb = pieces[turn][KNIGHT] & ~pinned;
 	while (bb) {
@@ -147,13 +192,10 @@ Moves Position::generate_blockers() const {
 	return moves;
 }
 
-Moves Position::generate_moves() const {
+Moves Position::generate_moves() {
 	Moves moves;
-	Square king = lsb(pieces[turn][KING]);
-	Color enemy = ~turn;
-	Bitboard pinned = blockers(king, turn, enemy);
 	
-	// TODO: Do all pawn moves at once + Promotions + EN PEASANT
+	// Regular pawn pushes and captures
 	Bitboard promotions = turn ? BB_RANKS[RANK_1] : BB_RANKS[RANK_8];
 	Bitboard two_steps = turn ? BB_RANKS[RANK_6] : BB_RANKS[RANK_3];
 	Bitboard unpinned_pawns = pieces[turn][PAWN] & ~pinned;
@@ -189,6 +231,7 @@ Moves Position::generate_moves() const {
 		*moves.end++ = move_init(to - forward_right, to);
 	}
 
+	// Promotions
 	moves_bb = single_push & promotions;
 	while (moves_bb) {
 		Square to = pop_lsb(moves_bb);
@@ -276,32 +319,35 @@ Moves Position::generate_moves() const {
 			*moves.end++ = move_init(queen, pop_lsb(moves_bb));
 	}
 
-	// King moves such that you aren't in check
-	Bitboard enemy_controls = controlling(~turn);
-	// std::cout << bb_string(enemy_controls) << std::endl;
-	moves_bb = king_moves(king) & ~enemy_controls & ~colors[turn];
+	moves_bb = king_moves(king) & ~king_unsafe & ~colors[turn];
 	while (moves_bb)
 		*moves.end++ = move_init(king, pop_lsb(moves_bb));
 
 	// Castling
 	if (turn == WHITE) {
-		if ((castling & WHITE_KINGSIDE) && !(all_pieces & BB_CASTLING_ROOK[WHITE_KINGSIDE]) && !(enemy_controls & BB_CASTLING_KING[WHITE_KINGSIDE]))
+		if ((castling & WHITE_KINGSIDE) && !(all_pieces & BB_CASTLING_ROOK[WHITE_KINGSIDE]) && !(king_unsafe & BB_CASTLING_KING[WHITE_KINGSIDE]))
 			*moves.end++ = move_init(E1, G1) | S_MOVE_CASTLING;
-		if ((castling & WHITE_QUEENSIDE) && !(all_pieces & BB_CASTLING_ROOK[WHITE_QUEENSIDE]) && !(enemy_controls & BB_CASTLING_KING[WHITE_QUEENSIDE]))
+		if ((castling & WHITE_QUEENSIDE) && !(all_pieces & BB_CASTLING_ROOK[WHITE_QUEENSIDE]) && !(king_unsafe & BB_CASTLING_KING[WHITE_QUEENSIDE]))
 			*moves.end++ = move_init(E1, C1) | S_MOVE_CASTLING;
 	}
 	else {
-		if ((castling & BLACK_KINGSIDE) && !(all_pieces & BB_CASTLING_ROOK[BLACK_KINGSIDE]) && !(enemy_controls & BB_CASTLING_KING[BLACK_KINGSIDE]))
+		if ((castling & BLACK_KINGSIDE) && !(all_pieces & BB_CASTLING_ROOK[BLACK_KINGSIDE]) && !(king_unsafe & BB_CASTLING_KING[BLACK_KINGSIDE]))
 			*moves.end++ = move_init(E8, G8) | S_MOVE_CASTLING;
-		if ((castling & BLACK_QUEENSIDE) && !(all_pieces & BB_CASTLING_ROOK[BLACK_QUEENSIDE]) && !(enemy_controls & BB_CASTLING_KING[BLACK_QUEENSIDE]))
+		if ((castling & BLACK_QUEENSIDE) && !(all_pieces & BB_CASTLING_ROOK[BLACK_QUEENSIDE]) && !(king_unsafe & BB_CASTLING_KING[BLACK_QUEENSIDE]))
 			*moves.end++ = move_init(E8, C8) | S_MOVE_CASTLING;
 	}
 
 	return moves;
 }
 
-Moves Position::legal_moves() const {
-	if (checkers)
-		return generate_blockers();
-	return generate_moves();
+void Position::info_init() {
+	king = lsb(pieces[turn][KING]);
+	enemy = ~turn;
+	checkers = attackers_to_sq(king, enemy);
+	pinned = blockers(king, turn, enemy);
+	king_unsafe = controlling(turn, all_pieces ^ king);
+}
+
+Moves Position::legal_moves() {
+	return checkers ? generate_blockers() : generate_moves();
 }

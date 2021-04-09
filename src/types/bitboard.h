@@ -7,6 +7,7 @@
 
 #include "board.h"
 #include "direction.h"
+#include "piece.h"
 
 typedef uint64_t Bitboard;
 
@@ -17,6 +18,7 @@ extern Bitboard BB_CASTLING_KING[NUM_CASTLING];
 extern Bitboard BB_CASTLING_ROOK[NUM_CASTLING];
 extern Bitboard BB_RAYS[NUM_SQUARES][NUM_SQUARES];
 extern Bitboard BB_LINES[NUM_SQUARES][NUM_SQUARES];
+extern Bitboard OUTPOSTS[NUM_COLORS];
 
 inline Bitboard bb_ray(Square from, Square to) {
 	return BB_RAYS[from][to];
@@ -68,11 +70,13 @@ inline Bitboard operator&(Bitboard bb, Rank r) { return bb & BB_RANKS[r]; }
 inline Bitboard operator&(Bitboard bb, File f) { return bb & BB_FILES[f]; }
 
 inline Bitboard operator^(Bitboard bb, Square s) { return bb ^ BB_SQUARES[s]; }
+inline Bitboard& operator^=(Bitboard& bb, Square s) { return bb = bb ^ s; }
 
 inline Bitboard operator|(Rank r1, Rank r2) { return BB_RANKS[r1] | BB_RANKS[r2]; }
 inline Bitboard operator|(Rank r, File f) { return BB_RANKS[r] | BB_FILES[f]; }
 inline Bitboard operator|(File f, Rank r) { return BB_RANKS[r] | BB_FILES[f]; }
 inline Bitboard operator|(File f1, File f2) { return BB_FILES[f1] | BB_FILES[f2]; }
+inline Bitboard operator|(Square s1, Square s2) { return BB_SQUARES[s1] | BB_SQUARES[s2]; }
 
 inline Bitboard operator~(Rank r) { return ~BB_RANKS[r]; }
 inline Bitboard operator~(File f) { return ~BB_FILES[f]; }

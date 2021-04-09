@@ -41,5 +41,8 @@ int main() {
 		move_notation(pos, moves.list[i]);
 	std::cout << "Number of moves: " << moves.size() << std::endl;
 
+	std::cout << bb_string(OUTPOSTS[WHITE]) << std::endl;
+	std::cout << bb_string(OUTPOSTS[BLACK]) << std::endl;
+
 	return 0;
 }

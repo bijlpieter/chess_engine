@@ -50,11 +50,13 @@ enum Direction : char {
 	UP_LEFT_LEFT = UP + LEFT + LEFT
 };
 
-inline Direction operator+(Direction d1, Direction d2) { return d1 + d2; }
+inline Direction operator+(Direction d1, Direction d2) { return Direction(d1 + d2); }
 
 const Direction KingDirections[] = {DOWN_LEFT, DOWN, DOWN_RIGHT, LEFT, RIGHT, UP_LEFT, UP, UP_RIGHT};
 const Direction KnightDirections[] = {DOWN_DOWN_LEFT, DOWN_DOWN_RIGHT, DOWN_RIGHT_RIGHT, UP_RIGHT_RIGHT, UP_UP_RIGHT, UP_UP_LEFT, UP_LEFT_LEFT, DOWN_LEFT_LEFT};
 const Direction BishopDirections[] = {UP_RIGHT, UP_LEFT, DOWN_RIGHT, DOWN_LEFT};
 const Direction RookDirections[] = {UP, LEFT, DOWN, RIGHT};
+
+
 
 #endif

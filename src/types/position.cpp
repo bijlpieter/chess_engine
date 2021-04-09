@@ -202,7 +202,7 @@ Position::Position(std::string fen) {
 	}
 	//set all
 	all_pieces = colors[WHITE] | colors[BLACK];
-	checkers = attackers_to_sq(square_of(KING, turn), ~turn);
+	info_init();
     // phase = calculate_phase();
 }
 
@@ -212,13 +212,6 @@ Piece Position::piece_on(Square s) const {
 
 Square Position::square_of(PieceType p, Color c) const {
 	return lsb(pieces[c][p]);
-}
-
-void Position::place_piece(Piece p, Square s) {
-	board[s] = p;
-	pieces[piece_color(p)][piece_type(p)] |= BB_SQUARES[s];
-	colors[piece_color(p)] |= BB_SQUARES[s];
-	all_pieces |= BB_SQUARES[s];
 }
 
 std::ostream& operator<<(std::ostream& os, const Position& p) {

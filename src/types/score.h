@@ -5,11 +5,11 @@
 #include "position.h"
 typedef uint16_t Phase;
 // Pawn, Knight, Bishop, Rook, Queen, King
-const float mobility_middle[6] = {0.01, 0.01, 0.01, 0.01, 0.01, 0.01};
-const float mobility_end[6] = {0.01, 0.01, 0.01, 0.01, 0.01, 0.01};
-const float material_score[6] = {1, 3.5, 3.5, 5.25, 10.00, 1000};
+const float mobility_middle[NUM_PIECE_TYPES] = {0.01, 0.01, 0.01, 0.01, 0.01, 0.01};
+const float mobility_end[NUM_PIECE_TYPES] = {0.01, 0.01, 0.01, 0.01, 0.01, 0.01};
+const float material_score[NUM_PIECE_TYPES] = {1, 3.5, 3.5, 5.25, 10.00, 1000};
 
-const float KNIGHT_PAWN_MODIFIER = 0.05, KNIGHT_DEFENDED_MODIFIER = 0.01;
+const float KNIGHT_PAWN_MODIFIER = 0.05, KNIGHT_DEFENDED_MODIFIER = 0.01, KNIGHT_OUTPOST_MODIFIER = 0.1;
 
 
 class Score {
