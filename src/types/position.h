@@ -17,7 +17,7 @@ public:
 	Square square_of(PieceType p, Color c) const;
 	Bitboard attackers_to_sq(Square s, Color c) const;
 	Bitboard controlling(Color c) const;
-	Bitboard king_safe_squares(Color c) const;
+	Bitboard king_safe_squares(Square king, Color c) const;
 
 	Bitboard blockers(Square s, Color blocking, Color attacking) const;
 	// Bitboard pinned_pieces(Color c) const;

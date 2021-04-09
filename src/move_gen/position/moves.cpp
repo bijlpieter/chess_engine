@@ -51,7 +51,7 @@ Bitboard Position::controlling(Color c) const {
 // NOTE: This function excludes our king as blocker!
 Bitboard Position::king_safe_squares(Square king, Color c) const {
 	Bitboard attacked = 0;
-	Color enemy = ~c
+	Color enemy = ~c;
 	attacked |= shift(pieces[enemy][PAWN], enemy ? DOWN_LEFT : UP_LEFT);
 	attacked |= shift(pieces[enemy][PAWN], enemy ? DOWN_RIGHT : UP_RIGHT);
 
@@ -150,7 +150,8 @@ Moves Position::generate_blockers() const {
 Moves Position::generate_moves() const {
 	Moves moves;
 	Square king = lsb(pieces[turn][KING]);
-	Bitboard pinned = blockers(king, turn, ~turn);
+	Color enemy = ~turn;
+	Bitboard pinned = blockers(king, turn, enemy);
 	
 	// TODO: Do all pawn moves at once + Promotions + EN PEASANT
 	Bitboard promotions = turn ? BB_RANKS[RANK_1] : BB_RANKS[RANK_8];
@@ -162,8 +163,8 @@ Moves Position::generate_moves() const {
 	Direction forward_right = turn ? DOWN_RIGHT : UP_RIGHT;
 	Bitboard single_push = shift(unpinned_pawns | (pieces[turn][PAWN] & file(king)), forward) & ~all_pieces;
 	Bitboard double_push = shift(single_push & two_steps, forward) & ~all_pieces;
-	Bitboard left_captures = shift(unpinned_pawns, forward_left) & colors[~turn];
-	Bitboard right_captures = shift(unpinned_pawns, forward_right) & colors[~turn];
+	Bitboard left_captures = shift(unpinned_pawns, forward_left) & colors[enemy];
+	Bitboard right_captures = shift(unpinned_pawns, forward_right) & colors[enemy];
 
 	Bitboard moves_bb = single_push & ~promotions;
 	while (moves_bb) {
@@ -206,11 +207,23 @@ Moves Position::generate_moves() const {
 		add_promotions(moves.end, to - forward_right, to);
 	}
 
+	// EN PEASENT CAPTURES
+	// en_peasent is the square behind the pawn to be captured.
+	if (en_peasant != NO_SQUARE) {	
+		moves_bb = unpinned_pawns & PAWN_ATTACKS[enemy][en_peasant];
+		while (moves_bb) {
+			Square from = pop_lsb(moves_bb);
+			Bitboard new_occ = (all_pieces ^ from ^ (en_peasant - forward)) | en_peasant;
+			// Make sure our king is not in check after the move is played
+			if (!(rook_moves(king, new_occ) & (pieces[enemy][ROOK] | pieces[enemy][QUEEN])) && !(bishop_moves(king, new_occ) & (pieces[enemy][BISHOP] | pieces[enemy][QUEEN])))
+				*moves.end++ = move_init(pop_lsb(moves_bb), en_peasant) | S_MOVE_EN_PASSANT;
+		}
+	}
+
 	Bitboard bb = pieces[turn][KNIGHT] & ~pinned;
 	while (bb) {
 		Square knight = pop_lsb(bb);
 		moves_bb = knight_moves(knight) & ~colors[turn];
-		std::cout << bb_string(moves_bb) << std::endl;
 		while (moves_bb)
 			*moves.end++ = move_init(knight, pop_lsb(moves_bb));
 	}
@@ -219,7 +232,6 @@ Moves Position::generate_moves() const {
 	while (bb) {
 		Square bishop = pop_lsb(bb);
 		moves_bb = bishop_moves(bishop, all_pieces) & ~colors[turn];
-		std::cout << bb_string(moves_bb) << std::endl;
 		while (moves_bb)
 			*moves.end++ = move_init(bishop, pop_lsb(moves_bb));
 	}
@@ -228,7 +240,6 @@ Moves Position::generate_moves() const {
 	while (bb) {
 		Square bishop = pop_lsb(bb);
 		moves_bb = bishop_moves(bishop, all_pieces) & ~colors[turn] & bb_line(king, bishop);
-		std::cout << bb_string(moves_bb) << std::endl;
 		while (moves_bb)
 			*moves.end++ = move_init(bishop, pop_lsb(moves_bb));
 	}
@@ -237,7 +248,6 @@ Moves Position::generate_moves() const {
 	while (bb) {
 		Square rook = pop_lsb(bb);
 		moves_bb = rook_moves(rook, all_pieces) & ~colors[turn];
-		std::cout << bb_string(moves_bb) << std::endl;
 		while (moves_bb)
 			*moves.end++ = move_init(rook, pop_lsb(moves_bb));
 	}
@@ -246,7 +256,6 @@ Moves Position::generate_moves() const {
 	while (bb) {
 		Square rook = pop_lsb(bb);
 		moves_bb = rook_moves(rook, all_pieces) & ~colors[turn] & bb_line(king, rook);
-		std::cout << bb_string(moves_bb) << std::endl;
 		while (moves_bb)
 			*moves.end++ = move_init(rook, pop_lsb(moves_bb));
 	}
@@ -255,7 +264,6 @@ Moves Position::generate_moves() const {
 	while (bb) {
 		Square queen = pop_lsb(bb);
 		moves_bb = queen_moves(queen, all_pieces) & ~colors[turn];
-		std::cout << bb_string(moves_bb) << std::endl;
 		while (moves_bb)
 			*moves.end++ = move_init(queen, pop_lsb(moves_bb));
 	}
@@ -264,7 +272,6 @@ Moves Position::generate_moves() const {
 	while (bb) {
 		Square queen = pop_lsb(bb);
 		moves_bb = queen_moves(queen, all_pieces) & ~colors[turn] & bb_line(king, queen);
-		std::cout << bb_string(moves_bb) << std::endl;
 		while (moves_bb)
 			*moves.end++ = move_init(queen, pop_lsb(moves_bb));
 	}

@@ -29,19 +29,19 @@ bool validateFEN(std::string fen) {
     }
     // move field
     std::regex wb("^(w|b)$");
-	if (!std::regex_match(fields[1],wb)){
+	if (!std::regex_match(fields[1], wb)) {
         std::cout << "Move field must be either 'w' or 'b'."<< std::endl;
         return false;
     }
     // castle rights field
     std::regex castle("^(KQ?k?q?|Qk?q?|kq?|q|-)$");
-    if (!std::regex_match(fields[2],castle )){
+    if (!std::regex_match(fields[2], castle)) {
         std::cout << "Castling field must be either - or any of K Q q k in that specific order."<< std::endl;
         return false;
     }
     // en peasant field
     std::regex peasant("^(-|[abcdefgh][36])$");
-    if (!std::regex_match(fields[3],castle )){
+    if (!std::regex_match(fields[3], peasant)) {
         std::cout << "En pessant field must be either - or a coordinate."<< std::endl;
         return false;
     }
@@ -51,8 +51,8 @@ bool validateFEN(std::string fen) {
 		return false;
 	}
     // halfmove field
-    for (char& c : fields[4]){
-        if (std::isdigit(c) == 0){
+    for (char& c : fields[4]) {
+        if (std::isdigit(c) == 0) {
             std::cout << "halfmove field may not contain characters."<< std::endl;
 		    return false;
         }
