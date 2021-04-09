@@ -19,6 +19,8 @@ extern Bitboard BB_CASTLING_ROOK[NUM_CASTLING];
 extern Bitboard BB_RAYS[NUM_SQUARES][NUM_SQUARES];
 extern Bitboard BB_LINES[NUM_SQUARES][NUM_SQUARES];
 extern Bitboard OUTPOSTS[NUM_COLORS];
+extern Bitboard LIGHT_SQUARES;
+extern Bitboard DARK_SQUARES;
 
 inline Bitboard bb_ray(Square from, Square to) {
 	return BB_RAYS[from][to];

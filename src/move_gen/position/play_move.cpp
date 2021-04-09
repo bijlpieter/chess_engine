@@ -1,15 +1,15 @@
-#include "position.h"
+#include "types.h"
 
 void Position::play_move(Move m) {
-	Square from = from(m);
-	Square to = to(m);
+	Square from = move_from(m);
+	Square to = move_to(m);
 	Bitboard both = from | to;
 
-	Piece captured = move_type(m) == S_MOVE_EN_PASSANT ? piece_init(enemy, PAWN) : piece_on(to);
-	Square capped = move_type(m) == S_MOVE_EN_PASSANT ? to -
+	Piece captured = move_type(m) == S_MOVE_EN_PASSANT ? piece_init(PAWN, enemy) : piece_on(to);
+	// Square capped = move_type(m) == S_MOVE_EN_PASSANT ? to -
 
 	if (captured != NO_PIECE)
-		remove_piece(to)
+		remove_piece(to);
 
 	pieces[turn][piece_type(piece_on(from))] ^= both;
 	colors[turn] ^= both;

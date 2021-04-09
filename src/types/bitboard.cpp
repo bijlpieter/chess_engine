@@ -10,6 +10,8 @@ Bitboard BB_CASTLING_ROOK[NUM_CASTLING] = {0};
 Bitboard BB_RAYS[NUM_SQUARES][NUM_SQUARES];
 Bitboard BB_LINES[NUM_SQUARES][NUM_SQUARES];
 Bitboard OUTPOSTS[NUM_COLORS];
+Bitboard LIGHT_SQUARES;
+Bitboard DARK_SQUARES;
 
 void bb_init() {
 	for (Rank r = RANK_1; r <= RANK_8; r++)
@@ -20,6 +22,9 @@ void bb_init() {
 		
 	for (Square s = A1; s <= H8; s++)
 		BB_SQUARES[s] = 0x1ULL << (s * RIGHT);
+	
+	LIGHT_SQUARES = 0x55AA55AA55AA55AAULL;
+	DARK_SQUARES = 0xAA55AA55AA55AA55ULL;
 	OUTPOSTS[WHITE] = 0x00ffffffff000000ULL;
 	OUTPOSTS[BLACK] = 0x000000ffffffff00ULL;
 	Bitboard white_kingside_king = 0x70ULL;

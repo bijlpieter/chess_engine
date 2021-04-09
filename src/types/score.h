@@ -10,6 +10,7 @@ const float mobility_end[NUM_PIECE_TYPES] = {0.01, 0.01, 0.01, 0.01, 0.01, 0.01}
 const float material_score[NUM_PIECE_TYPES] = {1, 3.5, 3.5, 5.25, 10.00, 1000};
 
 const float KNIGHT_PAWN_MODIFIER = 0.05, KNIGHT_DEFENDED_MODIFIER = 0.01, KNIGHT_OUTPOST_MODIFIER = 0.1;
+const float BISHOP_PAIR_MODIFIER = 0.03, BISHOP_DEFENDED_MODIFIER = 0.01, BISHOP_OUTPOST_MODIFIER = 0.1; 
 
 
 class Score {

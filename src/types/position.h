@@ -11,16 +11,18 @@ const std::string defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQ
 
 class Position {
 public:
+	Position(std::string fen = defaultFEN);
+
 	Piece board[NUM_SQUARES];
 	Piece captured = NO_PIECE; // The piece that was captured last move
 
 	Bitboard pieces[NUM_COLORS][NUM_PIECE_TYPES] = {0};
-	Bitboard current_legal_moves[NUM_PIECE_TYPES] = {0};
+	// Bitboard current_legal_moves[NUM_PIECE_TYPES] = {0};
 	Bitboard colors[NUM_COLORS] = {0};
 	Bitboard all_pieces = 0;
 	
 	// Useful Bitboards and variables used through move generation and evaluation. These should all be precomputed by info_init().
-	Bitboard checkers;			// Bitboard containing all pieces that are checking the king
+	Bitboard checkers;
 	// Bitboard check_blocks;
 	Bitboard pinned;	
 	Bitboard king_unsafe;
@@ -34,8 +36,6 @@ public:
 	Square en_peasant;
 	Castling castling;
 	Phase phase;
-
-	Position(std::string fen = defaultFEN);
 
 	Piece piece_on(Square s) const;
 	Square square_of(PieceType p, Color c) const;
@@ -54,7 +54,7 @@ public:
 	Moves generate_moves();
 	Moves generate_blockers();
 
-	void generate_pawn_moves()
+	void generate_pawn_moves();
 
 	// Function to play or unplay a move, or move a piece
 	void play_move(Move m);
@@ -63,8 +63,15 @@ public:
 	void remove_piece(Square s);
 	void place_piece(Piece p, Square s);
 
+	// Get legal move bitboards for evaluation
+	Bitboard legal_knight_moves() const;
+	Bitboard legal_bishop_moves() const;
+	Bitboard legal_rook_moves() const;
+	Bitboard legal_queen_moves() const;
+
 	// Evaluation functions
-	Score knight_score(Color c);
+	Score knight_score(Color c, Bitboard enemy_pawn_control, Bitboard defended_squares);
+	Score bishop_score(Color c, Bitboard enemy_pawn_control, Bitboard defended_squares);
 	Phase calculate_phase();
 	Score calculate_score(Color c);
 	Score calculate_material(Color c);
