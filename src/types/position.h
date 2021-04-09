@@ -23,7 +23,7 @@ public:
 	
 	// Useful Bitboards and variables used through move generation and evaluation. These should all be precomputed by info_init().
 	Bitboard checkers;
-	// Bitboard check_blocks;
+	Bitboard check_blocks;
 	Bitboard pinned;	
 	Bitboard king_unsafe;
 	Square king;
@@ -49,12 +49,14 @@ public:
 	// Bitboard pinned_pieces(Color c) const;
 	// Bitboard fossilization_pieces(Color c) const;
 
-	// Generates all moves in the position
-	Moves legal_moves();
+	// Move generation if king is not in check
 	Moves generate_moves();
+
+	// Move generation if king is in check
 	Moves generate_blockers();
 
-	void generate_pawn_moves();
+	// Generates all moves in the position
+	Moves legal_moves();
 
 	// Function to play or unplay a move, or move a piece
 	void play_move(Move m);
@@ -62,6 +64,8 @@ public:
 	void move_piece(Square from, Square to);
 	void remove_piece(Square s);
 	void place_piece(Piece p, Square s);
+	void castle(Square to);
+	void uncastle(Square to);
 
 	// Get legal move bitboards for evaluation
 	Bitboard legal_knight_moves() const;
@@ -72,6 +76,7 @@ public:
 	// Evaluation functions
 	Score knight_score(Color c, Bitboard enemy_pawn_control, Bitboard defended_squares);
 	Score bishop_score(Color c, Bitboard enemy_pawn_control, Bitboard defended_squares);
+	Score rook_score(Color c, Bitboard enemy_pawn_control);
 	Phase calculate_phase();
 	Score calculate_score(Color c);
 	Score calculate_material(Color c);

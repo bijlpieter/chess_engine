@@ -21,6 +21,10 @@ extern Bitboard BB_LINES[NUM_SQUARES][NUM_SQUARES];
 extern Bitboard OUTPOSTS[NUM_COLORS];
 extern Bitboard LIGHT_SQUARES;
 extern Bitboard DARK_SQUARES;
+extern Bitboard WHITE_LEFT_FIANCHETTO;
+extern Bitboard WHITE_RIGHT_FIANCHETTO;
+extern Bitboard BLACK_LEFT_FIANCHETTO;
+extern Bitboard BLACK_RIGHT_FIANCHETTO;
 
 inline Bitboard bb_ray(Square from, Square to) {
 	return BB_RAYS[from][to];

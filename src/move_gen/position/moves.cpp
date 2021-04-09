@@ -3,7 +3,6 @@
 
 #include <iostream>
 
-
 // Adds each promotion type to the movelist pointed to by m
 inline void add_promotions(Move*& m, Square from, Square to) {
 	*m++ = move_init(from, to) | (PROMOTION_QUEEN << 12) | S_MOVE_PROMOTION;
@@ -85,8 +84,7 @@ Moves Position::generate_blockers() {
 	if (popcount(checkers) > 1)
 		return moves;
 
-	Square checking_piece = lsb(checkers);
-	Bitboard blocks = bb_ray(king, checking_piece);
+	Bitboard blocks = bb_ray(king, lsb(checkers));
 
 	Bitboard promotions = turn ? BB_RANKS[RANK_1] : BB_RANKS[RANK_8];
 	Bitboard two_steps = turn ? BB_RANKS[RANK_6] : BB_RANKS[RANK_3];
@@ -340,14 +338,14 @@ Moves Position::generate_moves() {
 	return moves;
 }
 
+Moves Position::legal_moves() {
+	return checkers ? generate_blockers() : generate_moves();
+}
+
 void Position::info_init() {
 	king = lsb(pieces[turn][KING]);
 	enemy = ~turn;
 	checkers = attackers_to_sq(king, enemy);
 	pinned = blockers(king, turn, enemy);
 	king_unsafe = controlling(turn, all_pieces ^ king);
-}
-
-Moves Position::legal_moves() {
-	return checkers ? generate_blockers() : generate_moves();
 }

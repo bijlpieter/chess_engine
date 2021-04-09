@@ -41,8 +41,8 @@ int main() {
 		move_notation(pos, moves.list[i]);
 	std::cout << "Number of moves: " << moves.size() << std::endl;
 
-	std::cout << bb_string(OUTPOSTS[WHITE]) << std::endl;
-	std::cout << bb_string(OUTPOSTS[BLACK]) << std::endl;
+	std::cout << bb_string(BLACK_LEFT_FIANCHETTO) << std::endl;
+	std::cout << bb_string(BLACK_RIGHT_FIANCHETTO) << std::endl;
 
 	return 0;
 }
