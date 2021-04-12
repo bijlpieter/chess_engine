@@ -20,12 +20,14 @@ int main() {
 	// std::string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 	// std::string fen1 = "2r2b2/8/8/2pP4/8/2K5/8/8 w KQkq - 0 1";
 
-
-	Position pos = Position("r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10");
-
-
-	std::cout << pos << std::endl;
-
+	PositionInfo info = {0};
+	PositionInfo info2;
+	Position pos = Position(&info);
+	// std::cout << pos << std::endl;
+	// pos.play_move(move_init(B7, B5), &info2);
+	// std::cout << pos << std::endl;
+	std::cout << pos.perft(7) << std::endl;
+	
 	// for (Color c : {WHITE, BLACK})
 	// 	for (PieceType pt : {PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING})
 			
@@ -36,13 +38,15 @@ int main() {
 
 	// std::cout << bb_string(pos.blockers(H1, WHITE, BLACK)) << std::endl;
 
-	Moves moves = pos.legal_moves();
-	for (MoveCount i = 0; i < moves.size(); i++)
-		move_notation(pos, moves.list[i]);
-	std::cout << "Number of moves: " << moves.size() << std::endl;
+	// Moves moves = pos.legal_moves();
+	// for (MoveCount i = 0; i < moves.size(); i++)
+	// 	std::cout << move_notation(pos, moves.list[i]) << std::endl;
 
-	std::cout << bb_string(BLACK_LEFT_FIANCHETTO) << std::endl;
-	std::cout << bb_string(BLACK_RIGHT_FIANCHETTO) << std::endl;
+	// // std::cout << bb_string(pos.state->king_unsafe) << std::endl;
+	// std::cout << "Number of moves: " << moves.size() << std::endl;
+
+	// std::cout << bb_string(BLACK_LEFT_FIANCHETTO) << std::endl;
+	// std::cout << bb_string(BLACK_RIGHT_FIANCHETTO) << std::endl;
 
 	return 0;
 }

@@ -5,6 +5,6 @@
 
 #include <string>
 
-void move_notation(Position pos, Move m);
+std::string move_notation(Position pos, Move m);
 
 #endif

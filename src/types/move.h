@@ -47,6 +47,9 @@ struct Moves {
 	Move list[MAX_MOVES];
 	Move* end = list;
 	MoveCount size() { return end - list; }
+	Move& operator[](int i) {
+		return list[i];
+	}
 };
 
 #endif

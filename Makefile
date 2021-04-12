@@ -3,7 +3,7 @@ IDIR := include
 ODIR := obj
 
 CC = g++
-FLAGS = -Wall -mbmi2
+FLAGS = -Wall -mbmi2 -O3
 
 TARGET := main
 TAR_GZ := chess.tar.gz

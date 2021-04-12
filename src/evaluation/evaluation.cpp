@@ -115,18 +115,18 @@ Score Position::bishop_score(Color c, Bitboard enemy_pawn_control, Bitboard defe
 }
 
 Score Position::rook_score(Color c, Bitboard enemy_pawn_control) {
-
+    return Score(0, 0);
 }
 
 Score Position::calculate_material(Color c) {
     Direction left = c == WHITE ? DOWN_LEFT : UP_LEFT;
     Direction right = c == WHITE ? DOWN_RIGHT : UP_RIGHT;
     Bitboard enemy_pawn_control = (shift(pieces[~c][PAWN], left) | shift(pieces[~c][PAWN], right));
-    Bitboard defended_squares = controlling(c, all_pieces);
+    // Bitboard defended_squares = controlling(c, all_pieces);
     
     Score total(0,0);
-    total += knight_score(c, enemy_pawn_control, defended_squares);
-    total += bishop_score(c, enemy_pawn_control, defended_squares);
+    // total += knight_score(c, enemy_pawn_control, defended_squares);
+    // total += bishop_score(c, enemy_pawn_control, defended_squares);
     total += rook_score(c, enemy_pawn_control);
    
     return total;

@@ -76,27 +76,28 @@ Bitboard Position::blockers(Square s, Color blocking, Color attacking) const {
 }
 
 Moves Position::generate_blockers() {
-	Bitboard kingmoves = king_moves(king) & ~king_unsafe & ~colors[turn];
+	Moves moves;
+	Bitboard kingmoves = king_moves(state->king) & ~state->king_unsafe & ~colors[turn];
 	while (kingmoves)
-		*moves.end++ = move_init(king, pop_lsb(kingmoves));
+		*moves.end++ = move_init(state->king, pop_lsb(kingmoves));
 
 	// If there is more than one checker, return all possible moves of the king.
-	if (popcount(checkers) > 1)
+	if (popcount(state->checkers) > 1)
 		return moves;
 
-	Bitboard blocks = bb_ray(king, lsb(checkers));
+	Bitboard blocks = bb_ray(state->king, lsb(state->checkers));
 
 	Bitboard promotions = turn ? BB_RANKS[RANK_1] : BB_RANKS[RANK_8];
 	Bitboard two_steps = turn ? BB_RANKS[RANK_6] : BB_RANKS[RANK_3];
-	Bitboard unpinned_pawns = pieces[turn][PAWN] & ~pinned;
+	Bitboard unpinned_pawns = pieces[turn][PAWN] & ~state->pinned;
 
 	Direction forward = turn ? DOWN : UP;
 	Direction forward_left = turn ? DOWN_LEFT : UP_LEFT;
 	Direction forward_right = turn ? DOWN_RIGHT : UP_RIGHT;
-	Bitboard single_push = shift(unpinned_pawns | (pieces[turn][PAWN] & file(king)), forward) & ~all_pieces;
+	Bitboard single_push = shift(unpinned_pawns | (pieces[turn][PAWN] & file(state->king)), forward) & ~all_pieces;
 	Bitboard double_push = shift(single_push & two_steps, forward) & ~all_pieces & blocks;
-	Bitboard left_captures = shift(unpinned_pawns, forward_left) & colors[enemy];
-	Bitboard right_captures = shift(unpinned_pawns, forward_right) & colors[enemy];
+	Bitboard left_captures = shift(unpinned_pawns, forward_left) & colors[state->enemy];
+	Bitboard right_captures = shift(unpinned_pawns, forward_right) & colors[state->enemy];
 
 	Bitboard moves_bb = single_push & ~promotions & blocks;
 	while (moves_bb) {
@@ -140,49 +141,45 @@ Moves Position::generate_blockers() {
 		add_promotions(moves.end, to - forward_right, to);
 	}
 
-	if (en_peasant != NO_SQUARE) {	
-		moves_bb = unpinned_pawns & PAWN_ATTACKS[enemy][en_peasant] & blocks;
+	if (state->en_peasant != NO_SQUARE) {
+		moves_bb = unpinned_pawns & PAWN_ATTACKS[state->enemy][state->en_peasant] & blocks;
 		while (moves_bb) {
 			Square from = pop_lsb(moves_bb);
-			Bitboard new_occ = (all_pieces ^ from ^ (en_peasant - forward)) | en_peasant;
+			Bitboard new_occ = (all_pieces ^ from ^ (state->en_peasant - forward)) | state->en_peasant;
 			// Make sure our king is not in check after the move is played
-			if (!(rook_moves(king, new_occ) & (pieces[enemy][ROOK] | pieces[enemy][QUEEN])) && !(bishop_moves(king, new_occ) & (pieces[enemy][BISHOP] | pieces[enemy][QUEEN])))
-				*moves.end++ = move_init(pop_lsb(moves_bb), en_peasant) | S_MOVE_EN_PASSANT;
+			if (!(rook_moves(state->king, new_occ) & (pieces[state->enemy][ROOK] | pieces[state->enemy][QUEEN])) && !(bishop_moves(state->king, new_occ) & (pieces[state->enemy][BISHOP] | pieces[state->enemy][QUEEN])))
+				*moves.end++ = move_init(from, state->en_peasant) | S_MOVE_EN_PASSANT;
 		}
 	}
 
-	Bitboard bb = pieces[turn][KNIGHT] & ~pinned;
+	Bitboard bb = pieces[turn][KNIGHT] & ~state->pinned;
 	while (bb) {
 		Square knight = pop_lsb(bb);
 		Bitboard attacks = knight_moves(knight) & ~colors[turn] & blocks;
-		std::cout << bb_string(attacks) << std::endl;
 		while (attacks)
 			*moves.end++ = move_init(knight, pop_lsb(attacks));
 	}
 
-	bb = pieces[turn][BISHOP] & ~pinned;
+	bb = pieces[turn][BISHOP] & ~state->pinned;
 	while (bb) {
 		Square bishop = pop_lsb(bb);
 		Bitboard attacks = bishop_moves(bishop, all_pieces) & ~colors[turn] & blocks;
-		std::cout << bb_string(attacks) << std::endl;
 		while (attacks)
 			*moves.end++ = move_init(bishop, pop_lsb(attacks));
 	}
 
-	bb = pieces[turn][ROOK] & ~pinned;
+	bb = pieces[turn][ROOK] & ~state->pinned;
 	while (bb) {
 		Square rook = pop_lsb(bb);
 		Bitboard attacks = rook_moves(rook, all_pieces) & ~colors[turn] & blocks;
-		std::cout << bb_string(attacks) << std::endl;
 		while (attacks)
 			*moves.end++ = move_init(rook, pop_lsb(attacks));
 	}
 
-	bb = pieces[turn][QUEEN] & ~pinned;
+	bb = pieces[turn][QUEEN] & ~state->pinned;
 	while (bb) {
 		Square queen = pop_lsb(bb);
 		Bitboard attacks = queen_moves(queen, all_pieces) & ~colors[turn] & blocks;
-		std::cout << bb_string(attacks) << std::endl;
 		while (attacks)
 			*moves.end++ = move_init(queen, pop_lsb(attacks));
 	}
@@ -196,15 +193,15 @@ Moves Position::generate_moves() {
 	// Regular pawn pushes and captures
 	Bitboard promotions = turn ? BB_RANKS[RANK_1] : BB_RANKS[RANK_8];
 	Bitboard two_steps = turn ? BB_RANKS[RANK_6] : BB_RANKS[RANK_3];
-	Bitboard unpinned_pawns = pieces[turn][PAWN] & ~pinned;
+	Bitboard unpinned_pawns = pieces[turn][PAWN] & ~state->pinned;
 
 	Direction forward = turn ? DOWN : UP;
 	Direction forward_left = turn ? DOWN_LEFT : UP_LEFT;
 	Direction forward_right = turn ? DOWN_RIGHT : UP_RIGHT;
-	Bitboard single_push = shift(unpinned_pawns | (pieces[turn][PAWN] & file(king)), forward) & ~all_pieces;
+	Bitboard single_push = shift(unpinned_pawns | (pieces[turn][PAWN] & file(state->king)), forward) & ~all_pieces;
 	Bitboard double_push = shift(single_push & two_steps, forward) & ~all_pieces;
-	Bitboard left_captures = shift(unpinned_pawns, forward_left) & colors[enemy];
-	Bitboard right_captures = shift(unpinned_pawns, forward_right) & colors[enemy];
+	Bitboard left_captures = shift(unpinned_pawns, forward_left) & colors[state->enemy];
+	Bitboard right_captures = shift(unpinned_pawns, forward_right) & colors[state->enemy];
 
 	Bitboard moves_bb = single_push & ~promotions;
 	while (moves_bb) {
@@ -250,18 +247,18 @@ Moves Position::generate_moves() {
 
 	// EN PEASENT CAPTURES
 	// en_peasent is the square behind the pawn to be captured.
-	if (en_peasant != NO_SQUARE) {	
-		moves_bb = unpinned_pawns & PAWN_ATTACKS[enemy][en_peasant];
+	if (state->en_peasant != NO_SQUARE) {
+		moves_bb = unpinned_pawns & PAWN_ATTACKS[state->enemy][state->en_peasant];
 		while (moves_bb) {
 			Square from = pop_lsb(moves_bb);
-			Bitboard new_occ = (all_pieces ^ from ^ (en_peasant - forward)) | en_peasant;
+			Bitboard new_occ = (all_pieces ^ from ^ (state->en_peasant - forward)) | state->en_peasant;
 			// Make sure our king is not in check after the move is played
-			if (!(rook_moves(king, new_occ) & (pieces[enemy][ROOK] | pieces[enemy][QUEEN])) && !(bishop_moves(king, new_occ) & (pieces[enemy][BISHOP] | pieces[enemy][QUEEN])))
-				*moves.end++ = move_init(pop_lsb(moves_bb), en_peasant) | S_MOVE_EN_PASSANT;
+			if (!(rook_moves(state->king, new_occ) & (pieces[state->enemy][ROOK] | pieces[state->enemy][QUEEN])) && !(bishop_moves(state->king, new_occ) & (pieces[state->enemy][BISHOP] | pieces[state->enemy][QUEEN])))
+				*moves.end++ = move_init(from, state->en_peasant) | S_MOVE_EN_PASSANT;
 		}
 	}
 
-	Bitboard bb = pieces[turn][KNIGHT] & ~pinned;
+	Bitboard bb = pieces[turn][KNIGHT] & ~state->pinned;
 	while (bb) {
 		Square knight = pop_lsb(bb);
 		moves_bb = knight_moves(knight) & ~colors[turn];
@@ -269,7 +266,7 @@ Moves Position::generate_moves() {
 			*moves.end++ = move_init(knight, pop_lsb(moves_bb));
 	}
 
-	bb = pieces[turn][BISHOP] & ~pinned;
+	bb = pieces[turn][BISHOP] & ~state->pinned;
 	while (bb) {
 		Square bishop = pop_lsb(bb);
 		moves_bb = bishop_moves(bishop, all_pieces) & ~colors[turn];
@@ -277,15 +274,15 @@ Moves Position::generate_moves() {
 			*moves.end++ = move_init(bishop, pop_lsb(moves_bb));
 	}
 
-	bb = pieces[turn][BISHOP] & pinned;
+	bb = pieces[turn][BISHOP] & state->pinned;
 	while (bb) {
 		Square bishop = pop_lsb(bb);
-		moves_bb = bishop_moves(bishop, all_pieces) & ~colors[turn] & bb_line(king, bishop);
+		moves_bb = bishop_moves(bishop, all_pieces) & ~colors[turn] & bb_line(state->king, bishop);
 		while (moves_bb)
 			*moves.end++ = move_init(bishop, pop_lsb(moves_bb));
 	}
 
-	bb = pieces[turn][ROOK] & ~pinned;
+	bb = pieces[turn][ROOK] & ~state->pinned;
 	while (bb) {
 		Square rook = pop_lsb(bb);
 		moves_bb = rook_moves(rook, all_pieces) & ~colors[turn];
@@ -293,15 +290,15 @@ Moves Position::generate_moves() {
 			*moves.end++ = move_init(rook, pop_lsb(moves_bb));
 	}
 
-	bb = pieces[turn][ROOK] & pinned;
+	bb = pieces[turn][ROOK] & state->pinned;
 	while (bb) {
 		Square rook = pop_lsb(bb);
-		moves_bb = rook_moves(rook, all_pieces) & ~colors[turn] & bb_line(king, rook);
+		moves_bb = rook_moves(rook, all_pieces) & ~colors[turn] & bb_line(state->king, rook);
 		while (moves_bb)
 			*moves.end++ = move_init(rook, pop_lsb(moves_bb));
 	}
 
-	bb = pieces[turn][QUEEN] & ~pinned;
+	bb = pieces[turn][QUEEN] & ~state->pinned;
 	while (bb) {
 		Square queen = pop_lsb(bb);
 		moves_bb = queen_moves(queen, all_pieces) & ~colors[turn];
@@ -309,43 +306,43 @@ Moves Position::generate_moves() {
 			*moves.end++ = move_init(queen, pop_lsb(moves_bb));
 	}
 
-	bb = pieces[turn][QUEEN] & pinned;
+	bb = pieces[turn][QUEEN] & state->pinned;
 	while (bb) {
 		Square queen = pop_lsb(bb);
-		moves_bb = queen_moves(queen, all_pieces) & ~colors[turn] & bb_line(king, queen);
+		moves_bb = queen_moves(queen, all_pieces) & ~colors[turn] & bb_line(state->king, queen);
 		while (moves_bb)
 			*moves.end++ = move_init(queen, pop_lsb(moves_bb));
 	}
 
-	moves_bb = king_moves(king) & ~king_unsafe & ~colors[turn];
+	moves_bb = king_moves(state->king) & ~state->king_unsafe & ~colors[turn];
 	while (moves_bb)
-		*moves.end++ = move_init(king, pop_lsb(moves_bb));
+		*moves.end++ = move_init(state->king, pop_lsb(moves_bb));
 
 	// Castling
 	if (turn == WHITE) {
-		if ((castling & WHITE_KINGSIDE) && !(all_pieces & BB_CASTLING_ROOK[WHITE_KINGSIDE]) && !(king_unsafe & BB_CASTLING_KING[WHITE_KINGSIDE]))
-			*moves.end++ = move_init(E1, G1) | S_MOVE_CASTLING;
-		if ((castling & WHITE_QUEENSIDE) && !(all_pieces & BB_CASTLING_ROOK[WHITE_QUEENSIDE]) && !(king_unsafe & BB_CASTLING_KING[WHITE_QUEENSIDE]))
-			*moves.end++ = move_init(E1, C1) | S_MOVE_CASTLING;
+		if ((state->castling & WHITE_KINGSIDE) && !(all_pieces & BB_CASTLING_ROOK[WHITE_KINGSIDE]) && !(state->king_unsafe & BB_CASTLING_KING[WHITE_KINGSIDE]))
+			*moves.end++ = move_init(E1, H1) | S_MOVE_CASTLING;
+		if ((state->castling & WHITE_QUEENSIDE) && !(all_pieces & BB_CASTLING_ROOK[WHITE_QUEENSIDE]) && !(state->king_unsafe & BB_CASTLING_KING[WHITE_QUEENSIDE]))
+			*moves.end++ = move_init(E1, A1) | S_MOVE_CASTLING;
 	}
 	else {
-		if ((castling & BLACK_KINGSIDE) && !(all_pieces & BB_CASTLING_ROOK[BLACK_KINGSIDE]) && !(king_unsafe & BB_CASTLING_KING[BLACK_KINGSIDE]))
-			*moves.end++ = move_init(E8, G8) | S_MOVE_CASTLING;
-		if ((castling & BLACK_QUEENSIDE) && !(all_pieces & BB_CASTLING_ROOK[BLACK_QUEENSIDE]) && !(king_unsafe & BB_CASTLING_KING[BLACK_QUEENSIDE]))
-			*moves.end++ = move_init(E8, C8) | S_MOVE_CASTLING;
+		if ((state->castling & BLACK_KINGSIDE) && !(all_pieces & BB_CASTLING_ROOK[BLACK_KINGSIDE]) && !(state->king_unsafe & BB_CASTLING_KING[BLACK_KINGSIDE]))
+			*moves.end++ = move_init(E8, H8) | S_MOVE_CASTLING;
+		if ((state->castling & BLACK_QUEENSIDE) && !(all_pieces & BB_CASTLING_ROOK[BLACK_QUEENSIDE]) && !(state->king_unsafe & BB_CASTLING_KING[BLACK_QUEENSIDE]))
+			*moves.end++ = move_init(E8, A8) | S_MOVE_CASTLING;
 	}
 
 	return moves;
 }
 
 Moves Position::legal_moves() {
-	return checkers ? generate_blockers() : generate_moves();
+	return state->checkers ? generate_blockers() : generate_moves();
 }
 
 void Position::info_init() {
-	king = lsb(pieces[turn][KING]);
-	enemy = ~turn;
-	checkers = attackers_to_sq(king, enemy);
-	pinned = blockers(king, turn, enemy);
-	king_unsafe = controlling(turn, all_pieces ^ king);
+	state->king = lsb(pieces[turn][KING]);
+	state->enemy = ~turn;
+	state->checkers = attackers_to_sq(state->king, state->enemy);
+	state->pinned = blockers(state->king, turn, state->enemy);
+	state->king_unsafe = controlling(state->enemy, all_pieces ^ state->king);
 }

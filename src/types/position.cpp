@@ -121,8 +121,10 @@ bool validateFEN(std::string fen) {
 	std::cout << "Valid FEN."<< std::endl;
 	return true;
 }
+
 //  rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
-Position::Position(std::string fen) {
+Position::Position(PositionInfo* info, std::string fen) {
+    state = info;
     if (!validateFEN(fen)) {
         std::cout << "FEN was not valid, returning." << std::endl;
         return;
@@ -138,13 +140,15 @@ Position::Position(std::string fen) {
 	}
 	turn = (fields[1] == "w") ? WHITE : BLACK;
 	//castling
-	if (fields[2].find('k') != std::string::npos) castling |= BLACK_KINGSIDE;
-	if (fields[2].find('K') != std::string::npos) castling |= WHITE_KINGSIDE;
-	if (fields[2].find('q') != std::string::npos) castling |= BLACK_QUEENSIDE;
-	if (fields[2].find('Q') != std::string::npos) castling |= WHITE_QUEENSIDE;
+	if (fields[2].find('k') != std::string::npos) state->castling |= BLACK_KINGSIDE;
+	if (fields[2].find('K') != std::string::npos) state->castling |= WHITE_KINGSIDE;
+	if (fields[2].find('q') != std::string::npos) state->castling |= BLACK_QUEENSIDE;
+	if (fields[2].find('Q') != std::string::npos) state->castling |= WHITE_QUEENSIDE;
 	//en peasant xd
-	if (fields[3] != "-")en_peasant = square(Rank(fields[3][1] - '1'), File(fields[3][0] - 'a'));
-	else en_peasant = NO_SQUARE;
+	if (fields[3] != "-")
+        state->en_peasant = square(Rank(fields[3][1] - '1'), File(fields[3][0] - 'a'));
+	else 
+        state->en_peasant = NO_SQUARE;
 	fullMoves = std::stoi(fields[4]);
 	halfMoves = std::stoi(fields[4]);
 
@@ -222,5 +226,8 @@ std::ostream& operator<<(std::ostream& os, const Position& p) {
 		os << " | " << (1 + r) << "\n +---+---+---+---+---+---+---+---+\n";
 	}
 	os << "   a   b   c   d   e   f   g   h\n";
+
+    
+
 	return os;
 }

@@ -9,18 +9,7 @@
 #include <string>
 const std::string defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-class Position {
-public:
-	Position(std::string fen = defaultFEN);
-
-	Piece board[NUM_SQUARES];
-	Piece captured = NO_PIECE; // The piece that was captured last move
-
-	Bitboard pieces[NUM_COLORS][NUM_PIECE_TYPES] = {0};
-	// Bitboard current_legal_moves[NUM_PIECE_TYPES] = {0};
-	Bitboard colors[NUM_COLORS] = {0};
-	Bitboard all_pieces = 0;
-	
+struct PositionInfo {
 	// Useful Bitboards and variables used through move generation and evaluation. These should all be precomputed by info_init().
 	Bitboard checkers;
 	Bitboard check_blocks;
@@ -29,13 +18,29 @@ public:
 	Square king;
 	Color enemy;
 
-	Moves moves;
-	MoveCount fullMoves;
-	MoveCount halfMoves;
-	Color turn;
+	Piece captured = NO_PIECE; // The piece that was captured last move
 	Square en_peasant;
 	Castling castling;
 	Phase phase;
+
+	PositionInfo* previous;
+};
+
+class Position {
+public:
+	Position(PositionInfo* info, std::string fen = defaultFEN);
+
+	Piece board[NUM_SQUARES];
+
+	Bitboard pieces[NUM_COLORS][NUM_PIECE_TYPES] = {0};
+	// Bitboard current_legal_moves[NUM_PIECE_TYPES] = {0};
+	Bitboard colors[NUM_COLORS] = {0};
+	Bitboard all_pieces = 0;
+
+	PositionInfo* state;
+	MoveCount fullMoves;
+	MoveCount halfMoves;
+	Color turn;
 
 	Piece piece_on(Square s) const;
 	Square square_of(PieceType p, Color c) const;
@@ -59,13 +64,16 @@ public:
 	Moves legal_moves();
 
 	// Function to play or unplay a move, or move a piece
-	void play_move(Move m);
+	void play_move(Move m, PositionInfo* info);
 	void unplay_move(Move m);
 	void move_piece(Square from, Square to);
 	void remove_piece(Square s);
 	void place_piece(Piece p, Square s);
 	void castle(Square to);
 	void uncastle(Square to);
+
+	// Function to test move generation
+	uint64_t perft(int depth);
 
 	// Get legal move bitboards for evaluation
 	Bitboard legal_knight_moves() const;
