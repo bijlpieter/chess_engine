@@ -15,13 +15,16 @@ int main() {
 
 	// for (int i = 0; i < NUM_CASTLING; i++)
 	// 	std::cout << bb_string(BB_CASTLING_ROOK[i]) << std::endl;
-	std::string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-	std::string fen1 = "2r2b2/8/8/2pP4/8/2K5/8/8 w KQkq - 0 1";
+	std::string start = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+	std::string fen = "1k6/8/8/4N3/5P2/8/8/1K6 w KQkq - 0 1";
 	std::string fen2 = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1";
+
+	std::string test_fen= "k7/8/6p1/3Np1B1/4P2P/8/8/K7";
+	test_fen += " w KQkq - 0 1";
 
 	PositionInfo info = {0};
 	// PositionInfo info2 = {0};
-	Position pos = Position(&info, fen);
+	Position pos = Position(&info, test_fen);
 	std::cout << pos << std::endl;
 	Score test = pos.calculate_score(WHITE);
 	std::cout << test;

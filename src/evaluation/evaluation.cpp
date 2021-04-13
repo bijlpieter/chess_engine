@@ -12,14 +12,14 @@ Phase Position::calculate_phase() {
 
 bool Position::is_outpost(Color c, Square s) {
 	//on outpost square
-	if (!(s & OUTPOSTS[c])) {
+	if (popcount(s & OUTPOSTS[c]) > 0) {
 		return false;
 	}
 	//defended by pawn;
-	if (!(PAWN_ATTACKS[~c][s] & pieces[c][PAWN])) {
-		return false;    
+	if (popcount(PAWN_ATTACKS[~c][s] & pieces[c][PAWN]) == 0) {
+		return false;
 	}
-	//no kicker nickers
+	//no kickers
 	Direction h_direction = (c == WHITE) ? UP : DOWN;
 	int steps = (c == WHITE) ? (7 - rank(s)) : rank(s);
 	if (file(s) & ~FILE_H) {
