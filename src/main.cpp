@@ -19,7 +19,7 @@ int main() {
 	std::string fen = "1k6/8/8/4N3/5P2/8/8/1K6 w KQkq - 0 1";
 	std::string fen2 = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1";
 
-	std::string test_fen= "k7/8/6p1/3Np1B1/4P2P/8/8/K7";
+	std::string test_fen= "rnbqkbnr/pppppppp/8/8/8/5NP1/PPPPPPBP/RNBQ1RK1";
 	test_fen += " w KQkq - 0 1";
 
 	PositionInfo info = {0};

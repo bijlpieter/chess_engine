@@ -30,7 +30,6 @@ extern Score ROOK_ON_KING_FILE_SCORE, ROOK_ON_KING_RANK_SCORE, ROOK_ON_OPEN_SCOR
 ROOK_ON_QUEEN_LINE_SCORE, ROOK_STACKED_SCORE, ROOK_ON_SEVENTH_SCORE;
 extern Score ROOK_ON_BLOCKED_PENALTY, ROOK_TRAPPED_BY_KING_PENALTY;
 
-const float KNIGHT_PAWN_MODIFIER = 0.05;
 
 inline Score operator+(Score a, Score b) { return Score((a.middle_game + b.middle_game),(a.end_game + b.end_game));}
 inline Score operator-(Score a, Score b) { return Score((a.middle_game - b.middle_game),(a.end_game - b.end_game));}
