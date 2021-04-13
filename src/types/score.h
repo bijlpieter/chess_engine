@@ -2,17 +2,6 @@
 #define _SCORE_H_
 
 #include "bitboard.h"
-#include "position.h"
-typedef uint16_t Phase;
-// Pawn, Knight, Bishop, Rook, Queen, King
-const float mobility_middle[NUM_PIECE_TYPES] = {0.01, 0.01, 0.01, 0.01, 0.01, 0.01};
-const float mobility_end[NUM_PIECE_TYPES] = {0.01, 0.01, 0.01, 0.01, 0.01, 0.01};
-const float material_score[NUM_PIECE_TYPES] = {1, 3.5, 3.5, 5.25, 10.00, 1000};
-
-const float KNIGHT_PAWN_MODIFIER = 0.05, KNIGHT_DEFENDED_MODIFIER = 0.01, KNIGHT_OUTPOST_MODIFIER = 0.1;
-const float BISHOP_PAIR_MODIFIER = 0.03, BISHOP_DEFENDED_MODIFIER = 0.01, BISHOP_OUTPOST_MODIFIER = 0.1, BISHOP_FIANCHETTO_MODIFIER = 0.1; 
-
-
 
 class Score {
     public:
@@ -24,8 +13,25 @@ class Score {
         float end_game;
 };
 
+typedef uint16_t Phase;
+// Pawn, Knight, Bishop, Rook, Queen, King
+extern Score mobility_scores[NUM_PIECE_TYPES];
+extern Score material_scores[NUM_PIECE_TYPES];
+extern Score BISHOP_PAIR_SCORE, BISHOP_DEFENDED_SCORE, BISHOP_OUTPOST_SCORE,
+BISHOP_FIANCHETTO_SCORE, BISHOP_SHIELDED_SCORE, BISHOP_ATTACKING_KING_SCORE;
+extern Score BISHOP_KING_DISTANCE_PENALTY, BISHOP_XRAY_PAWN_PENALTY;
+
+extern Score KNIGHT_DEFENDED_SCORE, KNIGHT_OUTPOST_SCORE, KNIGHT_SHIELDED_SCORE;
+extern Score KNIGHT_KING_DISTANCE_PENALTY;
+const float KNIGHT_PAWN_MODIFIER = 0.05;
+
 inline Score operator+(Score a, Score b) { return Score((a.middle_game + b.middle_game),(a.end_game + b.end_game));}
 inline Score operator-(Score a, Score b) { return Score((a.middle_game - b.middle_game),(a.end_game - b.end_game));}
+inline Score operator*(int a, Score b) { return Score((a * b.middle_game),(a * b.end_game));}
+inline Score operator*(Score b, int a) { return Score((a * b.middle_game),(a * b.end_game));}
+inline Score operator/(Score b, int a) { return Score((b.middle_game / a),(b.end_game / a));}
+
 inline Score& operator+=(Score& a, Score b) { return a = Score((a.middle_game + b.middle_game),(a.end_game + b.end_game));}
+inline Score& operator-=(Score& a, Score b) { return a = Score((a.middle_game - b.middle_game),(a.end_game - b.end_game));}
 
 #endif

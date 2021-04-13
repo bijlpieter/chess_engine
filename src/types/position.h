@@ -26,21 +26,18 @@ struct PositionInfo {
 	PositionInfo* previous;
 };
 
+struct EvalInfo {
+    Square king_square;
+    Color c;
+    Bitboard defended_squares;
+    Bitboard king_area[NUM_COLORS];
+    Bitboard blocked_pawns;
+    Bitboard mobility;
+};
+
 class Position {
 public:
 	Position(PositionInfo* info, std::string fen = defaultFEN);
-
-	Piece board[NUM_SQUARES];
-
-	Bitboard pieces[NUM_COLORS][NUM_PIECE_TYPES] = {0};
-	// Bitboard current_legal_moves[NUM_PIECE_TYPES] = {0};
-	Bitboard colors[NUM_COLORS] = {0};
-	Bitboard all_pieces = 0;
-
-	PositionInfo* state;
-	MoveCount fullMoves;
-	MoveCount halfMoves;
-	Color turn;
 
 	Piece piece_on(Square s) const;
 	Square square_of(PieceType p, Color c) const;
@@ -50,6 +47,7 @@ public:
 	Bitboard controlling_sliding(Color c, Bitboard occ) const;
 	Bitboard controlling(Color c, Bitboard occ) const;
 
+	Bitboard snipers_to_king(Color c, Bitboard occ = 0ULL) const;
 	Bitboard blockers(Square s, Color blocking, Color attacking) const;
 	// Bitboard pinned_pieces(Color c) const;
 	// Bitboard fossilization_pieces(Color c) const;
@@ -72,8 +70,9 @@ public:
 	void castle(Square to);
 	void uncastle(Square to);
 
-	// Function to test move generation
+	// Functions to test move generation
 	uint64_t perft(int depth);
+	uint64_t divide(int depth);
 
 	// Get legal move bitboards for evaluation
 	Bitboard legal_knight_moves() const;
@@ -82,15 +81,27 @@ public:
 	Bitboard legal_queen_moves() const;
 
 	// Evaluation functions
-	Score knight_score(Color c, Bitboard enemy_pawn_control, Bitboard defended_squares);
-	Score bishop_score(Color c, Bitboard enemy_pawn_control, Bitboard defended_squares);
-	Score rook_score(Color c, Bitboard enemy_pawn_control);
+	Score knight_score();
+	Score bishop_score();
+	Score rook_score();
 	Phase calculate_phase();
 	Score calculate_score(Color c);
-	Score calculate_material(Color c);
 	bool is_outpost(Color c, Square s);
+	Bitboard king_ring(Square ks);
 
 	void info_init();
+
+	Piece board[NUM_SQUARES];
+	Bitboard pieces[NUM_COLORS][NUM_PIECE_TYPES] = {0};
+	// Bitboard current_legal_moves[NUM_PIECE_TYPES] = {0};
+	Bitboard colors[NUM_COLORS] = {0};
+	Bitboard all_pieces = 0;
+
+	PositionInfo* state;
+    EvalInfo info;
+	MoveCount fullMoves;
+	MoveCount halfMoves;
+	Color turn;
 };
 
 std::ostream& operator<<(std::ostream& os, const Position& p);

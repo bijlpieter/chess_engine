@@ -21,6 +21,7 @@ void Position::play_move(Move m, PositionInfo* info) {
 		state->captured = NO_PIECE;
 	}
 
+	state->castling = state->previous->castling;
 	if (from == H1 || to == H1)
 		state->castling &= ~WHITE_KINGSIDE;
 	if (from == A1 || to == A1)
@@ -29,6 +30,10 @@ void Position::play_move(Move m, PositionInfo* info) {
 		state->castling &= ~BLACK_KINGSIDE;
 	if (from == A8 || to == A8)
 		state->castling &= ~BLACK_QUEENSIDE;
+	if (from == E1)
+		state->castling &= BLACK_BOTH;
+	if (from == E8)
+		state->castling &= WHITE_BOTH;
 
 	if (state->captured != NO_PIECE)
 		remove_piece(capped);
@@ -44,7 +49,7 @@ void Position::play_move(Move m, PositionInfo* info) {
 			state->en_peasant = to - forward;
 		else if (type == S_MOVE_PROMOTION) {
 			remove_piece(to);
-			Piece promo = piece_init(PieceType((move_promo(m) >> 12) + 2), turn);
+			Piece promo = piece_init(PieceType((move_promo(m) >> 12) + 1), turn);
 			place_piece(promo, to);
 		}
 	}

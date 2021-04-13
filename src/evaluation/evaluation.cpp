@@ -2,132 +2,162 @@
 #include "move_generation.h"
 
 Phase Position::calculate_phase() {
-    Phase total = 24;
-    for (Color c : {WHITE,BLACK}) {
-        total -= popcount(pieces[c][1]) + popcount(pieces[c][2]) + popcount(pieces[c][3]) * 2 + popcount(pieces[c][4]) * 4;
-    }
-    return (total * 256 + 12) / 12;
+	Phase total = 24;
+	for (Color c : {WHITE,BLACK}) {
+		total -= popcount(pieces[info.c][1]) + popcount(pieces[c][2]) + popcount(pieces[c][3]) * 2 + popcount(pieces[c][4]) * 4;
+	}
+	return (total * 256 + 12) / 12;
+}
+//centralizes the kingring
+Bitboard Position::king_ring(Square ks){
+	if(rank(ks) < RANK_2){
+		ks += UP;
+	}
+	else if (rank(ks) > RANK_7){
+		ks += DOWN;
+	}
+	if (file(ks) < FILE_B){
+		ks += RIGHT;
+	}
+	else if (file(ks) > FILE_G){
+		ks += LEFT;
+	}
+	return king_moves(ks);
 }
 
 bool Position::is_outpost(Color c, Square s) {
-    //on outpost square
-    if (!(s & OUTPOSTS[c])) {
-        return false;
-    }
-    //defended by pawn;
-    if (!(PAWN_ATTACKS[~c][s] & pieces[c][PAWN])) {
-        return false;    
-    }
-    //no kicker nickers
-    Direction h_direction = (c == WHITE) ? UP : DOWN;
-    int steps = (c == WHITE) ? (7 - rank(s)) : rank(s);
-    if (file(s) & ~FILE_H) {
-        if (bb_ray(s + RIGHT, s + (RIGHT + (h_direction * steps))) & pieces[~c][PAWN]) {
-            return false;
-        }
-    }
-    if (file(s) & ~FILE_A) {
-        if (bb_ray(s + LEFT, s + (LEFT + (h_direction * steps))) & pieces[~c][PAWN]) {
-            return false;
-        }
-    }
-    return true;
+	//on outpost square
+	if (!(s & OUTPOSTS[c])) {
+		return false;
+	}
+	//defended by pawn;
+	if (!(PAWN_ATTACKS[~c][s] & pieces[c][PAWN])) {
+		return false;    
+	}
+	//no kicker nickers
+	Direction h_direction = (c == WHITE) ? UP : DOWN;
+	int steps = (c == WHITE) ? (7 - rank(s)) : rank(s);
+	if (file(s) & ~FILE_H) {
+		if (bb_ray(s + RIGHT, s + (RIGHT + (h_direction * steps))) & pieces[~c][PAWN]) {
+			return false;
+		}
+	}
+	if (file(s) & ~FILE_A) {
+		if (bb_ray(s + LEFT, s + (LEFT + (h_direction * steps))) & pieces[~c][PAWN]) {
+			return false;
+		}
+	}
+	return true;
 }
 
-Score Position::knight_score(Color c, Bitboard enemy_pawn_control, Bitboard defended_squares) {
-    if (popcount(pieces[c][KNIGHT]) == 0) {
-        return Score(0,0);
-    }
-    //TODO trapped knight
-    Bitboard knights = pieces[c][KNIGHT];
-    int total_pawns = popcount(pieces[WHITE][PAWN]) + popcount (pieces[BLACK][PAWN]);
-    //knight: less value the less pawns on the board
-    float material_value = material_score[KNIGHT] * popcount(pieces[c][KNIGHT]) - KNIGHT_PAWN_MODIFIER * (16 - total_pawns);
-    //bonus for defended minor piece
-    float defended_value = popcount(knights & defended_squares) * KNIGHT_DEFENDED_MODIFIER;
-     //outpost is on ranks 4-7 respectively, with no pawns to kick bonus
-    float outpost_value = 0;
-    while (knights) {
-        if (is_outpost(c, pop_lsb(knights))) {
-            outpost_value++;
-        }
-    }
-    outpost_value *= KNIGHT_OUTPOST_MODIFIER;
-    //mobility
-    float temp_mobility = popcount(legal_knight_moves() & ~enemy_pawn_control);
-    Score mobility = Score(temp_mobility *mobility_middle[KNIGHT], temp_mobility * mobility_end[KNIGHT]);
-    float total = material_value + defended_value + outpost_value;
-    return Score(total,total) + mobility;
+Score Position::knight_score() {
+	if (popcount(pieces[info.c][KNIGHT]) == 0) {
+		return Score(0,0);
+	}
+	Score total = Score(0,0);
+	Bitboard knights = pieces[info.c][KNIGHT];
+	 //knight: less value the less pawns on the board
+	// int total_pawns = popcount(pieces[WHITE][PAWN]) + popcount (pieces[BLACK][PAWN]);
+	total += material_scores[KNIGHT] * (popcount(pieces[info.c][KNIGHT]));// - KNIGHT_PAWN_MODIFIER * (16 - total_pawns));
+	//bonus for defended minor piece
+	total += popcount(knights & info.defended_squares) * KNIGHT_DEFENDED_SCORE;
+	 //mobility
+	total += popcount(legal_knight_moves() & info.mobility) * mobility_scores[KNIGHT];
+	//outpost, distance and shielded
+	int outposts = 0, distance = 0, shielded = 0;
+	while (knights) {
+		Square knight = pop_lsb(knights);
+		distance += SQUARE_DISTANCE[knight][info.king_square];
+		if (knight & shift(pieces[info.c][PAWN], DOWN)){
+			shielded++;
+		}
+		if (is_outpost(info.c, knight)) {
+			outposts++;
+		}
+	}
+	total += KNIGHT_OUTPOST_SCORE * outposts;
+	total += KNIGHT_SHIELDED_SCORE * shielded;
+	total -= KNIGHT_KING_DISTANCE_PENALTY * distance;
+	return total;
+}
+//TODO bad bishop & trapped bishop
+Score Position::bishop_score() {
+	if (popcount(pieces[info.c][BISHOP]) == 0) {
+		return Score(0,0);
+	}
+	Score total = Score(0,0);
+	Bitboard bishops = pieces[info.c][BISHOP];
+	total += material_scores[BISHOP] * popcount(pieces[info.c][BISHOP]);
+	//complementing bishops on the board
+	if (bishops & LIGHT_SQUARES && bishops & DARK_SQUARES) total += BISHOP_PAIR_SCORE;
+	//bonus for defended minor piece
+	total += popcount(bishops & info.defended_squares) * BISHOP_DEFENDED_SCORE;
+	//mobility 
+	total += popcount(legal_bishop_moves() & info.mobility) * mobility_scores[BISHOP];
+	//distance, outposts and fianchettoes and xraying enemy pawns
+	int outposts = 0, distance = 0, shielded = 0, fianchettoes = 0, pawns_xrayed = 0;
+	while (bishops) {
+		Square bishop = pop_lsb(pieces[info.c][BISHOP]);
+		distance += SQUARE_DISTANCE[bishop][info.king_square];
+		pawns_xrayed += popcount(bishop_moves(bishop, 0) & pieces[~info.c][PAWN]);
+		if (bishop & shift(pieces[info.c][PAWN],DOWN)){
+			shielded++;
+		}
+		if (is_outpost(info.c, bishop)) {
+			outposts++;
+		}
+		else {
+			if (bishop == B2 && info.c == WHITE) {
+				if (popcount(pieces[info.c][PAWN] & WHITE_LEFT_FIANCHETTO) > 2) {
+					fianchettoes++;
+				}
+			}
+			else if (bishop == G2 && info.c == WHITE) {
+				if (popcount(pieces[info.c][PAWN] & WHITE_RIGHT_FIANCHETTO) > 2) {
+					fianchettoes++;
+				}  
+			}
+			else if (bishop == B7 && info.c == BLACK) {
+				if (popcount(pieces[info.c][PAWN] & BLACK_LEFT_FIANCHETTO) > 2) {
+					fianchettoes++;
+				} 
+			}
+			else if (bishop == G7 && info.c == BLACK) {
+				if (popcount(pieces[info.c][PAWN] & BLACK_RIGHT_FIANCHETTO) > 2){
+					fianchettoes++;
+				}
+			} 
+		}
+	}
+	total += BISHOP_OUTPOST_SCORE * outposts;
+	total += BISHOP_SHIELDED_SCORE * shielded;
+	total += BISHOP_FIANCHETTO_SCORE * fianchettoes;
+	total -= BISHOP_KING_DISTANCE_PENALTY * distance;
+	total -= BISHOP_XRAY_PAWN_PENALTY * pawns_xrayed;
+	return total;
 }
 
-Score Position::bishop_score(Color c, Bitboard enemy_pawn_control, Bitboard defended_squares) {
-    if (popcount(pieces[c][BISHOP]) == 0) {
-        return Score(0,0);
-    }
-    //TODO bad bishop & trapped bishop
-    Bitboard bishops = pieces[c][BISHOP];
-    //bishop: static value;
-    float material_value = material_score[BISHOP] * popcount(pieces[c][BISHOP]);
-    //complementing bishops on the board
-    float pair_value = 0;
-    if (bishops & LIGHT_SQUARES && bishops & DARK_SQUARES) pair_value = BISHOP_PAIR_MODIFIER;
-    //bonus for defended minor piece
-    float defended_value = popcount(bishops & defended_squares) * BISHOP_DEFENDED_MODIFIER;
-    float outpost_value = 0;
-    float fianchetto_value = 0;
-    while (bishops) {
-        Square bishop = pop_lsb(pieces[c][BISHOP]);
-         //outpost is on ranks 4-7 respectively, with no pawns to kick
-        if (is_outpost(c, bishop)) {
-            outpost_value++;
-        }
-        //fianchetto'd. Can't be fianchetto'd && on an outpost -> else{}
-        else {
-            if (bishop == B2 && c == WHITE) {
-                if (popcount(pieces[c][PAWN] & WHITE_LEFT_FIANCHETTO) > 2) {
-                    fianchetto_value++;
-                }
-            }
-            else if (bishop == G2 && c == WHITE) {
-                if (popcount(pieces[c][PAWN] & WHITE_RIGHT_FIANCHETTO) > 2) {
-                    fianchetto_value++;
-                }  
-            }
-            else if (bishop == B7 && c == BLACK) {
-                if (popcount(pieces[c][PAWN] & BLACK_LEFT_FIANCHETTO) > 2) {
-                        fianchetto_value++;
-                } 
-            }
-            else if (bishop == G7 && c == BLACK) {
-                if (popcount(pieces[c][PAWN] & BLACK_RIGHT_FIANCHETTO) > 2){
-                    fianchetto_value++;
-                }
-            } 
-        }
-    }
-    outpost_value *= BISHOP_OUTPOST_MODIFIER;
-    fianchetto_value *= BISHOP_FIANCHETTO_MODIFIER;
-    //mobility (- enemy pawn controlled)
-    float temp_mobility = popcount(legal_bishop_moves() & ~enemy_pawn_control);
-    Score mobility = Score(temp_mobility * mobility_middle[BISHOP], temp_mobility * mobility_end[BISHOP]);
-    float total = material_value + defended_value + outpost_value + pair_value + fianchetto_value;
-    return Score(total,total) + mobility;
+Score Position::rook_score() {
+	return Score(0, 0);
 }
 
-Score Position::rook_score(Color c, Bitboard enemy_pawn_control) {
-    return Score(0, 0);
-}
-
-Score Position::calculate_material(Color c) {
+Score Position::calculate_score(Color c) {
     Direction left = c == WHITE ? DOWN_LEFT : UP_LEFT;
-    Direction right = c == WHITE ? DOWN_RIGHT : UP_RIGHT;
-    Bitboard enemy_pawn_control = (shift(pieces[~c][PAWN], left) | shift(pieces[~c][PAWN], right));
-    // Bitboard defended_squares = controlling(c, all_pieces);
-    
-    Score total(0,0);
-    // total += knight_score(c, enemy_pawn_control, defended_squares);
-    // total += bishop_score(c, enemy_pawn_control, defended_squares);
-    total += rook_score(c, enemy_pawn_control);
+	Direction right = c == WHITE ? DOWN_RIGHT : UP_RIGHT;
+	Bitboard enemy_pawn_control = (shift(pieces[~c][PAWN], left) | shift(pieces[~c][PAWN], right));
+    Bitboard lower_ranks = c == WHITE ? LOW_RANKS_WHITE : LOW_RANKS_BLACK;
+	info.c = c;
+    info.king_square = state->king;
+    info.defended_squares = controlling(c, all_pieces);
+    info.blocked_pawns = pieces[c][PAWN] & (shift(all_pieces, DOWN) | lower_ranks);
+    info.mobility = ~(info.blocked_pawns | info.king_square | pieces[c][QUEEN] | state->pinned | enemy_pawn_control);
+	info.king_area[c] = king_ring(info.king_square);
+	info.king_area[~c] = king_ring(lsb(pieces[~c][KING]));
+	
+	Score total(0,0);
+	total += knight_score();
+	total += bishop_score();
+	total += rook_score();
    
-    return total;
+	return total;
 }

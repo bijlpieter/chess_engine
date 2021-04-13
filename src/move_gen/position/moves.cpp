@@ -50,20 +50,25 @@ inline Bitboard Position::controlling_sliding(Color c, Bitboard occ) const {
 	return attacked;
 }
 
+inline Bitboard Position::snipers_to_king(Color c, Bitboard occ) const {
+	return (rook_moves(state->king, occ) & (pieces[c][ROOK] | pieces[c][QUEEN])) | (bishop_moves(state->king, 0) & (pieces[c][BISHOP] | pieces[c][QUEEN]));
+}
+
 // Returns a bitboard containing all squares that are controlled by Color c.
 // It is literally every square that is attacked by at least one piece of Color c.
 // The function does not check for legality.
 // Param Bitboard occ: occupancy to use for the sliding pieces; this is useful for checking safe squares around the king.
 // Can be used to remove unsafe squares from a bitboard.
-inline Bitboard Position::controlling(Color c, Bitboard occ) const {
+Bitboard Position::controlling(Color c, Bitboard occ) const {
 	return controlling_regular(c) | controlling_sliding(c, occ);
 }
+
 
 // Returns a bitboard containing all pieces that are blocking a sliding piece attack to Square s.
 // Can be used to detect pins and fossilizations.
 Bitboard Position::blockers(Square s, Color blocking, Color attacking) const {
 	Bitboard blocks = 0;
-	Bitboard sliding_attackers = (rook_moves(s, 0) & (pieces[attacking][ROOK] | pieces[attacking][QUEEN])) | (bishop_moves(s, 0) & (pieces[attacking][BISHOP] | pieces[attacking][QUEEN]));
+	Bitboard sliding_attackers = snipers_to_king(attacking);
 
 	while (sliding_attackers) {
 		Square sniper = pop_lsb(sliding_attackers);
@@ -94,6 +99,7 @@ Moves Position::generate_blockers() {
 	Direction forward = turn ? DOWN : UP;
 	Direction forward_left = turn ? DOWN_LEFT : UP_LEFT;
 	Direction forward_right = turn ? DOWN_RIGHT : UP_RIGHT;
+
 	Bitboard single_push = shift(unpinned_pawns | (pieces[turn][PAWN] & file(state->king)), forward) & ~all_pieces;
 	Bitboard double_push = shift(single_push & two_steps, forward) & ~all_pieces & blocks;
 	Bitboard left_captures = shift(unpinned_pawns, forward_left) & colors[state->enemy];
@@ -145,9 +151,8 @@ Moves Position::generate_blockers() {
 		moves_bb = unpinned_pawns & PAWN_ATTACKS[state->enemy][state->en_peasant] & blocks;
 		while (moves_bb) {
 			Square from = pop_lsb(moves_bb);
-			Bitboard new_occ = (all_pieces ^ from ^ (state->en_peasant - forward)) | state->en_peasant;
 			// Make sure our king is not in check after the move is played
-			if (!(rook_moves(state->king, new_occ) & (pieces[state->enemy][ROOK] | pieces[state->enemy][QUEEN])) && !(bishop_moves(state->king, new_occ) & (pieces[state->enemy][BISHOP] | pieces[state->enemy][QUEEN])))
+			if (!snipers_to_king(state->enemy, (all_pieces ^ from ^ (state->en_peasant - forward)) | state->en_peasant))
 				*moves.end++ = move_init(from, state->en_peasant) | S_MOVE_EN_PASSANT;
 		}
 	}
@@ -198,10 +203,14 @@ Moves Position::generate_moves() {
 	Direction forward = turn ? DOWN : UP;
 	Direction forward_left = turn ? DOWN_LEFT : UP_LEFT;
 	Direction forward_right = turn ? DOWN_RIGHT : UP_RIGHT;
+
+	Bitboard left_diagonal = pieces[turn][KING] & (FILE_A | promotions) ? 0ULL : bb_line(state->king, state->king + forward_left);
+	Bitboard right_diagonal = pieces[turn][KING] & (FILE_H | promotions) ? 0ULL : bb_line(state->king, state->king + forward_right);
+
 	Bitboard single_push = shift(unpinned_pawns | (pieces[turn][PAWN] & file(state->king)), forward) & ~all_pieces;
 	Bitboard double_push = shift(single_push & two_steps, forward) & ~all_pieces;
-	Bitboard left_captures = shift(unpinned_pawns, forward_left) & colors[state->enemy];
-	Bitboard right_captures = shift(unpinned_pawns, forward_right) & colors[state->enemy];
+	Bitboard left_captures = shift(unpinned_pawns | (pieces[turn][PAWN] & left_diagonal), forward_left) & colors[state->enemy];
+	Bitboard right_captures = shift(unpinned_pawns | (pieces[turn][PAWN] & right_diagonal), forward_right) & colors[state->enemy];
 
 	Bitboard moves_bb = single_push & ~promotions;
 	while (moves_bb) {

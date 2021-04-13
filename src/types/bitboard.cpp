@@ -2,6 +2,8 @@
 #include "direction.h"
 #include "move_generation.h"
 
+#include <algorithm>
+
 Bitboard BB_RANKS[NUM_RANKS];
 Bitboard BB_FILES[NUM_FILES];
 Bitboard BB_SQUARES[NUM_SQUARES];
@@ -9,13 +11,17 @@ Bitboard BB_CASTLING_KING[NUM_CASTLING] = {0};
 Bitboard BB_CASTLING_ROOK[NUM_CASTLING] = {0};
 Bitboard BB_RAYS[NUM_SQUARES][NUM_SQUARES];
 Bitboard BB_LINES[NUM_SQUARES][NUM_SQUARES];
-Bitboard OUTPOSTS[NUM_COLORS];
-Bitboard LIGHT_SQUARES;
-Bitboard DARK_SQUARES;
-Bitboard WHITE_LEFT_FIANCHETTO;
-Bitboard WHITE_RIGHT_FIANCHETTO;
-Bitboard BLACK_LEFT_FIANCHETTO;
-Bitboard BLACK_RIGHT_FIANCHETTO;
+Bitboard OUTPOSTS[NUM_COLORS] = {0x00ffffffff000000ULL, 0x000000ffffffff00ULL};
+Bitboard LOW_RANKS_BLACK = BB_RANKS[RANK_6] | BB_RANKS[RANK_7];
+Bitboard LOW_RANKS_WHITE = BB_RANKS[RANK_2] | BB_RANKS[RANK_3];
+Bitboard LIGHT_SQUARES = 0x55AA55AA55AA55AAULL;
+Bitboard DARK_SQUARES = 0xAA55AA55AA55AA55ULL;
+Bitboard WHITE_LEFT_FIANCHETTO = 0x2020500ULL;
+Bitboard WHITE_RIGHT_FIANCHETTO = 0x4040A000ULL;
+Bitboard BLACK_LEFT_FIANCHETTO = flip(WHITE_LEFT_FIANCHETTO, VERTICALLY);
+Bitboard BLACK_RIGHT_FIANCHETTO = flip(WHITE_RIGHT_FIANCHETTO, VERTICALLY);
+
+uint8_t SQUARE_DISTANCE[NUM_SQUARES][NUM_SQUARES];
 
 
 void bb_init() {
@@ -27,15 +33,6 @@ void bb_init() {
 		
 	for (Square s = A1; s <= H8; s++)
 		BB_SQUARES[s] = 0x1ULL << (s * RIGHT);
-	WHITE_LEFT_FIANCHETTO = 0x2020500ULL;
-	WHITE_RIGHT_FIANCHETTO = 0x4040A000ULL;
-	BLACK_LEFT_FIANCHETTO = flip(WHITE_LEFT_FIANCHETTO, VERTICALLY);
-	BLACK_RIGHT_FIANCHETTO = flip(WHITE_RIGHT_FIANCHETTO, VERTICALLY);
-
-	LIGHT_SQUARES = 0x55AA55AA55AA55AAULL;
-	DARK_SQUARES = 0xAA55AA55AA55AA55ULL;
-	OUTPOSTS[WHITE] = 0x00ffffffff000000ULL;
-	OUTPOSTS[BLACK] = 0x000000ffffffff00ULL;
 	Bitboard white_kingside_king = 0x70ULL;
 	Bitboard white_queenside_king = 0x1CULL;
 	Bitboard black_kingside_king = 0x70ULL << 56;
@@ -64,6 +61,11 @@ void bb_init() {
 			BB_CASTLING_ROOK[i] |= black_queenside_rook;
 		}
 	}
+
+	//The Chebyshev distance
+	for (Square s1 = A1; s1 <= H8; s1++)
+		for (Square s2 = A1; s2 <= H8; s2++)
+			SQUARE_DISTANCE[s1][s2] = std::max(std::abs(file(s1) - file(s2)), std::abs(rank(s1) - rank(s2)));
 }
 
 void bb_rays_init() {
@@ -72,10 +74,12 @@ void bb_rays_init() {
 			BB_RAYS[s1][s2] = (rook_moves(s1, BB_SQUARES[s2]) & rook_moves(s2, BB_SQUARES[s1])) | s2;
 			BB_LINES[s1][s2] = (rook_moves(s1, 0) & rook_moves(s2, 0)) | s1 | s2;
 		}
-		if (bishop_moves(s1, 0) & s2) {
+		else if (bishop_moves(s1, 0) & s2) {
 			BB_RAYS[s1][s2] = (bishop_moves(s1, BB_SQUARES[s2]) & bishop_moves(s2, BB_SQUARES[s1])) | s2;
 			BB_LINES[s1][s2] = (bishop_moves(s1, 0) & bishop_moves(s2, 0)) | s1 | s2;
 		}
+		else
+			BB_RAYS[s1][s2] = BB_SQUARES[s2];
 	}
 }
 

@@ -9,7 +9,6 @@ int main() {
 	bb_moves_init();
 	bb_rays_init();
 
-
 	// for (Square s = A1; s <= H8; s++)
 	// 	std::cout << bb_string(BB_RAYS[s][E4]) << std::endl;
 
@@ -21,12 +20,14 @@ int main() {
 	// std::string fen1 = "2r2b2/8/8/2pP4/8/2K5/8/8 w KQkq - 0 1";
 
 	PositionInfo info = {0};
-	PositionInfo info2;
-	Position pos = Position(&info);
+	// PositionInfo info2 = {0};
+	Position pos = Position(&info, "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+	std::cout << pos << std::endl;
+	// pos.play_move(move_init(H1, F1), &info2);
 	// std::cout << pos << std::endl;
-	// pos.play_move(move_init(B7, B5), &info2);
-	// std::cout << pos << std::endl;
-	std::cout << pos.perft(7) << std::endl;
+	// // std::cout << pos.calculate_score(WHITE).middle_game << std::endl;
+	// std::cout << "Castling: " << int(pos.state->castling) << std::endl;
+	std::cout << pos.divide(5) << std::endl;
 	
 	// for (Color c : {WHITE, BLACK})
 	// 	for (PieceType pt : {PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING})

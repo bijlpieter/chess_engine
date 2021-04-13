@@ -130,7 +130,7 @@ Position::Position(PositionInfo* info, std::string fen) {
         return;
     }
 	std::string fields[6];
-	int ls = 0, index = 0;
+		int ls = 0, index = 0;
 	for (unsigned int i = 0; i < fen.length() + 1; i++){
 		if (fen[i] == ' ' || i == fen.length()){
 			fields[index] = fen.substr(ls, i - ls);
@@ -155,7 +155,6 @@ Position::Position(PositionInfo* info, std::string fen) {
     //rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
     Square s = A8;
 	for (unsigned i = 0; i < fields[0].length(); i++) {
-        std::cout << (int)s << " ";
         if (fields[0][i] == '/'){
             s += -16;
             continue;
@@ -226,8 +225,6 @@ std::ostream& operator<<(std::ostream& os, const Position& p) {
 		os << " | " << (1 + r) << "\n +---+---+---+---+---+---+---+---+\n";
 	}
 	os << "   a   b   c   d   e   f   g   h\n";
-
-    
 
 	return os;
 }
