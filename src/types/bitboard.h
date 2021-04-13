@@ -83,6 +83,7 @@ inline Bitboard operator&(Bitboard bb, File f) { return bb & BB_FILES[f]; }
 inline Bitboard operator^(Bitboard bb, Square s) { return bb ^ BB_SQUARES[s]; }
 inline Bitboard& operator^=(Bitboard& bb, Square s) { return bb = bb ^ s; }
 
+
 inline Bitboard operator|(Rank r1, Rank r2) { return BB_RANKS[r1] | BB_RANKS[r2]; }
 inline Bitboard operator|(Rank r, File f) { return BB_RANKS[r] | BB_FILES[f]; }
 inline Bitboard operator|(File f, Rank r) { return BB_RANKS[r] | BB_FILES[f]; }

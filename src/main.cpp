@@ -8,7 +8,6 @@ int main() {
 	bb_init();
 	bb_moves_init();
 	bb_rays_init();
-
 	//for (Square s = A1; s <= H8; s++)
 	// 	std::cout << bb_string(KING_RING[s]) << std::endl;
 
@@ -23,11 +22,14 @@ int main() {
 	// PositionInfo info2 = {0};
 	Position pos = Position(&info, "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1");
 	std::cout << pos << std::endl;
+	Score test = pos.calculate_score(WHITE);
+	std::cout << test.middle_game;
+	
 	// pos.play_move(move_init(H1, F1), &info2);
 	// std::cout << pos << std::endl;
 	// // std::cout << pos.calculate_score(WHITE).middle_game << std::endl;
 	// std::cout << "Castling: " << int(pos.state->castling) << std::endl;
-	std::cout << pos.perft(5) << std::endl;
+	// std::cout << pos.perft(5) << std::endl;
 	
 	// for (Color c : {WHITE, BLACK})
 	// 	for (PieceType pt : {PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING})
@@ -45,9 +47,5 @@ int main() {
 
 	// // std::cout << bb_string(pos.state->king_unsafe) << std::endl;
 	// std::cout << "Number of moves: " << moves.size() << std::endl;
-
-	// std::cout << bb_string(BLACK_LEFT_FIANCHETTO) << std::endl;
-	// std::cout << bb_string(BLACK_RIGHT_FIANCHETTO) << std::endl;
-
 	return 0;
 }

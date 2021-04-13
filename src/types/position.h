@@ -90,6 +90,7 @@ public:
 	Phase calculate_phase();
 	Score calculate_score(Color c);
 	bool is_outpost(Color c, Square s);
+	void eval_init(Color c);
 
 	void info_init();
 
