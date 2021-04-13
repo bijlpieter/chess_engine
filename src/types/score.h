@@ -2,6 +2,7 @@
 #define _SCORE_H_
 
 #include "bitboard.h"
+#include <iostream>
 
 class Score {
     public:
@@ -40,4 +41,5 @@ inline Score operator/(Score b, int a) { return Score((b.middle_game / a),(b.end
 inline Score& operator+=(Score& a, Score b) { return a = Score((a.middle_game + b.middle_game),(a.end_game + b.end_game));}
 inline Score& operator-=(Score& a, Score b) { return a = Score((a.middle_game - b.middle_game),(a.end_game - b.end_game));}
 
+std::ostream& operator<<(std::ostream& os, const Score& s);
 #endif

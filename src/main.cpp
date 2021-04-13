@@ -15,19 +15,18 @@ int main() {
 
 	// for (int i = 0; i < NUM_CASTLING; i++)
 	// 	std::cout << bb_string(BB_CASTLING_ROOK[i]) << std::endl;
-	// std::string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-	// std::string fen1 = "2r2b2/8/8/2pP4/8/2K5/8/8 w KQkq - 0 1";
+	std::string fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+	std::string fen1 = "2r2b2/8/8/2pP4/8/2K5/8/8 w KQkq - 0 1";
+	std::string fen2 = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1";
 
 	PositionInfo info = {0};
 	// PositionInfo info2 = {0};
-	Position pos = Position(&info, "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1");
+	Position pos = Position(&info, fen);
 	std::cout << pos << std::endl;
 	Score test = pos.calculate_score(WHITE);
-	std::cout << test.middle_game;
-	
+	std::cout << test;
 	// pos.play_move(move_init(H1, F1), &info2);
 	// std::cout << pos << std::endl;
-	// // std::cout << pos.calculate_score(WHITE).middle_game << std::endl;
 	// std::cout << "Castling: " << int(pos.state->castling) << std::endl;
 	// std::cout << pos.perft(5) << std::endl;
 	
