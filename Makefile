@@ -21,7 +21,7 @@ $(ODIR)/%.o: $(SDIR)/%.cpp
 	$(CC) $(FLAGS) -c $< -I $(IDIR) -o $@
 
 tar: clean
-	tar -cvzf $(TAR_GZ) $(SDIR) Makefile README.md LICENSE .gitignore
+	tar -cvzf $(TAR_GZ) $(IDIR) $(SDIR) Makefile README.md LICENSE .gitignore
 
 clean:
 	rm -rf $(ODIR)/
