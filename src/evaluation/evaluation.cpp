@@ -131,10 +131,10 @@ Score Position::rook_score() {
 		Square rook = pop_lsb(rooks);
 		File f = file(rook);
 		Rank r = rank(rook);
-		if (r & KING_AREA[op_king_square]){
+		if (r & KING_AREA[info.opp_king_square]){
 			total += ROOK_ON_KING_RANK_SCORE;
 		}
-		if (f & KING_AREA[op_king_square]){
+		if (f & KING_AREA[info.opp_king_square]){
 			total += ROOK_ON_KING_FILE_SCORE;
 		}
 		if (r | f | pieces[~info.c][QUEEN]){

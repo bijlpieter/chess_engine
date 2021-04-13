@@ -31,7 +31,7 @@ struct EvalInfo {
 	Rank promotion_rank;
 	Rank opp_promotion_rank;
     Square king_square;
-	Square op_king_square;
+	Square opp_king_square;
     Bitboard defended_squares;
     Bitboard king_area[NUM_COLORS];
     Bitboard mobility;
