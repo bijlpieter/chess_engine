@@ -204,8 +204,8 @@ Moves Position::generate_moves() {
 	Direction forward_left = turn ? DOWN_LEFT : UP_LEFT;
 	Direction forward_right = turn ? DOWN_RIGHT : UP_RIGHT;
 
-	Bitboard left_diagonal = pieces[turn][KING] & (FILE_A | promotions) ? 0ULL : bb_line(state->king, state->king + forward_left);
-	Bitboard right_diagonal = pieces[turn][KING] & (FILE_H | promotions) ? 0ULL : bb_line(state->king, state->king + forward_right);
+	Bitboard left_diagonal = (pieces[turn][KING] & (promotions | FILE_A)) ? 0ULL : bb_line(state->king, state->king + forward_left);
+	Bitboard right_diagonal = (pieces[turn][KING] & (promotions | FILE_H)) ? 0ULL : bb_line(state->king, state->king + forward_right);
 
 	Bitboard single_push = shift(unpinned_pawns | (pieces[turn][PAWN] & file(state->king)), forward) & ~all_pieces;
 	Bitboard double_push = shift(single_push & two_steps, forward) & ~all_pieces;

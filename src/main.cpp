@@ -9,8 +9,8 @@ int main() {
 	bb_moves_init();
 	bb_rays_init();
 
-	// for (Square s = A1; s <= H8; s++)
-	// 	std::cout << bb_string(BB_RAYS[s][E4]) << std::endl;
+	//for (Square s = A1; s <= H8; s++)
+	// 	std::cout << bb_string(KING_RING[s]) << std::endl;
 
 	// std::cout << bb_string(queen_moves(A1, 0)) << std::endl;
 
@@ -21,13 +21,13 @@ int main() {
 
 	PositionInfo info = {0};
 	// PositionInfo info2 = {0};
-	Position pos = Position(&info, "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+	Position pos = Position(&info, "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1");
 	std::cout << pos << std::endl;
 	// pos.play_move(move_init(H1, F1), &info2);
 	// std::cout << pos << std::endl;
 	// // std::cout << pos.calculate_score(WHITE).middle_game << std::endl;
 	// std::cout << "Castling: " << int(pos.state->castling) << std::endl;
-	std::cout << pos.divide(5) << std::endl;
+	std::cout << pos.perft(5) << std::endl;
 	
 	// for (Color c : {WHITE, BLACK})
 	// 	for (PieceType pt : {PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING})

@@ -27,12 +27,15 @@ struct PositionInfo {
 };
 
 struct EvalInfo {
+	Color c;
+	Rank promotion_rank;
+	Rank opp_promotion_rank;
     Square king_square;
-    Color c;
+	Square op_king_square;
     Bitboard defended_squares;
     Bitboard king_area[NUM_COLORS];
-    Bitboard blocked_pawns;
     Bitboard mobility;
+	Bitboard blocked_pawns;
 };
 
 class Position {
@@ -87,7 +90,6 @@ public:
 	Phase calculate_phase();
 	Score calculate_score(Color c);
 	bool is_outpost(Color c, Square s);
-	Bitboard king_ring(Square ks);
 
 	void info_init();
 

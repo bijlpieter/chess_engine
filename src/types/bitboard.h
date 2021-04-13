@@ -19,6 +19,7 @@ extern Bitboard BB_CASTLING_ROOK[NUM_CASTLING];
 extern Bitboard BB_RAYS[NUM_SQUARES][NUM_SQUARES];
 extern Bitboard BB_LINES[NUM_SQUARES][NUM_SQUARES];
 extern Bitboard OUTPOSTS[NUM_COLORS];
+extern Bitboard KING_AREA[NUM_SQUARES];
 extern Bitboard LOW_RANKS_WHITE;
 extern Bitboard LOW_RANKS_BLACK;
 extern Bitboard LIGHT_SQUARES;

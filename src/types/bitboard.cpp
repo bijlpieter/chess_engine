@@ -12,6 +12,7 @@ Bitboard BB_CASTLING_ROOK[NUM_CASTLING] = {0};
 Bitboard BB_RAYS[NUM_SQUARES][NUM_SQUARES];
 Bitboard BB_LINES[NUM_SQUARES][NUM_SQUARES];
 Bitboard OUTPOSTS[NUM_COLORS] = {0x00ffffffff000000ULL, 0x000000ffffffff00ULL};
+Bitboard KING_AREA[NUM_SQUARES];
 Bitboard LOW_RANKS_BLACK = BB_RANKS[RANK_6] | BB_RANKS[RANK_7];
 Bitboard LOW_RANKS_WHITE = BB_RANKS[RANK_2] | BB_RANKS[RANK_3];
 Bitboard LIGHT_SQUARES = 0x55AA55AA55AA55AAULL;
@@ -62,10 +63,12 @@ void bb_init() {
 		}
 	}
 
-	//The Chebyshev distance
-	for (Square s1 = A1; s1 <= H8; s1++)
-		for (Square s2 = A1; s2 <= H8; s2++)
+	//The Chebyshev distance & king_ring
+	for (Square s1 = A1; s1 <= H8; s1++){
+		for (Square s2 = A1; s2 <= H8; s2++){
 			SQUARE_DISTANCE[s1][s2] = std::max(std::abs(file(s1) - file(s2)), std::abs(rank(s1) - rank(s2)));
+		}
+	}
 }
 
 void bb_rays_init() {
@@ -81,6 +84,23 @@ void bb_rays_init() {
 		else
 			BB_RAYS[s1][s2] = BB_SQUARES[s2];
 	}
+
+	for (Square s1 = A1; s1 <= H8; s1++){
+		Square ks = s1;
+		if(rank(s1) < RANK_2){
+			ks += UP;
+		}
+		else if (rank(s1) > RANK_7){
+			ks += DOWN;
+		}
+		if (file(s1) < FILE_B){
+			ks += RIGHT;
+		}
+		else if (file(s1) > FILE_G){
+			ks += LEFT;
+		}
+		KING_AREA[s1] = (king_moves(ks) | ks);
+	}	
 }
 
 std::string bb_string(Bitboard bb) {
