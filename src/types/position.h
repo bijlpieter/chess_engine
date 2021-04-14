@@ -36,6 +36,8 @@ struct EvalInfo {
     Bitboard king_area[NUM_COLORS];
     Bitboard mobility;
 	Bitboard blocked_pawns;
+	Bitboard enemy_pawn_control;
+	Direction push_direction;
 };
 
 class Position {
@@ -87,10 +89,19 @@ public:
 	Score knight_score();
 	Score bishop_score();
 	Score rook_score();
+	Score queen_score();
+	Score king_score();
+	Score pawn_score();
+	Score control_score();
+	Score calculate_material();
 	Phase calculate_phase();
 	Score calculate_score(Color c);
+	Score pawn_storm_safety();
+	Square farmost_square(Color c, Bitboard b);
+	bool is_open_file(Color c, File f);
 	bool is_outpost(Color c, Square s);
 	void eval_init(Color c);
+	Rank relevant_rank(Color c, Rank r);
 
 	void info_init();
 

@@ -9,7 +9,6 @@ Phase Position::calculate_phase() {
 	}
 	return (total * 256 + 12) / 12;
 }
-
 bool Position::is_outpost(Color c, Square s) {
 	//on outpost square
 	if (popcount(s & OUTPOSTS[c]) > 0) {
@@ -34,7 +33,19 @@ bool Position::is_outpost(Color c, Square s) {
 	}
 	return true;
 }
-
+bool Position::is_open_file(Color c, File f){
+	return (popcount(pieces[c][PAWN] & f) == 0);
+}
+Rank Position::relevant_rank(Color c, Rank r){
+	return Rank(r ^ (c * 7));
+}
+Square Position::farmost_square(Color c, Bitboard b){
+	if (!b){
+		std::cout << "ERROR: farmost_square requires a non-empty bitboard";
+		return NO_SQUARE;
+	}
+	return c == WHITE ? msb(b) : lsb(b);
+}
 Score Position::knight_score() {
 	if (popcount(pieces[info.c][KNIGHT]) == 0) {
 		return Score(0,0);
@@ -60,12 +71,11 @@ Score Position::knight_score() {
 	}
 	return total;
 }
-//TODO bad bishop & trapped bishop
 Score Position::bishop_score() {
 	if (popcount(pieces[info.c][BISHOP]) == 0) {
 		return Score(0,0);
 	}
-	Score total = Score(0,0);
+	Score total(0,0);
 	Bitboard bishops = pieces[info.c][BISHOP];
 
 	total += material_scores[BISHOP] * popcount(pieces[info.c][BISHOP]);
@@ -124,7 +134,7 @@ Score Position::rook_score() {
 	if (popcount(pieces[info.c][ROOK]) == 0) {
 		return Score(0,0);
 	}
-	Score total = Score(0,0);
+	Score total(0,0);
 	Bitboard rooks = pieces[info.c][ROOK];
 	total += material_scores[ROOK] * popcount(pieces[info.c][ROOK]);
 	//mobility
@@ -164,7 +174,7 @@ Score Position::rook_score() {
 				total += ROOK_ON_SEVENTH_SCORE;
 			}
 		}
-		if (popcount(pieces[info.c][PAWN] & f) == 0){
+		if (is_open_file(info.c,f)){
 			total += ROOK_ON_OPEN_SCORE;
 		}
 		else if (info.blocked_pawns & f){
@@ -179,27 +189,85 @@ Score Position::rook_score() {
 	}
 	return total;
 }
+Score Position::queen_score(){
+	if (popcount(pieces[info.c][QUEEN]) == 0) {
+		return Score(0,0);
+	}
+	Score total(0,0);
+	//material
+	total += material_scores[QUEEN] * popcount(pieces[info.c][QUEEN]);
+	//mobility 
+	total += popcount(legal_queen_moves() & info.mobility) * mobility_scores[QUEEN];
+	//TODO QUEEN PINNERS PENALTY
+	return total;
+
+}
+Score Position::pawn_storm_safety(){
+	Score total(0,0);
+	int opp_next_rank = info.c == WHITE ? -1 : 1;
+	Rank r = rank(info.opp_king_square);
+	// these ranks are in front of the enemy king.
+	Bitboard excluded_ranks = BB_RANKS[r + opp_next_rank] | BB_RANKS[r + opp_next_rank + opp_next_rank];
+	Bitboard pawns = pieces[info.c][PAWN] & ~info.enemy_pawn_control & ~excluded_ranks;
+	Bitboard opp_pawns = pieces[~info.c][PAWN] & ~excluded_ranks;
+
+	File kf = file(info.king_square);
+	kf = (kf == FILE_A) ? FILE_B : (kf == FILE_H) ? FILE_G : kf;
+	Bitboard temp;
+	for (File f = File(kf - 1); f <= File(kf + 1); f++){
+		temp = pawns & f;
+		int def_rank = temp ? relevant_rank(info.c, rank(farmost_square(info.c, temp))) : 0;
+		temp = opp_pawns & f;
+		int att_rank = temp ? relevant_rank(info.c, rank(farmost_square(~info.c, temp))) : 0;
+		if (def_rank && (def_rank == att_rank - 1)){
+			total += PAWN_STORM_BLOCKED_FILE_PENALTY[att_rank];
+		}
+		// no need to check if(att_rank);
+		else{
+			total += PAWN_STORM_UNBLOCKED_FILE_PENALTY[att_rank];
+		}
+	}
+	return total;
+}
+Score Position::king_score(){
+	Score total(0,0);
+	total += pawn_storm_safety();
+	if (is_open_file(info.c,file(info.king_square))){
+		total -= KING_ON_OPEN_FILE_PENALTY;
+	}
+	return total;
+
+}
 void Position::eval_init(Color c){
 	Direction left = c == WHITE ? DOWN_LEFT : UP_LEFT;
 	Direction right = c == WHITE ? DOWN_RIGHT : UP_RIGHT;
-	Bitboard enemy_pawn_control = (shift(pieces[~c][PAWN], left) | shift(pieces[~c][PAWN], right));
+	info.enemy_pawn_control = (shift(pieces[~c][PAWN], left) | shift(pieces[~c][PAWN], right));
 	info.c = c;
     info.king_square = state->king;
 	info.opp_king_square = lsb(pieces[~c][KING]);
     info.defended_squares = controlling(c, all_pieces);
 	info.blocked_pawns = pieces[c][PAWN] & shift(all_pieces, DOWN);
-    info.mobility = ~(info.blocked_pawns | info.king_square | pieces[c][QUEEN] | state->pinned | enemy_pawn_control);
+    info.mobility = ~(info.blocked_pawns | info.king_square | pieces[c][QUEEN] | state->pinned | info.enemy_pawn_control);
 	info.king_area[c] = KING_AREA[info.king_square];
 	info.king_area[~c] = KING_AREA[info.opp_king_square];
 	info.promotion_rank = c == WHITE ? RANK_8 : RANK_1;
 	info.opp_promotion_rank = c == WHITE ? RANK_1 : RANK_8;
+	info.push_direction = c == WHITE ? UP : DOWN;
 }
-Score Position::calculate_score(Color c) {
-	eval_init(c);
+Score Position::calculate_material(){
 	Score total(0,0);
 	total += knight_score();
 	total += bishop_score();
 	total += rook_score();
+	total += queen_score();
+	total += king_score();
+	return total;
+}
+Score Position::calculate_score(Color c) {
+	eval_init(c);
+	Score total(0,0);
+	total += calculate_material();
+	
    
 	return total;
 }

@@ -6,12 +6,12 @@
 
 class Score {
     public:
-        Score(float mg, float eg) {
+        Score(int mg, int eg) {
             middle_game = mg;  
             end_game = eg;
         }
-        float middle_game;
-        float end_game;
+        int middle_game;
+        int end_game;
 };
 
 typedef uint16_t Phase;
@@ -29,13 +29,17 @@ extern Score KNIGHT_KING_DISTANCE_PENALTY;
 extern Score ROOK_ON_KING_FILE_SCORE, ROOK_ON_KING_RANK_SCORE, ROOK_ON_OPEN_SCORE,
 ROOK_ON_QUEEN_LINE_SCORE, ROOK_STACKED_SCORE, ROOK_ON_SEVENTH_SCORE;
 extern Score ROOK_ON_BLOCKED_PENALTY, ROOK_TRAPPED_BY_KING_PENALTY;
-
+//king 
+extern Score PAWN_STORM_BLOCKED_FILE_PENALTY[NUM_FILES];
+extern Score PAWN_STORM_UNBLOCKED_FILE_PENALTY[NUM_FILES];
+extern Score KING_ON_OPEN_FILE_PENALTY;
 
 inline Score operator+(Score a, Score b) { return Score((a.middle_game + b.middle_game),(a.end_game + b.end_game));}
 inline Score operator-(Score a, Score b) { return Score((a.middle_game - b.middle_game),(a.end_game - b.end_game));}
 inline Score operator*(int a, Score b) { return Score((a * b.middle_game),(a * b.end_game));}
 inline Score operator*(Score b, int a) { return Score((a * b.middle_game),(a * b.end_game));}
 inline Score operator/(Score b, int a) { return Score((b.middle_game / a),(b.end_game / a));}
+inline Score operator/(int a, Score b) { return Score((b.middle_game / a),(b.end_game / a));}
 
 inline Score& operator+=(Score& a, Score b) { return a = Score((a.middle_game + b.middle_game),(a.end_game + b.end_game));}
 inline Score& operator-=(Score& a, Score b) { return a = Score((a.middle_game - b.middle_game),(a.end_game - b.end_game));}
