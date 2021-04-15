@@ -11,10 +11,19 @@ TAR_GZ := chess.tar.gz
 .PHONY: all clean
 
 SOURCES = $(shell find $(SDIR)/ -type f -name "*.cpp")
+PERFT = $(shell find test/perft/ -type f -name "*.cpp")
+EVAL = $(shell find test/eval/ -type f -name "*.cpp")
+MAIN = main.cpp
 OBJECTS = $(patsubst $(SDIR)/%.cpp, $(ODIR)/%.o, $(SOURCES))
 
 all: $(OBJECTS)
-	$(CC) $(FLAGS) $(OBJECTS) -I $(IDIR) -o $(TARGET)
+	$(CC) $(FLAGS) $(MAIN) $(OBJECTS) -I $(IDIR) -o $(TARGET)
+
+test-perft: $(OBJECTS)
+	$(CC) $(FLAGS) $(PERFT) $(OBJECTS) -I $(IDIR) -o $(TARGET)
+
+test-eval: $(OBJECTS)
+	$(CC) $(FLAGS) $(EVAL) $(OBJECTS) -I $(IDIR) -o $(TARGET)
 
 $(ODIR)/%.o: $(SDIR)/%.cpp
 	@mkdir -p $(@D)
