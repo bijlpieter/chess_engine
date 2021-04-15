@@ -27,12 +27,14 @@ Score ROOK_STACKED_SCORE = S (20,20);
 Score ROOK_ON_SEVENTH_SCORE = S (100, 20);
 Score ROOK_ON_BLOCKED_PENALTY = S(5, 50);
 Score ROOK_TRAPPED_BY_KING_PENALTY = S(100, 100);
+//queen
+Score QUEEN_PINNED_PENALTY = S(30,30);
 //king
 Score PAWN_STORM_BLOCKED_FILE_PENALTY[NUM_FILES] = {S(0,0), S(0,0), S(30, 30), S (-10,20), S (-10, 20), S(-10, 20), S(0, 10), S(0,0)};
 Score PAWN_STORM_UNBLOCKED_FILE_PENALTY[NUM_FILES] = {S(0,0), S(0,0), S(30, 30), S (-10,20), S (-10, 20), S(-10, 20), S(0, 10), S(0,0)};
 Score KING_ON_OPEN_FILE_PENALTY = S(50,0);
 Score KING_PAWN_DISTANCE_SCORE[7] = {S(0,0), S(0,50) ,S(0,40), S(0,30), S(0,0), S(0,-20), S(0,-50)};
 std::ostream& operator<<(std::ostream& os, const Score& s) {
-    os << "M-S: " << s.middle_game << " E-S: " << s.end_game <<std::endl;
+    os << "[Mid(" << s.middle_game << ") End(" << s.end_game << ")]";
 	return os;
 }
