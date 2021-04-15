@@ -118,6 +118,16 @@ bool alternative() {
 }
 
 int main() {
+	bb_init();
+	bb_moves_init();
+	bb_rays_init();
+
+	if (!default_position()) return 1;
+	if (!kiwipete()) return 1;
+	if (!en_passant()) return 1;
+	if (!weird()) return 1;
+	if (!talkchess()) return 1;
+	if (!alternative()) return 1;
 
 	return 0;
 }
