@@ -101,6 +101,7 @@ public:
 	bool is_open_file(Color c, File f);
 	bool is_outpost(Color c, Square s);
 	void eval_init(Color c);
+	int queen_pin_count(Color opp, Square q);
 	Rank relevant_rank(Color c, Rank r);
 
 	void info_init();

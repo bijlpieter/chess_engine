@@ -9,6 +9,17 @@ Phase Position::calculate_phase() {
 	}
 	return (total * 256 + 12) / 12;
 }
+int Position::queen_pin_count(Color opp, Square q){
+	int pinned = 0;
+	Bitboard snipers = (rook_moves(q, 0) & (pieces[opp][ROOK] | pieces[opp][QUEEN])) | (bishop_moves(q, 0) & (pieces[opp][BISHOP] | pieces[opp][QUEEN]));
+	while(snipers){
+		Bitboard ray_blockers = bb_ray(pop_lsb(snipers), q) & ~q & all_pieces;
+		if (ray_blockers && popcount(ray_blockers) == 1){
+			pinned++;
+		}
+	}
+	return pinned;
+}
 bool Position::is_outpost(Color c, Square s) {
 	//on outpost square
 	if (popcount(s & OUTPOSTS[c]) > 0) {
@@ -53,7 +64,7 @@ Score Position::knight_score() {
 	Score total = Score(0,0);
 	Bitboard knights = pieces[info.c][KNIGHT];
 	//material
-	total += material_scores[KNIGHT] * (popcount(pieces[info.c][KNIGHT]));
+	total += material_scores[KNIGHT] * popcount(knights);
 	//bonus for defended minor piece
 	total += popcount(knights & info.defended_squares) * KNIGHT_DEFENDED_SCORE;
 	 //mobility
@@ -78,20 +89,17 @@ Score Position::bishop_score() {
 	Score total(0,0);
 	Bitboard bishops = pieces[info.c][BISHOP];
 
-	total += material_scores[BISHOP] * popcount(pieces[info.c][BISHOP]);
+	total += material_scores[BISHOP] * popcount(bishops);
 
 	//complementing bishops on the board
 	if (bishops & LIGHT_SQUARES && bishops & DARK_SQUARES) total += BISHOP_PAIR_SCORE;
 
 	//bonus for defended minor piece
 	total += popcount(bishops & info.defended_squares) * BISHOP_DEFENDED_SCORE;
-
-	//mobility 
-	total += popcount(legal_bishop_moves() & info.mobility) * mobility_scores[BISHOP];
-
 	//distance, outposts and fianchettoes, xraying enemy pawns and attacking the enemy king_area
 	while (bishops) {
 		Square bishop = pop_lsb(bishops);
+		total += popcount(bishop_moves(bishop,0) & info.mobility) * mobility_scores[BISHOP];
 		total -= BISHOP_KING_DISTANCE_PENALTY * SQUARE_DISTANCE[bishop][info.king_square];
 
 		total -= BISHOP_XRAY_PAWN_PENALTY * (popcount(bishop_moves(bishop, 0) & pieces[~info.c][PAWN]));
@@ -136,9 +144,7 @@ Score Position::rook_score() {
 	}
 	Score total(0,0);
 	Bitboard rooks = pieces[info.c][ROOK];
-	total += material_scores[ROOK] * popcount(pieces[info.c][ROOK]);
-	//mobility
-	total += popcount(legal_rook_moves() & info.mobility) * mobility_scores[ROOK];
+	total += material_scores[ROOK] * popcount(rooks);
 	//rooks defending eachother
 	if (popcount(rooks) > 1){
 		Bitboard rooks_temp = rooks;
@@ -155,6 +161,7 @@ Score Position::rook_score() {
 		Square rook = pop_lsb(rooks);
 		File f = file(rook);
 		Rank r = rank(rook);
+		total += popcount(rook_moves(rook,0) & info.mobility) * mobility_scores[ROOK];
 		if (KING_AREA[info.opp_king_square] & r){
 			total += ROOK_ON_KING_RANK_SCORE;
 		}
@@ -194,10 +201,15 @@ Score Position::queen_score(){
 		return Score(0,0);
 	}
 	Score total(0,0);
+	Bitboard queens = pieces[info.c][QUEEN];
 	//material
-	total += material_scores[QUEEN] * popcount(pieces[info.c][QUEEN]);
+	total += material_scores[QUEEN] * popcount(queens);
 	//mobility 
-	total += popcount(legal_queen_moves() & info.mobility) * mobility_scores[QUEEN];
+	while (queens){
+		Square queen = pop_lsb(queens);
+		total += popcount(queen_moves(queen,0) & info.mobility) * mobility_scores[QUEEN];
+
+	}
 	//TODO QUEEN PINNERS PENALTY
 	return total;
 

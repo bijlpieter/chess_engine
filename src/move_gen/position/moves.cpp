@@ -51,7 +51,7 @@ inline Bitboard Position::controlling_sliding(Color c, Bitboard occ) const {
 }
 
 inline Bitboard Position::snipers_to_king(Color c, Bitboard occ) const {
-	return (rook_moves(state->king, occ) & (pieces[c][ROOK] | pieces[c][QUEEN])) | (bishop_moves(state->king, 0) & (pieces[c][BISHOP] | pieces[c][QUEEN]));
+	return (rook_moves(state->king, occ) & (pieces[c][ROOK] | pieces[c][QUEEN])) | (bishop_moves(state->king, occ) & (pieces[c][BISHOP] | pieces[c][QUEEN]));
 }
 
 // Returns a bitboard containing all squares that are controlled by Color c.
@@ -71,8 +71,7 @@ Bitboard Position::blockers(Square s, Color blocking, Color attacking) const {
 	Bitboard sliding_attackers = snipers_to_king(attacking);
 
 	while (sliding_attackers) {
-		Square sniper = pop_lsb(sliding_attackers);
-		Bitboard ray_blockers = bb_ray(sniper, s) & ~s & all_pieces;
+		Bitboard ray_blockers = bb_ray(pop_lsb(sliding_attackers), s) & ~s & all_pieces;
 		if (ray_blockers && popcount(ray_blockers) == 1)
 			blocks |= ray_blockers & colors[blocking];
 	}
