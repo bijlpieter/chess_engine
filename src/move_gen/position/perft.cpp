@@ -6,6 +6,7 @@
 std::ofstream output("moves.txt");
 
 uint64_t Position::perft(int depth) {
+	perft_speed++;
 	if (depth < 1)
 		return 1ULL;
 

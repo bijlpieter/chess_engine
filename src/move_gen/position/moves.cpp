@@ -146,8 +146,8 @@ Moves Position::generate_blockers() {
 		add_promotions(moves.end, to - forward_right, to);
 	}
 
-	if (state->en_peasant != NO_SQUARE) {
-		moves_bb = unpinned_pawns & PAWN_ATTACKS[state->enemy][state->en_peasant] & blocks;
+	if ((state->en_peasant != NO_SQUARE) && (blocks & (state->en_peasant - forward))) {
+		moves_bb = unpinned_pawns & PAWN_ATTACKS[state->enemy][state->en_peasant];
 		while (moves_bb) {
 			Square from = pop_lsb(moves_bb);
 			// Make sure our king is not in check after the move is played

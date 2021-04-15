@@ -117,6 +117,8 @@ public:
 	MoveCount fullMoves;
 	MoveCount halfMoves;
 	Color turn;
+
+	uint64_t perft_speed = 0;
 };
 
 std::ostream& operator<<(std::ostream& os, const Position& p);
