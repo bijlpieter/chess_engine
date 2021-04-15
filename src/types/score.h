@@ -32,6 +32,7 @@ extern Score ROOK_ON_BLOCKED_PENALTY, ROOK_TRAPPED_BY_KING_PENALTY;
 //king 
 extern Score PAWN_STORM_BLOCKED_FILE_PENALTY[NUM_FILES];
 extern Score PAWN_STORM_UNBLOCKED_FILE_PENALTY[NUM_FILES];
+extern Score KING_PAWN_DISTANCE_SCORE[7];
 extern Score KING_ON_OPEN_FILE_PENALTY;
 
 inline Score operator+(Score a, Score b) { return Score((a.middle_game + b.middle_game),(a.end_game + b.end_game));}

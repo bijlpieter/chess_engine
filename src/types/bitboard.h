@@ -29,7 +29,7 @@ extern Bitboard WHITE_RIGHT_FIANCHETTO;
 extern Bitboard BLACK_LEFT_FIANCHETTO;
 extern Bitboard BLACK_RIGHT_FIANCHETTO;
 
-extern uint8_t SQUARE_DISTANCE[NUM_SQUARES][NUM_SQUARES];
+extern int SQUARE_DISTANCE[NUM_SQUARES][NUM_SQUARES];
 
 inline Bitboard bb_ray(Square from, Square to) {
 	return BB_RAYS[from][to];

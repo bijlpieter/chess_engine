@@ -231,10 +231,21 @@ Score Position::pawn_storm_safety(){
 }
 Score Position::king_score(){
 	Score total(0,0);
+	//if pawns/king has moved.{pawnstorm}
 	total += pawn_storm_safety();
 	if (is_open_file(info.c,file(info.king_square))){
 		total -= KING_ON_OPEN_FILE_PENALTY;
 	}
+	Bitboard pawns = pieces[info.c][PAWN];
+	int pawn_dist = 6;
+	if (pawns & king_moves(info.king_square)){
+		pawn_dist = 1;
+	}
+	else while(pawns){
+		pawn_dist = std::min(pawn_dist, SQUARE_DISTANCE[info.king_square][pop_lsb(pawns)]);
+	}
+	total += KING_PAWN_DISTANCE_SCORE[pawn_dist];
+
 	return total;
 
 }
