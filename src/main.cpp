@@ -26,8 +26,9 @@ int main() {
 	// PositionInfo info2 = {0};
 	Position pos = Position(&info, test_fen);
 	std::cout << pos << std::endl;
-	Score test = pos.calculate_score(WHITE);
-	std::cout << test;
+	Score test = pos.calculate_score();
+	std::cout << test << std::endl;
+	std::cout << "FINISHED.";
 	// pos.play_move(move_init(H1, F1), &info2);
 	// std::cout << pos << std::endl;
 	// std::cout << "Castling: " << int(pos.state->castling) << std::endl;

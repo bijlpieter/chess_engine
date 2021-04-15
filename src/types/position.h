@@ -27,17 +27,17 @@ struct PositionInfo {
 };
 
 struct EvalInfo {
-	Color c;
-	Rank promotion_rank;
-	Rank opp_promotion_rank;
-    Square king_square;
-	Square opp_king_square;
-    Bitboard defended_squares;
-    Bitboard king_area[NUM_COLORS];
-    Bitboard mobility;
-	Bitboard blocked_pawns;
-	Bitboard enemy_pawn_control;
-	Direction push_direction;
+	Rank promotion_rank[NUM_COLORS] = {RANK_8,RANK_1};
+	Direction push_direction[NUM_COLORS] = {UP, DOWN};
+	Direction left_pawn_attack[NUM_COLORS] = {UP_LEFT, DOWN_LEFT};
+	Direction right_pawn_attack[NUM_COLORS] = {DOWN_LEFT, DOWN_RIGHT};
+	Bitboard king_area[NUM_COLORS];
+    Square king_squares[NUM_COLORS];
+	Bitboard controlled_by[NUM_COLORS][NUM_PIECE_TYPES] = {0};
+	Bitboard controlled_twice[NUM_COLORS] = {0};
+    Bitboard controlled_squares[NUM_COLORS] = {0};
+    Bitboard mobility[NUM_COLORS];
+	Bitboard blocked_pawns[NUM_COLORS];
 };
 
 class Position {
@@ -86,23 +86,24 @@ public:
 	Bitboard legal_queen_moves() const;
 
 	// Evaluation functions
-	Score knight_score();
-	Score bishop_score();
-	Score rook_score();
-	Score queen_score();
-	Score king_score();
-	Score pawn_score();
+	Score knight_score(Color c);
+	Score bishop_score(Color c);
+	Score rook_score(Color c);
+	Score queen_score(Color c);
+	Score king_score(Color c);
+	Score pawn_score(Color c);
 	Score control_score();
 	Score calculate_material();
 	Phase calculate_phase();
-	Score calculate_score(Color c);
-	Score pawn_storm_safety();
+	Score calculate_score();
+	Score pawn_storm_safety(Color c);
 	Square farmost_square(Color c, Bitboard b);
 	bool is_open_file(Color c, File f);
 	bool is_outpost(Color c, Square s);
-	void eval_init(Color c);
+	void eval_init();
 	int queen_pin_count(Color opp, Square q);
 	Rank relevant_rank(Color c, Rank r);
+	Bitboard get_pseudo_legal_moves(PieceType p, Color c, Square s);
 
 	void info_init();
 
