@@ -233,7 +233,7 @@ Score Position::queen_score(Color c){
 Score Position::pawn_storm_safety(Color c){
 	Score total(0,0);
 	int opp_next_rank = c == WHITE ? -1 : 1;
-	Rank r = rank(info.king_squares[c]);
+	Rank r = rank(info.king_squares[~c]);
 	// these ranks are in front of the enemy king.
 	Bitboard excluded_ranks = BB_RANKS[r + opp_next_rank] | BB_RANKS[r + opp_next_rank + opp_next_rank];
 	Bitboard pawns = pieces[c][PAWN] & ~info.controlled_by[~c][PAWN] & ~excluded_ranks;
@@ -249,10 +249,13 @@ Score Position::pawn_storm_safety(Color c){
 		int att_rank = temp ? relevant_rank(c, rank(farmost_square(~c, temp))) : 0;
 		if (def_rank && (def_rank == att_rank - 1)){
 			total += PAWN_STORM_BLOCKED_FILE_PENALTY[att_rank];
+			//std::cout << "BLOCKED! COLOR: " << c <<" def_rank: " << def_rank << " att_rank: " << att_rank << std::endl;
+			
 		}
 		// no need to check if(att_rank);
 		else{
 			total += PAWN_STORM_UNBLOCKED_FILE_PENALTY[att_rank];
+			//std::cout << "UNBLOCKED! COLOR: " << c <<" def_rank: " << def_rank << " att_rank: " << att_rank << std::endl;
 		}
 	}
 	return total;
@@ -273,7 +276,6 @@ Score Position::king_score(Color c){
 		pawn_dist = std::min(pawn_dist, SQUARE_DISTANCE[info.king_squares[c]][pop_lsb(pawns)]);
 	}
 	total += KING_PAWN_DISTANCE_SCORE[pawn_dist];
-
 	return total;
 
 }
@@ -307,14 +309,15 @@ Score Position::calculate_material(){
 	total += rook_score(WHITE) - knight_score(BLACK);
 	total += queen_score(WHITE) - queen_score(BLACK);
 	total += king_score(WHITE) - king_score(BLACK);
+	/*
 	std::cout << "-----------------Score-Debug-----------------" << std::endl;
-	std::cout << "knight(W): " << knight_score(WHITE) << "knight(B): " << knight_score(BLACK) << std::endl;
-	std::cout << "bishop(W): " << bishop_score(WHITE) << "bishop(B): " << bishop_score(BLACK) << std::endl;
-	std::cout << "rook(W): " << rook_score(WHITE) << "rook(B): " << rook_score(BLACK) << std::endl;
-	std::cout << "queen(W): " << queen_score(WHITE) << "queen(B): " << queen_score(BLACK) << std::endl;
-	std::cout << "king(W): " << king_score(WHITE) << "king(B): " << king_score(BLACK) << std::endl;
+	std::cout << "knight(W): " << knight_score(WHITE) << " knight(B): " << knight_score(BLACK) << std::endl;
+	std::cout << "bishop(W): " << bishop_score(WHITE) << " bishop(B): " << bishop_score(BLACK) << std::endl;
+	std::cout << "rook(W): " << rook_score(WHITE) << " rook(B): " << rook_score(BLACK) << std::endl;
+	std::cout << "queen(W): " << queen_score(WHITE) << " queen(B): " << queen_score(BLACK) << std::endl;
+	std::cout << "king(W): " << king_score(WHITE) << " king(B): " << king_score(BLACK) << std::endl;
 	std::cout << "---------------------------------------------" << std::endl;
-	
+	*/
 	return total;
 }
 Score Position::calculate_score() {

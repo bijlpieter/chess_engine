@@ -35,6 +35,6 @@ Score PAWN_STORM_UNBLOCKED_FILE_PENALTY[NUM_FILES] = {S(0,0), S(0,0), S(30, 30),
 Score KING_ON_OPEN_FILE_PENALTY = S(50,0);
 Score KING_PAWN_DISTANCE_SCORE[7] = {S(0,0), S(0,50) ,S(0,40), S(0,30), S(0,0), S(0,-20), S(0,-50)};
 std::ostream& operator<<(std::ostream& os, const Score& s) {
-    os << "M-S: " << s.middle_game << " E-S: " << s.end_game <<std::endl;
+    os << "[Mid(" << s.middle_game << ") End(" << s.end_game << ")]";
 	return os;
 }
