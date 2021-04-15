@@ -33,6 +33,7 @@ struct EvalInfo {
 	Direction right_pawn_attack[NUM_COLORS] = {DOWN_LEFT, DOWN_RIGHT};
 	Bitboard king_area[NUM_COLORS];
     Square king_squares[NUM_COLORS];
+	Bitboard pinned[NUM_COLORS] = {0};
 	Bitboard controlled_by[NUM_COLORS][NUM_PIECE_TYPES] = {0};
 	Bitboard controlled_twice[NUM_COLORS] = {0};
     Bitboard controlled_squares[NUM_COLORS] = {0};

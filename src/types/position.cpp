@@ -118,7 +118,7 @@ bool validateFEN(std::string fen) {
 		std::cout << "FEN must contain exactly one white and one black king" << std::endl;
 		return false;
 	}
-	std::cout << "Valid FEN."<< std::endl;
+	//std::cout << "Valid FEN."<< std::endl;
 	return true;
 }
 

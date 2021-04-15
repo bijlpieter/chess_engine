@@ -47,5 +47,10 @@ inline Score operator/(int a, Score b) { return Score((b.middle_game / a),(b.end
 inline Score& operator+=(Score& a, Score b) { return a = Score((a.middle_game + b.middle_game),(a.end_game + b.end_game));}
 inline Score& operator-=(Score& a, Score b) { return a = Score((a.middle_game - b.middle_game),(a.end_game - b.end_game));}
 
+
+inline bool operator==(const Score& a, const Score& b) { return a.middle_game == b.middle_game;}
+inline bool operator>(const Score& a, const Score& b) { return a.middle_game > b.middle_game;}
+inline bool operator<(const Score& a, const Score& b) { return a.middle_game < b.middle_game;}
+
 std::ostream& operator<<(std::ostream& os, const Score& s);
 #endif

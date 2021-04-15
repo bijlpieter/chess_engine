@@ -24,7 +24,6 @@ Bitboard Position::get_pseudo_legal_moves(PieceType p, Color c, Square s){
 		case KING:
 			return king_moves(s);
 		default:
-			std::cout << "in get_pseudo_legal_moves piece type was not PAWN KNIGHT BISHOP ROOK QUEEN OR KING!";
 			return 0;
 	}
 }
@@ -41,7 +40,7 @@ int Position::queen_pin_count(Color opp, Square q){
 }
 bool Position::is_outpost(Color c, Square s) {
 	//on outpost square
-	if (popcount(s & OUTPOSTS[c]) > 0) {
+	if (popcount(OUTPOSTS[c] & s) == 0) {
 		return false;
 	}
 	//defended by pawn;
@@ -92,7 +91,7 @@ Score Position::knight_score(Color c) {
 	while (knights) {
 		Square knight = pop_lsb(knights);
 		total -= KNIGHT_KING_DISTANCE_PENALTY * SQUARE_DISTANCE[knight][info.king_squares[c]];
-		if (knight & shift(pieces[c][PAWN], DOWN)){
+		if (shift(pieces[c][PAWN], DOWN) & knight){
 			total += KNIGHT_SHIELDED_SCORE;
 		}
 		if (is_outpost(c, knight)) {
@@ -119,7 +118,7 @@ Score Position::bishop_score(Color c) {
 		Square bishop = pop_lsb(bishops);
 		total -= BISHOP_KING_DISTANCE_PENALTY * SQUARE_DISTANCE[bishop][info.king_squares[c]];
 		total -= BISHOP_XRAY_PAWN_PENALTY * (info.controlled_by[c][BISHOP] & pieces[~c][PAWN]);
-		if (bishop & shift(pieces[c][PAWN],DOWN)){
+		if (shift(pieces[c][PAWN],DOWN) & bishop){
 			total += BISHOP_SHIELDED_SCORE;
 		}
 		if (bishop_moves(bishop, pieces[c][PAWN]) & KING_AREA[info.king_squares[~c]]){
@@ -285,11 +284,11 @@ void Position::eval_init(){
 		info.king_area[c] = KING_AREA[info.king_squares[c]];
 		info.blocked_pawns[c] = pieces[c][PAWN] & shift(all_pieces, DOWN);
 		for (PieceType p : {PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING}){
-			if (pieces[p][c]){
-				Bitboard all = pieces[p][c];
+			if (pieces[c][p]){
+				Bitboard all = pieces[c][p];
 				while (all){
 					Square s = pop_lsb(all);
-					Bitboard moves = get_pseudo_legal_moves(p,c,s);
+					Bitboard moves = get_pseudo_legal_moves(p, c, s);
 					info.controlled_twice[c] |= info.controlled_squares[c] & moves;
 					info.controlled_by[c][p] |= moves;
 					info.controlled_squares[c] |= moves;
@@ -297,8 +296,9 @@ void Position::eval_init(){
 			}
 		}
 	}
+	//todo | pinned pieces
 	for (Color c : {WHITE,BLACK}){
-		info.mobility[c] = ~(info.blocked_pawns[c] | info.king_squares[c] | pieces[c][QUEEN] | state->pinned | info.controlled_by[~c][PAWN]);
+		info.mobility[c] = ~(info.blocked_pawns[c] | info.king_squares[c] | pieces[c][QUEEN] | info.controlled_by[~c][PAWN]);
 	}
     
 }

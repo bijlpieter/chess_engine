@@ -63,7 +63,7 @@ void bb_init() {
 		}
 	}
 
-	//The Chebyshev distance & king_ring
+	//The Chebyshev distance
 	for (Square s1 = A1; s1 <= H8; s1++){
 		for (Square s2 = A1; s2 <= H8; s2++){
 			SQUARE_DISTANCE[s1][s2] = std::max(std::abs(file(s1) - file(s2)), std::abs(rank(s1) - rank(s2)));
