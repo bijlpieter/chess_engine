@@ -203,10 +203,12 @@ Score Position::rook_score(Color c) {
 		else if (info.blocked_pawns[c] & f){
 			total -= ROOK_ON_BLOCKED_PENALTY;
 		}
-		if (r == info.promotion_rank[~c] && rank(info.king_squares[c]) == info.promotion_rank[~c]){
-			File kf = file(info.king_squares[c]);
-			if ((kf < FILE_E && kf > f) || (kf > FILE_E && kf < f)){
-				total -= ROOK_TRAPPED_BY_KING_PENALTY;
+		if (popcount(rook_moves(rook,all_pieces)) < 5){
+			if (r == info.promotion_rank[~c] && rank(info.king_squares[c]) == info.promotion_rank[~c]){
+				File kf = file(info.king_squares[c]);
+				if ((kf < FILE_E && kf > f) || (kf > FILE_E && kf < f)){
+					total -= ROOK_TRAPPED_BY_KING_PENALTY;
+				}
 			}
 		}
 	}
