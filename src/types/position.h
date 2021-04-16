@@ -30,7 +30,7 @@ struct EvalInfo {
 	Rank promotion_rank[NUM_COLORS] = {RANK_8,RANK_1};
 	Direction push_direction[NUM_COLORS] = {UP, DOWN};
 	Direction left_pawn_attack[NUM_COLORS] = {UP_LEFT, DOWN_LEFT};
-	Direction right_pawn_attack[NUM_COLORS] = {DOWN_LEFT, DOWN_RIGHT};
+	Direction right_pawn_attack[NUM_COLORS] = {UP_RIGHT, DOWN_RIGHT};
 	Bitboard king_area[NUM_COLORS];
     Square king_squares[NUM_COLORS];
 	Bitboard pinned[NUM_COLORS] = {0};

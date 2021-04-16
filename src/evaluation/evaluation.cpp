@@ -12,7 +12,8 @@ Phase Position::calculate_phase() {
 Bitboard Position::get_pseudo_legal_moves(PieceType p, Color c, Square s){
 	switch (p){
 		case PAWN:
-			return (shift(pieces[c][PAWN], info.left_pawn_attack[c]) | shift(pieces[c][PAWN],info.right_pawn_attack[c]));
+			std::cout << bb_string(shift(BB_SQUARES[s], info.left_pawn_attack[c]) | shift(BB_SQUARES[s], info.right_pawn_attack[c])) <<std::endl;
+			return (shift(BB_SQUARES[s], info.left_pawn_attack[c]) | shift(BB_SQUARES[s], info.right_pawn_attack[c]));
 		case KNIGHT:
 			return knight_moves(s);
 		case BISHOP:

@@ -350,5 +350,7 @@ int main(){
     //test_fen += " w KQkq - 0 1";
     init();
     test_calculate_material();
+    Position test = pos_fen("7k/8/8/8/8/8/3P1P2/K7 w KQkq - 0 1");
+    std::cout << bb_string(test.info.controlled_twice[WHITE]) <<std::endl;
     return 0;
 }
