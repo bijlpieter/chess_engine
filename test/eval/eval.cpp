@@ -34,14 +34,14 @@ void test_calculate_material(){
     else{
         r = "FAILED\n";
     }
-    std::cout << "Dectecting fake outposts: " + r;
+    std::cout << "[Dectecting fake outposts] " + r;
     if (real_1.is_outpost(WHITE,c4) && real_2.is_outpost(WHITE,c4) && real_3.is_outpost(WHITE,c7)){
         r = "PASSED 3/3\n";
     }
     else{
         r = "FAILED\n";
     }
-    std::cout << "Dectecting real outposts: " + r;
+    std::cout << "[Dectecting real outposts] " + r;
     std::cout << "------------------MOBILITY------------------" << std::endl;
     Bitboard all_mobility = ~0;
     Position only_king = pos_fen("4k3/8/8/8/8/8/8/4K3 w KQkq - 0 1");
@@ -50,15 +50,15 @@ void test_calculate_material(){
     Position king_and_unpinned = pos_fen("4k3/8/8/5bnr/5BNR/8/PPPPPPPP/3K4 w KQkq - 0 1");
     Position king_and_pinned = pos_fen("4k3/8/8/b7/8/8/3R4/4K3 w KQkq - 0 1");
     r = (popcount(all_mobility) > popcount(only_king.info.mobility[WHITE])) ? "PASSED\n" : "FAILED\n";
-    std::cout << "Friendly King restricts mobility: " + r;
+    std::cout << "[Friendly King restricts mobility] " + r;
     r = (popcount(only_king.info.mobility[WHITE]) > popcount(king_queen.info.mobility[WHITE])) ? "PASSED\n" : "FAILED\n";
-    std::cout << "Friendly Queen restricts mobility: " + r;
+    std::cout << "[Friendly Queen restricts mobility] " + r;
     r = (popcount(only_king.info.mobility[WHITE]) > popcount(king_and_enemy_pawns.info.mobility[WHITE])) ? "PASSED\n" : "FAILED\n";
-    std::cout << "Enemy pawns restricts mobility(by controlling squares): " + r;
+    std::cout << "[Enemy pawns restricts mobility(by controlling squares)]  " + r;
     r = (popcount(only_king.info.mobility[WHITE]) == popcount(king_and_unpinned.info.mobility[WHITE])) ? "PASSED\n" : "FAILED\n";
-    std::cout << "Unpinned pieces(excluding queens/kings & enemy pawns) do not hinder mobility : " + r;
+    std::cout << "[Unpinned pieces(excluding queens/kings & enemy pawns) do not hinder mobility] " + r;
     r = (popcount(only_king.info.mobility[WHITE]) > popcount(king_and_pinned.info.mobility[WHITE])) ? "PASSED\n" : "FAILED\n";
-    std::cout << "Pinned pieces hinder mobility : " + r;
+    std::cout << "[Pinned pieces hinder mobility] " + r;
 
     //knights
     std::cout << "------------------KNIGHTS------------------" << std::endl;
@@ -75,19 +75,19 @@ void test_calculate_material(){
     Score white_close_knight = white_knight_c4_close_to_king.knight_score(WHITE);
     Score white_knight_defended = white_knight_c4_defended.knight_score(WHITE);
     r = (white_knight > empty_score) ? "PASSED\n" : "FAILED\n";
-    std::cout << "White Knight > empty: " + r;
+    std::cout << "[White Knight > empty] " + r;
     r = (black_knight > empty_score) ? "PASSED\n" : "FAILED\n";
-    std::cout << "Black Knight > empty: " + r;
+    std::cout << "[Black Knight > empty] " + r;
     r = (white_knight == black_knight) ? "PASSED\n" : "FAILED\n"; 
-    std::cout << "White == Black: " + r;
+    std::cout << "[White == Black] " + r;
     r = (white_outpost_knight > white_knight) ? "PASSED\n" : "FAILED\n";
-    std::cout << "Outpost > No Outpost: " + r;
+    std::cout << "[Outpost > No Outpost] " + r;
     r = (white_knight_defended > white_knight) ? "PASSED\n" : "FAILED\n";
-    std::cout << "Defended > Not defended: " + r;
+    std::cout << "[Defended > Not defended] " + r;
     r = (white_shielded_knight > white_knight) ? "PASSED\n" : "FAILED\n";
-    std::cout << "Shielded > Not Shielded: " + r;
+    std::cout << "[Shielded > Not Shielded] " + r;
     r = (white_close_knight > white_knight) ? "PASSED\n" : "FAILED\n";
-    std::cout << "Knight closer to king > Knight farther from king: " + r;
+    std::cout << "[Knight closer to king > Knight farther from king] " + r;
     //bishops
     std::cout << "------------------BISHOPS------------------" << std::endl;
     Position white_bishop_c4 = pos_fen("4k3/8/8/8/2B5/8/8/4K3 w KQkq - 0 1");
@@ -96,26 +96,48 @@ void test_calculate_material(){
     Position white_bishop_c4_shielded = pos_fen("4k3/8/8/2P5/2B5/8/8/4K3 w KQkq - 0 1");
     Position white_bishop_c4_close_to_king = pos_fen("4k3/8/8/8/2B5/2K5/8/8 w KQkq - 0 1");
     Position white_bishop_c4_defended = pos_fen("4k3/8/8/8/2B5/4N3/8/4K3 w KQkq - 0 1");
+    //complementing bishops (same mobility)
+    Position white_bishop_same_col = pos_fen("4k1B1/8/8/8/8/8/8/1B2K3 w KQkq - 0 1");
+    Position white_bishop_dif_col = pos_fen("1B2k3/8/8/8/8/8/8/1B2K3 w KQkq - 0 1");
+    //xraying enemy pawns. Note that mobility is only restricted for other pieces in terms of pawn attacks not pawns themselves
+    Position white_bishop_c4_xray_enemy_pawn = pos_fen("4k3/5p2/8/8/2B5/8/8/4K3 w KQkq - 0 1");
+    Position white_bishop_c4_xray_enemy_pawns = pos_fen("4k1p1/5p2/4p3/8/2B5/8/8/4K3 w KQkq - 0 1");
+
     Score white_bishop = white_bishop_c4.bishop_score(WHITE);
     Score black_bishop = black_bishop_c5.bishop_score(BLACK);
     Score white_outpost_bishop = white_bishop_c4_outpost.bishop_score(WHITE);
     Score white_shielded_bishop = white_bishop_c4_shielded.bishop_score(WHITE);
     Score white_close_bishop = white_bishop_c4_close_to_king.bishop_score(WHITE);
     Score white_bishop_defended = white_bishop_c4_defended.bishop_score(WHITE);
+
+    Score white_bishop_notcomplementing = white_bishop_same_col.bishop_score(WHITE);
+    Score white_bishop_complementing = white_bishop_dif_col.bishop_score(WHITE);
+
+    Score white_bishop_xray_single = white_bishop_c4_xray_enemy_pawn.bishop_score(WHITE);
+    Score white_bishop_xray_multiple = white_bishop_c4_xray_enemy_pawns.bishop_score(WHITE);
+
     r = (white_bishop > empty_score) ? "PASSED\n" : "FAILED\n";
-    std::cout << "White Bishop > empty: " + r;
+    std::cout << "[White Bishop > empty] " + r;
     r = (black_bishop > empty_score) ? "PASSED\n" : "FAILED\n";
-    std::cout << "Black Bishop > empty: " + r;
+    std::cout << "[Black Bishop > empty] " + r;
     r = (white_bishop == black_bishop) ? "PASSED\n" : "FAILED\n"; 
-    std::cout << "White == Black: " + r;
+    std::cout << "[White == Black] " + r;
     r = (white_bishop_defended > white_bishop) ? "PASSED\n" : "FAILED\n";
-    std::cout << "Defended > Not defended: " + r;
+    std::cout << "[Defended > Not defended] " + r;
     r = (white_outpost_bishop > white_bishop) ? "PASSED\n" : "FAILED\n";
-    std::cout << "Outpost > No Outpost: " + r;
+    std::cout << "[Outpost > No Outpost] " + r;
     r = (white_shielded_bishop > white_bishop) ? "PASSED\n" : "FAILED\n";
-    std::cout << "Shielded > Not Shielded: " + r;
+    std::cout << "[Shielded > Not Shielded] " + r;
     r = (white_close_bishop > white_bishop) ? "PASSED\n" : "FAILED\n";
-    std::cout << "bishop closer to king > bishop farther from king: " + r;
+    std::cout << "[Bishop closer to king > bishop farther from king] " + r;
+    r = (white_bishop_complementing > white_bishop_notcomplementing) ? "PASSED\n" : "FAILED\n";
+    std::cout << "[Complementing bishops > not complementing bishops (same mobility)] " + r;
+    r = (white_bishop_xray_single < white_bishop) ? "PASSED\n" : "FAILED\n";
+    std::cout << "[Xraying enemy pawn < not] " + r;
+    r = (white_bishop_xray_multiple < white_bishop_xray_single) ? "PASSED\n" : "FAILED\n";
+    std::cout << "[Xraying more enemy pawns < Xraying less enemy pawns] " + r;
+    
+
 
 } 
 
