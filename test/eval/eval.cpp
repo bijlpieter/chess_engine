@@ -17,7 +17,7 @@ void init(){
 void test_calculate_material(){
     std::string r = "";
     Score empty_score(0,0);
-    std::cout << "-----Testing Outposts-----" << std::endl;
+    std::cout << "------------------OUTPOSTS------------------" << std::endl;
     //c4 square = 26, c3 =18, c8 = 58, c7 = 50
     Position fake_1 = pos_fen("4k3/1p6/8/8/2N5/3P4/8/4K3 w KQkq - 0 1"); //c4 //leftkicker
     Position fake_2 = pos_fen("4k3/3p4/8/8/2N5/3P4/8/4K3 w KQkq - 0 1"); //c4 //rightkicker
@@ -29,52 +29,49 @@ void test_calculate_material(){
     Position real_3 = pos_fen("4k3/1pNp4/3P4/8/8/8/8/4K3 w KQkq - 0 1"); //c7 2 black pawns beside horse
     Square c3 = (Square)18, c4 = (Square)26, c7 = (Square)50, c8 = (Square)58;
     if (!fake_1.is_outpost(WHITE,c4) && !fake_2.is_outpost(WHITE,c4) && !fake_3.is_outpost(WHITE,c4) && !fake_4.is_outpost(WHITE,c3) && !fake_5.is_outpost(WHITE,c8)){
-        r = "PASSED\n";
+        r = "PASSED 5/5\n";
     }
     else{
         r = "FAILED\n";
     }
     std::cout << "Dectecting fake outposts: " + r;
     if (real_1.is_outpost(WHITE,c4) && real_2.is_outpost(WHITE,c4) && real_3.is_outpost(WHITE,c7)){
-        r = "PASSED\n";
+        r = "PASSED 3/3\n";
     }
     else{
         r = "FAILED\n";
     }
     std::cout << "Dectecting real outposts: " + r;
-    std::cout << "-----Testing Mobility-----" << std::endl;
+    std::cout << "------------------MOBILITY------------------" << std::endl;
     Bitboard all_mobility = ~0;
     Position only_king = pos_fen("4k3/8/8/8/8/8/8/4K3 w KQkq - 0 1");
+    Position king_queen = pos_fen("4k3/8/8/8/8/8/8/3QK3 w KQkq - 0 1");
+    Position king_and_enemy_pawns = pos_fen("4k3/8/8/3p4/8/8/8/4K3 w KQkq - 0 1");
+    Position king_and_unpinned = pos_fen("4k3/8/8/5bnr/5BNR/8/PPPPPPPP/3K4 w KQkq - 0 1");
+    Position king_and_pinned = pos_fen("4k3/8/8/b7/8/8/3R4/4K3 w KQkq - 0 1");
     r = (popcount(all_mobility) > popcount(only_king.info.mobility[WHITE])) ? "PASSED\n" : "FAILED\n";
     std::cout << "Friendly King restricts mobility: " + r;
-
-    Position king_queen = pos_fen("4k3/8/8/8/8/8/8/3QK3 w KQkq - 0 1");
     r = (popcount(only_king.info.mobility[WHITE]) > popcount(king_queen.info.mobility[WHITE])) ? "PASSED\n" : "FAILED\n";
     std::cout << "Friendly Queen restricts mobility: " + r;
-
-    Position king_and_enemy_pawns = pos_fen("4k3/8/8/3p4/8/8/8/4K3 w KQkq - 0 1");
     r = (popcount(only_king.info.mobility[WHITE]) > popcount(king_and_enemy_pawns.info.mobility[WHITE])) ? "PASSED\n" : "FAILED\n";
     std::cout << "Enemy pawns restricts mobility(by controlling squares): " + r;
-
-    Position king_and_unpinned = pos_fen("4k3/8/8/5bnr/5BNR/8/PPPPPPPP/3K4 w KQkq - 0 1");
     r = (popcount(only_king.info.mobility[WHITE]) == popcount(king_and_unpinned.info.mobility[WHITE])) ? "PASSED\n" : "FAILED\n";
     std::cout << "Unpinned pieces(excluding queens/kings & enemy pawns) do not hinder mobility : " + r;
-
-    Position king_and_pinned = pos_fen("4k3/8/8/b7/8/8/3R4/4K3 w KQkq - 0 1");
     r = (popcount(only_king.info.mobility[WHITE]) > popcount(king_and_pinned.info.mobility[WHITE])) ? "PASSED\n" : "FAILED\n";
     std::cout << "Pinned pieces hinder mobility : " + r;
 
     //knights
-    std::cout << "-----Testing Knights-----" << std::endl;
-    //standard
+    std::cout << "------------------KNIGHTS------------------" << std::endl;
     Position white_knight_c4 = pos_fen("4k3/8/8/8/2N5/8/8/4K3 w KQkq - 0 1");
     Position black_knight_c5 = pos_fen("4k3/8/8/2n5/8/8/8/4K3 w KQkq - 0 1");
     Position white_knight_c4_outpost = pos_fen("4k3/8/8/8/2N5/3P4/8/4K3 w KQkq - 0 1");
     Position white_knight_c4_shielded = pos_fen("4k3/8/8/2P5/2N5/8/8/4K3 w KQkq - 0 1");
+    Position white_knight_c4_close_to_king = pos_fen("4k3/8/8/8/2N5/2K5/8/8 w KQkq - 0 1");
     Score white_knight = white_knight_c4.knight_score(WHITE);
     Score black_knight = black_knight_c5.knight_score(BLACK);
     Score white_outpost = white_knight_c4_outpost.knight_score(WHITE);
     Score white_shielded = white_knight_c4_shielded.knight_score(WHITE);
+    Score white_close = white_knight_c4_close_to_king.knight_score(WHITE);
     r = (white_knight > empty_score) ? "PASSED\n" : "FAILED\n";
     std::cout << "White Knight > empty: " + r;
     r = (black_knight > empty_score) ? "PASSED\n" : "FAILED\n";
@@ -85,6 +82,8 @@ void test_calculate_material(){
     std::cout << "Outpost > No Outpost: " + r;
     r = (white_shielded > white_knight) ? "PASSED\n" : "FAILED\n";
     std::cout << "Shielded > Not Shielded: " + r;
+    r = (white_close > white_knight) ? "PASSED\n" : "FAILED\n";
+    std::cout << "Knight closer to king > Knight farther from king: " + r;
     //bishops
 
 } 

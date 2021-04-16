@@ -283,6 +283,7 @@ void Position::eval_init(){
 		info.king_squares[c] = lsb(pieces[c][KING]);
 		info.king_area[c] = KING_AREA[info.king_squares[c]];
 		info.blocked_pawns[c] = pieces[c][PAWN] & shift(all_pieces, DOWN);
+		info.pinned[c] = blockers(info.king_squares[c],c,~c);
 		for (PieceType p : {PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING}){
 			if (pieces[c][p]){
 				Bitboard all = pieces[c][p];
@@ -298,7 +299,7 @@ void Position::eval_init(){
 	}
 	//todo | pinned pieces
 	for (Color c : {WHITE,BLACK}){
-		info.mobility[c] = ~(info.blocked_pawns[c] | info.king_squares[c] | pieces[c][QUEEN] | info.controlled_by[~c][PAWN]);
+		info.mobility[c] = ~(info.blocked_pawns[c] | info.pinned[c] | info.king_squares[c] | pieces[c][QUEEN] | info.controlled_by[~c][PAWN]);
 	}
     
 }
