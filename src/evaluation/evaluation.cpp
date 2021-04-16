@@ -278,6 +278,7 @@ Score Position::king_score(Color c){
 	return total;
 
 }
+
 void Position::eval_init(){
 	for (Color c : {WHITE,BLACK}){
 		info.king_squares[c] = lsb(pieces[c][KING]);
