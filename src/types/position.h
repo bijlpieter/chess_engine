@@ -104,7 +104,7 @@ public:
 	void eval_init();
 	int queen_pin_count(Color opp, Square q);
 	Rank relevant_rank(Color c, Rank r);
-	Bitboard get_pseudo_legal_moves(PieceType p, Color c, Square s);
+	Bitboard get_pseudo_legal_moves(PieceType p, Square s);
 
 	void info_init();
 

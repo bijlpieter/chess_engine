@@ -9,11 +9,8 @@ Phase Position::calculate_phase() {
 	}
 	return (total * 256 + 12) / 12;
 }
-Bitboard Position::get_pseudo_legal_moves(PieceType p, Color c, Square s){
+Bitboard Position::get_pseudo_legal_moves(PieceType p, Square s){
 	switch (p){
-		case PAWN:
-			std::cout << bb_string(shift(BB_SQUARES[s], info.left_pawn_attack[c]) | shift(BB_SQUARES[s], info.right_pawn_attack[c])) <<std::endl;
-			return (shift(BB_SQUARES[s], info.left_pawn_attack[c]) | shift(BB_SQUARES[s], info.right_pawn_attack[c]));
 		case KNIGHT:
 			return knight_moves(s);
 		case BISHOP:
@@ -283,6 +280,20 @@ Score Position::king_score(Color c){
 }
 
 void Position::eval_init(){
+	//do this seperately to get the bitboards attacked_by_pawns_twice[c] to subtract it from king_area[c];
+	Bitboard attacked_by_pawns_twice[NUM_COLORS];
+	for (Color c : {WHITE,BLACK}){
+		Bitboard pawns = pieces[c][PAWN];
+		Bitboard left = shift(pawns, info.left_pawn_attack[c]);
+		Bitboard right = shift(pawns, info.right_pawn_attack[c]);
+		Bitboard single_att = left | right;
+		Bitboard double_att = left & right;
+		attacked_by_pawns_twice[c] = double_att;
+		info.controlled_twice[c] |=  double_att;
+		info.controlled_by[c][PAWN] |= single_att;
+		info.controlled_squares[c] |= single_att;
+	}
+	
 	for (Color c : {WHITE,BLACK}){
 		info.king_squares[c] = lsb(pieces[c][KING]);
 		info.king_area[c] = KING_AREA[info.king_squares[c]];
@@ -293,7 +304,7 @@ void Position::eval_init(){
 				Bitboard all = pieces[c][p];
 				while (all){
 					Square s = pop_lsb(all);
-					Bitboard moves = get_pseudo_legal_moves(p, c, s);
+					Bitboard moves = get_pseudo_legal_moves(p, s);
 					info.controlled_twice[c] |= info.controlled_squares[c] & moves;
 					info.controlled_by[c][p] |= moves;
 					info.controlled_squares[c] |= moves;
@@ -304,6 +315,7 @@ void Position::eval_init(){
 	//todo | pinned pieces
 	for (Color c : {WHITE,BLACK}){
 		info.mobility[c] = ~(info.blocked_pawns[c] | info.pinned[c] | info.king_squares[c] | pieces[c][QUEEN] | info.controlled_by[~c][PAWN]);
+		info.king_area[c] &= ~attacked_by_pawns_twice[c];
 	}
     
 }
