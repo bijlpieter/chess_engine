@@ -12,11 +12,6 @@ const std::string defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQ
 struct PositionInfo {
 	// Useful Bitboards and variables used through move generation and evaluation. These should all be precomputed by info_init().
 	Bitboard checkers;
-	Bitboard check_blocks;
-	Bitboard pinned;	
-	Bitboard king_unsafe;
-	Square king;
-	Color enemy;
 
 	Piece captured = NO_PIECE; // The piece that was captured last move
 	Square en_peasant;
@@ -49,23 +44,10 @@ public:
 	Square square_of(PieceType p, Color c) const;
 	Bitboard attackers_to_sq(Square s, Color c) const;
 
-	Bitboard controlling_regular(Color c) const;
-	Bitboard controlling_sliding(Color c, Bitboard occ) const;
-	Bitboard controlling(Color c, Bitboard occ) const;
-
 	Bitboard snipers_to_king(Color c, Bitboard occ = 0ULL) const;
 	Bitboard blockers(Square s, Color blocking, Color attacking) const;
 	// Bitboard pinned_pieces(Color c) const;
 	// Bitboard fossilization_pieces(Color c) const;
-
-	// Move generation if king is not in check
-	Moves generate_moves();
-
-	// Move generation if king is in check
-	Moves generate_blockers();
-
-	// Generates all moves in the position
-	Moves legal_moves();
 
 	// Function to play or unplay a move, or move a piece
 	void play_move(Move m, PositionInfo* info);
@@ -75,10 +57,6 @@ public:
 	void place_piece(Piece p, Square s);
 	void castle(Square to);
 	void uncastle(Square to);
-
-	// Functions to test move generation
-	uint64_t perft(int depth);
-	uint64_t divide(int depth);
 
 	// Get legal move bitboards for evaluation
 	Bitboard legal_knight_moves() const;
@@ -106,8 +84,6 @@ public:
 	Rank relevant_rank(Color c, Rank r);
 	Bitboard get_pseudo_legal_moves(PieceType p, Square s);
 
-	void info_init();
-
 	Piece board[NUM_SQUARES];
 	Bitboard pieces[NUM_COLORS][NUM_PIECE_TYPES] = {0};
 	// Bitboard current_legal_moves[NUM_PIECE_TYPES] = {0};
@@ -119,8 +95,6 @@ public:
 	MoveCount fullMoves;
 	MoveCount halfMoves;
 	Color turn;
-
-	uint64_t perft_speed = 0;
 };
 
 std::ostream& operator<<(std::ostream& os, const Position& p);

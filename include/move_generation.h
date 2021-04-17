@@ -4,6 +4,8 @@
 #include "../src/move_gen/bitboards/pawn_attacks.h"
 #include "../src/move_gen/bitboards/regular_piece_attacks.h"
 #include "../src/move_gen/bitboards/sliding_piece_attacks.h"
+#include "../src/move_gen/position/moves.h"
+#include "../src/move_gen/position/perft.h"
 
 void bb_moves_init();
 

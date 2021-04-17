@@ -1,4 +1,5 @@
 #include "types.h"
+#include "move_generation.h"
 #include <iostream>
 
 // Plays a move and updates all the member variables.
@@ -56,7 +57,7 @@ void Position::play_move(Move m, PositionInfo* info) {
 	}
 
 	turn = ~turn;
-	info_init();
+	state->checkers = attackers_to_sq(lsb(pieces[turn][KING]), ~turn);
 }
 
 void Position::unplay_move(Move m) {

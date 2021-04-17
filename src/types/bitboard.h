@@ -95,8 +95,8 @@ inline Bitboard operator~(File f) { return ~BB_FILES[f]; }
 inline Bitboard operator~(Square s) { return ~BB_SQUARES[s]; }
 
 
-
-inline constexpr Bitboard shift(Bitboard bb, Direction D) {
+template <Direction D>
+inline constexpr Bitboard shift(Bitboard bb) {
 	switch(D) {
 	case UP:
 		return bb << UP;

@@ -205,7 +205,7 @@ Position::Position(PositionInfo* info, std::string fen) {
 	}
 	//set all
 	all_pieces = colors[WHITE] | colors[BLACK];
-	info_init();
+	state->checkers = attackers_to_sq(lsb(pieces[turn][KING]), ~turn);
     // phase = calculate_phase();
 }
 

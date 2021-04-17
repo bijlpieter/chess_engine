@@ -8,26 +8,31 @@ Bitboard BISHOP_MASKS[NUM_SQUARES];
 Bitboard ROOK_DATABASE[102400];
 Bitboard BISHOP_DATABASE[5248];
 
-inline Bitboard ray_attacks(Square s, Direction d, Bitboard occ) {
+template <Direction D>
+inline Bitboard ray_attacks(Square s, Bitboard occ) {
 	Bitboard ray = 0;
 	Bitboard bb = BB_SQUARES[s];
-	while (!(bb & occ) && (bb = shift(bb, d)))
+	while (!(bb & occ) && (bb = shift<D>(bb)))
 		ray |= bb;
 	return ray;
 }
 
 void init_rook_masks() {
 	for (Square s = A1; s <= H8; s++) {
-		for (Direction d : RookDirections)
-			ROOK_MASKS[s] |= ray_attacks(s, d);
+		ROOK_MASKS[s] |= ray_attacks<LEFT>(s, 0);
+		ROOK_MASKS[s] |= ray_attacks<RIGHT>(s, 0);
+		ROOK_MASKS[s] |= ray_attacks<UP>(s, 0);
+		ROOK_MASKS[s] |= ray_attacks<DOWN>(s, 0);
 		ROOK_MASKS[s] &= ~(((RANK_1 | RANK_8) & ~rank(s)) | ((FILE_A | FILE_H) & ~file(s)));
 	}
 }
 
 void init_bishop_masks() {
 	for (Square s = A1; s <= H8; s++) {
-		for (Direction d : BishopDirections)
-			BISHOP_MASKS[s] |= ray_attacks(s, d);
+		BISHOP_MASKS[s] |= ray_attacks<UP_LEFT>(s, 0);
+		BISHOP_MASKS[s] |= ray_attacks<UP_RIGHT>(s, 0);
+		BISHOP_MASKS[s] |= ray_attacks<DOWN_LEFT>(s, 0);
+		BISHOP_MASKS[s] |= ray_attacks<DOWN_RIGHT>(s, 0);
 		BISHOP_MASKS[s] &= ~(RANK_1 | RANK_8 | FILE_A | FILE_H);
 	}
 }
@@ -41,8 +46,12 @@ void init_rook_moves() {
 		
 		do {
 			Bitboard attacks = 0;
-			for (Direction d : RookDirections)
-				attacks |= ray_attacks(s, d, subset);
+
+			attacks |= ray_attacks<LEFT>(s, subset);
+			attacks |= ray_attacks<RIGHT>(s, subset);
+			attacks |= ray_attacks<UP>(s, subset);
+			attacks |= ray_attacks<DOWN>(s, subset);
+
 			ROOK_MOVES[s][pext(subset, mask)] = attacks;
 			subset = (subset - mask) & mask;
 		} while (subset);
@@ -60,8 +69,12 @@ void init_bishop_moves() {
 		
 		do {
 			Bitboard attacks = 0;
-			for (Direction d : BishopDirections)
-				attacks |= ray_attacks(s, d, subset);
+
+			attacks |= ray_attacks<UP_LEFT>(s, subset);
+			attacks |= ray_attacks<UP_RIGHT>(s, subset);
+			attacks |= ray_attacks<DOWN_LEFT>(s, subset);
+			attacks |= ray_attacks<DOWN_RIGHT>(s, subset);
+
 			BISHOP_MOVES[s][pext(subset, mask)] = attacks;
 			subset = (subset - mask) & mask;
 		} while (subset);
