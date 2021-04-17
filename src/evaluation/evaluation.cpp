@@ -89,7 +89,7 @@ Score Position::knight_score(Color c) {
 	while (knights) {
 		Square knight = pop_lsb(knights);
 		total -= KNIGHT_KING_DISTANCE_PENALTY * SQUARE_DISTANCE[knight][info.king_squares[c]];
-		if (shift(pieces[c][PAWN], DOWN) & knight){
+		if (shift(pieces[c][PAWN], info.push_direction[~c]) & knight){
 			total += KNIGHT_SHIELDED_SCORE;
 		}
 		if (is_outpost(c, knight)) {
