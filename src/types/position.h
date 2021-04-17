@@ -85,22 +85,26 @@ public:
 	Bitboard legal_bishop_moves() const;
 	Bitboard legal_rook_moves() const;
 	Bitboard legal_queen_moves() const;
-
+	//Phase
+	Phase calculate_phase();
 	// Evaluation functions
 	Score knight_score(Color c);
 	Score bishop_score(Color c);
 	Score rook_score(Color c);
 	Score queen_score(Color c);
+	Score pawn_storm_safety(Color c);
 	Score king_score(Color c);
 	Score pawn_score(Color c);
-	Score control_score();
 	Score calculate_material();
-	Phase calculate_phase();
+	Score calculate_threats(Color c);
+
+	Score control_score();
 	Score calculate_score();
-	Score pawn_storm_safety(Color c);
+	
 	Square farmost_square(Color c, Bitboard b);
 	bool is_open_file(Color c, File f);
 	bool is_outpost(Color c, Square s);
+	bool more_than_one(Bitboard pieces);
 	void eval_init();
 	int queen_pin_count(Color opp, Square q);
 	Rank relevant_rank(Color c, Rank r);

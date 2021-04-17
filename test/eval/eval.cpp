@@ -345,6 +345,7 @@ int main(){
     bb_moves_init();
     bb_rays_init();
     test_calculate_material();
-    Position test = pos_fen("4k3/4P1P1/8/2PPPP2/8/8/1P1P1P1P/4K3 w KQkq - 0 1");
+    Position test = pos_fen("7k/1q6/7r/8/8/8/8/4K3 w KQkq - 0 1");
+    Score temp = test.king_score(WHITE);
     return 0;
 }

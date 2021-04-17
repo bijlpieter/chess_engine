@@ -14,11 +14,11 @@ Bitboard Position::get_pseudo_legal_moves(PieceType p, Square s){
 		case KNIGHT:
 			return knight_moves(s);
 		case BISHOP:
-			return bishop_moves(s,0);
+			return bishop_moves(s,all_pieces);
 		case ROOK:
-			return rook_moves(s,0);
+			return rook_moves(s,all_pieces);
 		case QUEEN:
-			return queen_moves(s,0);
+			return queen_moves(s,all_pieces);
 		case KING:
 			return king_moves(s);
 		default:
@@ -62,6 +62,9 @@ bool Position::is_outpost(Color c, Square s) {
 }
 bool Position::is_open_file(Color c, File f){
 	return (popcount(pieces[c][PAWN] & f) == 0);
+}
+bool Position::more_than_one(Bitboard pieces){
+	return popcount(pieces) > 1;
 }
 Rank Position::relevant_rank(Color c, Rank r){
 	return Rank(r ^ (c * 7));
@@ -276,16 +279,18 @@ Score Position::king_score(Color c){
 	}
 	total += KING_PAWN_DISTANCE_SCORE[pawn_dist];
 	//squares enemy attack, which defended by king/queen at most once.
-	Bitboard weak_squares =  info.controlled_squares[~c] & (~info.controlled_squares[c] | info.controlled_by[c][KING] | info.controlled_by[c][QUEEN]);
-	//potential squares where opponent can check.
+	Bitboard weak_squares =  info.controlled_squares[~c] &~info.controlled_twice[c] & (~info.controlled_squares[c] | info.controlled_by[c][KING] | info.controlled_by[c][QUEEN]);
+	//potential squares where opponent can check. 
+	//Square with no enemy pieces -> not attacked by us or defended by queen/king once and double attacked
 	Bitboard safe_checks_squares = ~colors[~c] & (~info.controlled_squares[c] | (weak_squares & info.controlled_twice[~c]));
 	Bitboard rook_lines = rook_moves(info.king_squares[c], all_pieces);
 	Bitboard bishop_lines = bishop_moves(info.king_squares[c], all_pieces);
 	Bitboard unsafe_checks = 0;
 	// Rook checks.
-	Bitboard enemy_rook_checks = rook_lines & info.controlled_by[~c][ROOK];
-	if (enemy_rook_checks & safe_checks_squares){
-
+	Bitboard enemy_rook_checks = rook_lines & info.controlled_by[~c][ROOK] & safe_checks_squares;
+	if (enemy_rook_checks){
+		//std::cout << "Safe Rook checks found: " <<std::endl << bb_string(enemy_rook_checks) <<std::endl;
+		total -= SAFE_CHECKS_PENALTY[more_than_one(enemy_rook_checks)][ROOK];
 	}
 	else{
 		unsafe_checks |= enemy_rook_checks;
@@ -294,12 +299,14 @@ Score Position::king_score(Color c){
 	Bitboard enemy_queen_checks = (rook_lines | bishop_lines) & info.controlled_by[~c][QUEEN] & safe_checks_squares
 	& ~(info.controlled_by[c][QUEEN] | enemy_rook_checks);
 	if (enemy_queen_checks){
-
+		//std::cout << "Safe Queen checks found: " <<std::endl << bb_string(enemy_queen_checks) <<std::endl;
+		total -= SAFE_CHECKS_PENALTY[more_than_one(enemy_queen_checks)][QUEEN];
 	}
 	// Bishop checks: queen checks > bishop checks.
 	Bitboard enemy_bishop_checks = bishop_lines & info.controlled_by[~c][BISHOP] & safe_checks_squares & ~enemy_queen_checks;
 	if (enemy_bishop_checks){
-
+		total -= SAFE_CHECKS_PENALTY[more_than_one(enemy_bishop_checks)][BISHOP];
+		//std::cout << "Safe Bishop checks found: " <<std::endl << bb_string(enemy_bishop_checks) <<std::endl;
 	}
 	else{
 		unsafe_checks |= bishop_lines & info.controlled_by[~c][BISHOP];
@@ -307,11 +314,18 @@ Score Position::king_score(Color c){
 	//Knight checks
 	Bitboard enemy_knight_checks = knight_moves(info.king_squares[c]) & info.controlled_by[~c][KNIGHT];
 	if (enemy_knight_checks & safe_checks_squares){
-
+		total -= SAFE_CHECKS_PENALTY[more_than_one(enemy_knight_checks)][KNIGHT];
+		//std::cout << "Safe Knight checks found: " <<std::endl << bb_string(enemy_knight_checks) <<std::endl;
 	}
 	else{
 		unsafe_checks |= enemy_knight_checks;
 	}
+	total -= KING_AREA_WEAK_SQUARE_PENALTY * popcount(info.king_area[c] & weak_squares);
+	total -= UNSAFE_CHECKS_PENALTY * popcount(unsafe_checks);
+	if (!(pieces[~c][QUEEN])){
+		total += KING_NO_ENEMY_QUEEN_SCORE;
+	}
+	
 	return total;
 }
 
@@ -362,17 +376,29 @@ Score Position::calculate_material(){
 	total += rook_score(WHITE) - knight_score(BLACK);
 	total += queen_score(WHITE) - queen_score(BLACK);
 	total += king_score(WHITE) - king_score(BLACK);
-	/*
-	std::cout << "-----------------Score-Debug-----------------" << std::endl;
-	std::cout << "knight(W): " << knight_score(WHITE) << " knight(B): " << knight_score(BLACK) << std::endl;
-	std::cout << "bishop(W): " << bishop_score(WHITE) << " bishop(B): " << bishop_score(BLACK) << std::endl;
-	std::cout << "rook(W): " << rook_score(WHITE) << " rook(B): " << rook_score(BLACK) << std::endl;
-	std::cout << "queen(W): " << queen_score(WHITE) << " queen(B): " << queen_score(BLACK) << std::endl;
-	std::cout << "king(W): " << king_score(WHITE) << " king(B): " << king_score(BLACK) << std::endl;
-	std::cout << "---------------------------------------------" << std::endl;
-	*/
 	return total;
 }
+Score Position::calculate_threats(Color c){
+	Score total(0,0);
+	Bitboard enemy_pieces = colors[~c] & ~pieces[~c][PAWN];
+	Bitboard safe_squares_enemy = 	(info.controlled_twice[~c] & ~info.controlled_twice[c]) | info.controlled_by[~c][PAWN];
+	Bitboard defended_enemy_pieces = enemy_pieces & safe_squares_enemy;
+	Bitboard weak_enemy_pieces = colors[~c] &~ safe_squares_enemy & info.controlled_squares[c];
+
+	if(defended_enemy_pieces | weak_enemy_pieces){
+		Bitboard attacked = (info.controlled_by[c][KNIGHT] | info.controlled_by[c][KNIGHT]) & (defended_enemy_pieces | weak_enemy_pieces);
+		while(attacked){
+			total += THREAT_MINOR_SCORE[piece_type(piece_on(pop_lsb(attacked)))];
+		}
+		attacked = weak_enemy_pieces & info.controlled_by[c][ROOK];
+		while(attacked){
+			total += THREAT_ROOK_SCORE[piece_type(piece_on(pop_lsb(attacked)))];
+		}
+
+	}
+	return total;
+}
+
 Score Position::calculate_score() {
 	eval_init();
 	Score total(0,0);
