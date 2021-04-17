@@ -275,8 +275,44 @@ Score Position::king_score(Color c){
 		pawn_dist = std::min(pawn_dist, SQUARE_DISTANCE[info.king_squares[c]][pop_lsb(pawns)]);
 	}
 	total += KING_PAWN_DISTANCE_SCORE[pawn_dist];
-	return total;
+	//squares enemy attack, which defended by king/queen at most once.
+	Bitboard weak_squares =  info.controlled_squares[~c] & (~info.controlled_squares[c] | info.controlled_by[c][KING] | info.controlled_by[c][QUEEN]);
+	//potential squares where opponent can check.
+	Bitboard safe_checks_squares = ~colors[~c] & (~info.controlled_squares[c] | (weak_squares & info.controlled_twice[~c]));
+	Bitboard rook_lines = rook_moves(info.king_squares[c], all_pieces);
+	Bitboard bishop_lines = bishop_moves(info.king_squares[c], all_pieces);
+	Bitboard unsafe_checks = 0;
+	// Rook checks.
+	Bitboard enemy_rook_checks = rook_lines & info.controlled_by[~c][ROOK];
+	if (enemy_rook_checks & safe_checks_squares){
 
+	}
+	else{
+		unsafe_checks |= enemy_rook_checks;
+	}
+	// Queen checks: rook checks > queen checks. Queen may defend queen checks->equal trade. No need for unsafe chceks. bishop/rook will find all of those.
+	Bitboard enemy_queen_checks = (rook_lines | bishop_lines) & info.controlled_by[~c][QUEEN] & safe_checks_squares
+	& ~(info.controlled_by[c][QUEEN] | enemy_rook_checks);
+	if (enemy_queen_checks){
+
+	}
+	// Bishop checks: queen checks > bishop checks.
+	Bitboard enemy_bishop_checks = bishop_lines & info.controlled_by[~c][BISHOP] & safe_checks_squares & ~enemy_queen_checks;
+	if (enemy_bishop_checks){
+
+	}
+	else{
+		unsafe_checks |= bishop_lines & info.controlled_by[~c][BISHOP];
+	}
+	//Knight checks
+	Bitboard enemy_knight_checks = knight_moves(info.king_squares[c]) & info.controlled_by[~c][KNIGHT];
+	if (enemy_knight_checks & safe_checks_squares){
+
+	}
+	else{
+		unsafe_checks |= enemy_knight_checks;
+	}
+	return total;
 }
 
 void Position::eval_init(){
