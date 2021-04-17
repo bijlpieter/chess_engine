@@ -346,6 +346,5 @@ int main(){
     bb_rays_init();
     test_calculate_material();
     Position test = pos_fen("4k3/4P1P1/8/2PPPP2/8/8/1P1P1P1P/4K3 w KQkq - 0 1");
-    std::cout << bb_string(test.info.controlled_twice[WHITE]) <<std::endl;
     return 0;
 }
