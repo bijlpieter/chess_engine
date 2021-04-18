@@ -28,6 +28,7 @@ struct PositionInfo {
 
 struct EvalInfo {
 	Rank promotion_rank[NUM_COLORS] = {RANK_8,RANK_1};
+	Rank third_rank[NUM_COLORS] = {RANK_3,RANK_6};
 	Direction push_direction[NUM_COLORS] = {UP, DOWN};
 	Direction left_pawn_attack[NUM_COLORS] = {UP_LEFT, DOWN_LEFT};
 	Direction right_pawn_attack[NUM_COLORS] = {UP_RIGHT, DOWN_RIGHT};
@@ -85,6 +86,8 @@ public:
 	Bitboard legal_bishop_moves() const;
 	Bitboard legal_rook_moves() const;
 	Bitboard legal_queen_moves() const;
+
+	Bitboard get_pawn_moves(Bitboard pawns, Color c);
 	//Phase
 	Phase calculate_phase();
 	// Evaluation functions
@@ -97,7 +100,7 @@ public:
 	Score pawn_score(Color c);
 	Score calculate_material();
 	Score calculate_threats(Color c);
-
+	
 	Score control_score();
 	Score calculate_score();
 	

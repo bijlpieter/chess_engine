@@ -41,9 +41,13 @@ extern Score KING_ON_OPEN_FILE_PENALTY;
 extern Score KING_AREA_WEAK_SQUARE_PENALTY;
 extern Score KING_NO_ENEMY_QUEEN_SCORE;
 //threats
-Score THREAT_MINOR_SCORE[NUM_PIECE_TYPES];
-Score THREAT_ROOK_SCORE[NUM_PIECE_TYPES];
-Score THREAT_KING_SCORE;
+extern Score THREAT_MINOR_SCORE[NUM_PIECE_TYPES];
+extern Score THREAT_ROOK_SCORE[NUM_PIECE_TYPES];
+extern Score THREAT_KING_SCORE;
+extern Score THREAT_HANGING_PIECE_SCORE;
+extern Score THREAT_CONTROLLED_SQUARE_SCORE;
+extern Score THREAT_SAFE_PAWN_ATTACK;
+extern Score THREAT_PAWN_PUSH_ATTACK;
 
 inline Score operator+(Score a, Score b) { return Score((a.middle_game + b.middle_game),(a.end_game + b.end_game));}
 inline Score operator-(Score a, Score b) { return Score((a.middle_game - b.middle_game),(a.end_game - b.end_game));}

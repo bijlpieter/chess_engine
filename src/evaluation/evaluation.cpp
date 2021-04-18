@@ -25,6 +25,9 @@ Bitboard Position::get_pseudo_legal_moves(PieceType p, Square s){
 			return 0;
 	}
 }
+Bitboard Position::get_pawn_moves(Bitboard pawns, Color c){
+	return shift(pawns, info.left_pawn_attack[c]) | shift(pawns, info.right_pawn_attack[c]);
+}
 int Position::queen_pin_count(Color opp, Square q){
 	int pinned = 0;
 	Bitboard snipers = (rook_moves(q, 0) & (pieces[opp][ROOK] | pieces[opp][QUEEN])) | (bishop_moves(q, 0) & (pieces[opp][BISHOP] | pieces[opp][QUEEN]));
@@ -384,7 +387,6 @@ Score Position::calculate_threats(Color c){
 	Bitboard safe_squares_enemy = 	(info.controlled_twice[~c] & ~info.controlled_twice[c]) | info.controlled_by[~c][PAWN];
 	Bitboard defended_enemy_pieces = enemy_pieces & safe_squares_enemy;
 	Bitboard weak_enemy_pieces = colors[~c] &~ safe_squares_enemy & info.controlled_squares[c];
-
 	if(defended_enemy_pieces | weak_enemy_pieces){
 		Bitboard attacked = (info.controlled_by[c][KNIGHT] | info.controlled_by[c][KNIGHT]) & (defended_enemy_pieces | weak_enemy_pieces);
 		while(attacked){
@@ -394,8 +396,24 @@ Score Position::calculate_threats(Color c){
 		while(attacked){
 			total += THREAT_ROOK_SCORE[piece_type(piece_on(pop_lsb(attacked)))];
 		}
-
+		if(weak_enemy_pieces &info.controlled_by[c][KING]){
+			total += THREAT_KING_SCORE;
+		}
+		Bitboard free_juicers = ~info.controlled_squares[~c] | (enemy_pieces & info.controlled_twice[c]);
+		total +=  THREAT_HANGING_PIECE_SCORE * popcount(free_juicers & weak_enemy_pieces);
 	}
+	Bitboard controlled_juicers = info.controlled_squares[~c] & ~safe_squares_enemy & info.controlled_squares[c]; 
+	total +=  THREAT_CONTROLLED_SQUARE_SCORE * popcount(controlled_juicers);
+	Bitboard safe_squares_us = ~info.controlled_squares[~c] | info.controlled_squares[c];
+	Bitboard pawns = pieces[c][PAWN] & safe_squares_us;
+	Bitboard pawn_targets = get_pawn_moves(pawns,c) & enemy_pieces;
+	total += THREAT_SAFE_PAWN_ATTACK * popcount(pawn_targets);
+	//push squares
+	pawns = shift(pieces[c][PAWN], info.push_direction[c]) & ~all_pieces;
+	pawns |= (pawns & info.third_rank[c]) &~all_pieces;
+	pawns &= ~info.controlled_by[~c][PAWN] & safe_squares_us;
+	pawn_targets = get_pawn_moves(pawns,c) & enemy_pieces;
+	total += THREAT_PAWN_PUSH_ATTACK * popcount(pawn_targets);
 	return total;
 }
 
