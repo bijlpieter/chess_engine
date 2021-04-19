@@ -345,7 +345,10 @@ int main(){
     bb_moves_init();
     bb_rays_init();
     test_calculate_material();
-    Position test = pos_fen("7k/1q6/7r/8/8/8/8/4K3 w KQkq - 0 1");
-    Score temp = test.king_score(WHITE);
+    Position test = pos_fen("r1bqkbnr/pppppppp/8/1n1n1r1p/n1b1qr2/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    std::cout << test << std::endl;
+    Score temp = test.calculate_threats(WHITE);
+    std::cout << temp << std::endl;
+    
     return 0;
 }

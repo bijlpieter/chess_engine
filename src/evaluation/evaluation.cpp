@@ -413,6 +413,7 @@ Score Position::calculate_threats(Color c){
 	pawns |= (pawns & info.third_rank[c]) &~all_pieces;
 	pawns &= ~info.controlled_by[~c][PAWN] & safe_squares_us;
 	pawn_targets = get_pawn_moves(pawns,c) & enemy_pieces;
+	std::cout << "THREATS BY PAWN PUSH:" << std::endl << bb_string(pawn_targets) <<std::endl;
 	total += THREAT_PAWN_PUSH_ATTACK * popcount(pawn_targets);
 	return total;
 }
