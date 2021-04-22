@@ -1,5 +1,6 @@
 #include "types.h"
 #include "move_generation.h"
+#include <chrono>
 
 #include <iostream>
 #include <chrono>
@@ -119,6 +120,25 @@ bool alternative() {
 	}
 
 	return true;
+}
+void testing() {
+    PositionInfo info = {0};
+    Position pos = Position(&info);
+    auto t1 = std::chrono::high_resolution_clock::now();
+
+    for (int i = 0; i < 1000000; i++) {
+        // PositionInfo info2 = {0};
+        // pos.play_move(move_init(E2, E4), &info2);
+        // pos.unplay_move(move_init(E2, E4));
+        // pos.info_init();
+      pos.legal_moves();
+    }
+
+    auto t2 = std::chrono::high_resolution_clock::now();
+    auto sec = std::chrono::duration<double>(t2 - t1).count();
+
+    std::cout << sec << " seconds" << std::endl;
+
 }
 
 void testing() {
