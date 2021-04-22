@@ -2,6 +2,7 @@
 #include "move_generation.h"
 
 #include <iostream>
+#include <chrono>
 
 bool default_position() {
 	PositionInfo info = {0};
@@ -11,8 +12,11 @@ bool default_position() {
 
 	std::cout << "Default position: " << std::endl;
 	for (int i = 0; i < 7; i++) {
+		auto t1 = std::chrono::high_resolution_clock::now();
 		uint64_t nodes = pos.perft(i + 1);
-		std::cout << "    Depth " << i + 1 << ": " << nodes << std::endl;
+		auto t2 = std::chrono::high_resolution_clock::now();
+		auto sec = std::chrono::duration<double>(t2 - t1).count();
+		std::cout << "    Depth " << i + 1 << ": " << nodes << "    (" << sec << " sec)" << std::endl;
 		if (nodes != perft_results[i]) {
 			std::cout << "        error: expected " << perft_results[i] << std::endl;
 			return false;
@@ -117,17 +121,39 @@ bool alternative() {
 	return true;
 }
 
+void testing() {
+    PositionInfo info = {0};
+    Position pos = Position(&info);
+    auto t1 = std::chrono::high_resolution_clock::now();
+
+    for (int i = 0; i < 1000000; i++) {
+        // PositionInfo info2 = {0};
+        // pos.play_move(move_init(E2, E4), &info2);
+        // pos.unplay_move(move_init(E2, E4));
+        // pos.info_init();
+		pos.legal_moves();
+    }
+
+    auto t2 = std::chrono::high_resolution_clock::now();
+    auto sec = std::chrono::duration<double>(t2 - t1).count();
+
+    std::cout << sec << " seconds" << std::endl;
+
+}
+
 int main() {
 	bb_init();
 	bb_moves_init();
 	bb_rays_init();
 
+	// testing();
+
 	if (!default_position()) return 1;
-	if (!kiwipete()) return 1;
-	if (!en_passant()) return 1;
-	if (!weird()) return 1;
-	if (!talkchess()) return 1;
-	if (!alternative()) return 1;
+	// if (!kiwipete()) return 1;
+	// if (!en_passant()) return 1;
+	// if (!weird()) return 1;
+	// if (!talkchess()) return 1;
+	// if (!alternative()) return 1;
 
 	return 0;
 }
