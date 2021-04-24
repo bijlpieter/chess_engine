@@ -354,3 +354,24 @@ void Position::info_init() {
 	state->pinned = blockers(state->king, turn, state->enemy);
 	state->king_unsafe = controlling(state->enemy, all_pieces ^ state->king);
 }
+void Position::key_init(){
+	Bitboard all = all_pieces;
+	while(all){
+		Square s = pop_lsb(all);
+		Piece p = piece_on(s);
+		if (p != NO_PIECE){
+			state->position_key ^= zobrist.piece_square[p][s];
+		}
+		if (piece_type(p) == PAWN){
+			state->pawn_key ^= zobrist.piece_square[p][s];
+		}
+		if (state->en_peasant != NO_SQUARE){
+			state->position_key ^= zobrist.en_passant[file(state->en_peasant)];
+		}
+		if(turn == BLACK){
+			state->position_key ^= zobrist.side;
+		}
+		state->position_key ^= zobrist.castling[state->castling];
+	}
+
+}

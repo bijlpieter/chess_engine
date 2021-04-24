@@ -5,6 +5,7 @@
 #include "piece.h"
 #include "move.h"
 #include "score.h"
+#include "zobrist.h"
 
 #include <string>
 const std::string defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -24,7 +25,9 @@ struct PositionInfo {
 	Phase phase;
 
 	PositionInfo* previous;
-};
+	Key position_key;
+	Key pawn_key;
+	};
 
 struct PawnInfo {
 	Score scores[NUM_COLORS];
@@ -125,6 +128,7 @@ public:
 	Bitboard get_pseudo_legal_moves(PieceType p, Square s);
 
 	void info_init();
+	void key_init();
 
 	Piece board[NUM_SQUARES];
 	Bitboard pieces[NUM_COLORS][NUM_PIECE_TYPES] = {0};

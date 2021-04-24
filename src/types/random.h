@@ -1,5 +1,8 @@
 #ifndef _RANDOM_H_
 #define _RANDOM_H_
+
+#include <cstdint>
+
 struct Random{
     uint64_t r;
     uint64_t rand() {

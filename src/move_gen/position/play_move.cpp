@@ -7,6 +7,7 @@ void Position::play_move(Move m, PositionInfo* info) {
 	info->previous = state;
 	state = info;
 	state->en_peasant = NO_SQUARE;
+	Key k = state->position_key ^ zobrist.side;
 
 	Square from = move_from(m);
 	Square to = move_to(m);

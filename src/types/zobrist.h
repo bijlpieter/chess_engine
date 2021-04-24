@@ -1,15 +1,19 @@
 #ifndef _ZOBRIST_H_
 #define _ZOBRIST_H_
+
 #include "random.h"
+#include "board.h"
+#include "piece.h"
 typedef uint64_t Key;
+
 struct Zobrist{
-    Key piece_square[NUM_PIECE_TYPES][NUM_SQUARES];
+    Key piece_square[NUM_PIECES][NUM_SQUARES];
     Key en_passant[NUM_FILES];
     Key castling[NUM_CASTLING];
     Key side, no_pawns;
     Zobrist(){
         Random r(69420);
-        for (PieceType p : {PAWN,KNIGHT,BISHOP,ROOK,QUEEN,KING}){
+        for (int p = WHITE_PAWN; p < BLACK_KING; p++){
             for (Square s = A1; s <= H8; s++){
                 piece_square[p][s] = r.rand();
             }
@@ -24,6 +28,6 @@ struct Zobrist{
         no_pawns = r.rand();
     }
 };
-Zobrist zobrist;
+extern Zobrist zobrist;
 
 #endif

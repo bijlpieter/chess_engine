@@ -349,6 +349,7 @@ int main(){
     std::cout << test << std::endl;
     Score temp = test.calculate_threats(WHITE);
     std::cout << temp << std::endl;
+    std::cout << test.state->position_key << std::endl;
     
     return 0;
 }
