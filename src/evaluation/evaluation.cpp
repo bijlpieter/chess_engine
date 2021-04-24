@@ -328,10 +328,13 @@ Score Position::king_score(Color c){
 	if (!(pieces[~c][QUEEN])){
 		total += KING_NO_ENEMY_QUEEN_SCORE;
 	}
-	
 	return total;
 }
+Score Position::pawn_score(Color c){
+	Score total(0,0);
 
+	return total;
+}
 void Position::eval_init(){
 	//do this seperately to get the bitboards attacked_by_pawns_twice[c] to subtract it from king_area[c];
 	Bitboard attacked_by_pawns_twice[NUM_COLORS];
@@ -365,7 +368,6 @@ void Position::eval_init(){
 			}
 		}
 	}
-	//todo | pinned pieces
 	for (Color c : {WHITE,BLACK}){
 		info.mobility[c] = ~(info.blocked_pawns[c] | info.pinned[c] | info.king_squares[c] | pieces[c][QUEEN] | info.controlled_by[~c][PAWN]);
 		info.king_area[c] &= ~attacked_by_pawns_twice[c];
@@ -379,6 +381,7 @@ Score Position::calculate_material(){
 	total += rook_score(WHITE) - knight_score(BLACK);
 	total += queen_score(WHITE) - queen_score(BLACK);
 	total += king_score(WHITE) - king_score(BLACK);
+	total += pawn_score(WHITE) - pawn_score(BLACK);
 	return total;
 }
 Score Position::calculate_threats(Color c){

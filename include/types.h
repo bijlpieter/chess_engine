@@ -8,5 +8,7 @@
 #include "../src/types/move.h"
 #include "../src/types/position.h"
 #include "../src/types/score.h"
+#include "../src/types/random.h"
+#include "../src/types/zobrist.h"
 
 #endif

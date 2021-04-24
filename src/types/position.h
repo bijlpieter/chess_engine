@@ -26,12 +26,23 @@ struct PositionInfo {
 	PositionInfo* previous;
 };
 
+struct PawnInfo {
+	Score scores[NUM_COLORS];
+	Bitboard passed[NUM_COLORS];
+	Bitboard pawn_attacks[NUM_COLORS];
+	Bitboard pawn_attack_spawn[NUM_COLORS];
+	int blocked;
+
+};
+
 struct EvalInfo {
-	Rank promotion_rank[NUM_COLORS] = {RANK_8,RANK_1};
-	Rank third_rank[NUM_COLORS] = {RANK_3,RANK_6};
-	Direction push_direction[NUM_COLORS] = {UP, DOWN};
-	Direction left_pawn_attack[NUM_COLORS] = {UP_LEFT, DOWN_LEFT};
-	Direction right_pawn_attack[NUM_COLORS] = {UP_RIGHT, DOWN_RIGHT};
+	//const
+	const Rank promotion_rank[NUM_COLORS] = {RANK_8,RANK_1};
+	const Rank third_rank[NUM_COLORS] = {RANK_3,RANK_6};
+	const Direction push_direction[NUM_COLORS] = {UP, DOWN};
+	const Direction left_pawn_attack[NUM_COLORS] = {UP_LEFT, DOWN_LEFT};
+	const Direction right_pawn_attack[NUM_COLORS] = {UP_RIGHT, DOWN_RIGHT};
+
 	Bitboard king_area[NUM_COLORS];
     Square king_squares[NUM_COLORS];
 	Bitboard pinned[NUM_COLORS] = {0};
