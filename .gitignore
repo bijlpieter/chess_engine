@@ -2,3 +2,4 @@ obj/
 main
 .vscode/
 chess.tar.gz
+moves.txt
