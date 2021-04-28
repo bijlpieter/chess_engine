@@ -424,15 +424,15 @@ void Position::pawn_info_init(Color c, PawnInfo* p_info){
 }
 PawnInfo* Position::get_pawn_info(Key key){
 	PawnInfo* p;
-	// p = pawn_hash_table[key];
+	//PawnInfo* p = pawn_hash_table[key];
 	// if (kay == p->key){
 	// 	return p;
 	// }
 
 	p->key = key;
 	p->blocked = 0;
-	pawn_info_init(WHITE,p);
-	pawn_info_init(BLACK,p);
+	pawn_info_init(WHITE, p);
+	pawn_info_init(BLACK, p);
 	return p;
 }
 Score Position::pawn_score(Color c){
