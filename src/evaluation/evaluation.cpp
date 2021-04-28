@@ -25,8 +25,27 @@ Bitboard Position::get_pseudo_legal_moves(PieceType p, Square s){
 			return 0;
 	}
 }
-Bitboard Position::get_pawn_moves(Bitboard pawns, Color c){
+Bitboard Position::get_pawn_moves(Color c, Bitboard pawns){
 	return shift(pawns, info.left_pawn_attack[c]) | shift(pawns, info.right_pawn_attack[c]);
+}
+Bitboard Position::get_pawn_double_attacks(Color c, Bitboard pawns){
+	return shift(pawns, info.left_pawn_attack[c]) & shift(pawns, info.right_pawn_attack[c]);
+}
+Bitboard Position::forward_ranks(Color c, Square s) {
+  return c == WHITE ? ~BB_RANKS[RANK_1] << 8 * relevant_rank(WHITE, rank(s))
+                    : ~BB_RANKS[RANK_8] >> 8 * relevant_rank(BLACK, rank(s));
+}
+Bitboard Position::forward_files(Color c, Square s){
+	return forward_ranks(c,s) & BB_FILES[file(s)];
+}
+Bitboard Position::adjacent_files(Square s){
+	return shift(BB_FILES[file(s)],LEFT) & shift(BB_FILES[file(s)], RIGHT);
+}
+Bitboard Position::pawn_att_span(Color c, Square s){
+	return forward_ranks(c,s) & adjacent_files(s);
+}
+Bitboard Position::pass_pawn_span(Color c, Square s){
+	return pawn_att_span(c,s) | forward_files(c,s);
 }
 int Position::queen_pin_count(Color opp, Square q){
 	int pinned = 0;
@@ -330,9 +349,95 @@ Score Position::king_score(Color c){
 	}
 	return total;
 }
+void Position::pawn_info_init(Color c, PawnInfo* p_info){
+	Bitboard neighbours, stoppers, support, phalanx, opposed;
+    Bitboard lever, lever_push, blocked;
+    Square s;
+    bool backward, passed, doubled;
+
+    Bitboard b = pieces[c][PAWN];
+
+    Bitboard our_pawns   = b;
+    Bitboard their_pawns = pieces[~c][PAWN];
+    Bitboard their_double_att = get_pawn_double_attacks(~c,their_pawns);
+
+	p_info->passed[c] = 0;
+	p_info->pawn_attacks[c] = p_info->pawn_attack_span[c] = get_pawn_moves(c, our_pawns);
+	p_info->blocked += popcount(shift(our_pawns, info.push_direction[c]) & (their_pawns | their_double_att));
+
+    while (b){
+        s = pop_lsb(b);
+        Rank r = relevant_rank(c, rank(s));
+
+        opposed     = their_pawns & forward_files(c, s);
+        blocked     = their_pawns & (s + UP);
+        stoppers    = their_pawns & pass_pawn_span(c, s);
+        lever       = their_pawns & get_pawn_moves(c, BB_SQUARES[s]);
+        lever_push  = their_pawns & get_pawn_moves(c, BB_SQUARES[s + UP]);
+        doubled     = our_pawns   & (s - UP);
+        neighbours  = our_pawns   & adjacent_files(s);
+        phalanx     = neighbours & BB_RANKS[rank(s)];
+        support     = neighbours & BB_RANKS[rank(s - UP)];
+		backward    = !(neighbours & forward_ranks(~c, s + UP)) && (lever_push | blocked);
+
+        if (doubled && !(our_pawns & shift(their_pawns | get_pawn_moves(~c,their_pawns),DOWN))){
+			p_info->scores[c] -= PAWN_EARLY_DOUBLE_PENALTY;
+        }
+		if (!backward && !blocked){
+			p_info->pawn_attack_span[c] |= pawn_att_span(c,s);
+		}
+
+        passed =   !(stoppers ^ lever)
+		|| (!(stoppers ^ lever_push) && popcount(phalanx) >= popcount(lever_push))
+        || (stoppers == blocked && r >= RANK_5 && (shift(support,UP) & ~(their_pawns | their_double_att)));
+        passed &= !(forward_files(c, s) & our_pawns);
+
+        if (passed)
+            p_info->passed[c] |= s;
+
+
+        if (support | phalanx){
+           	p_info->scores[c] += PAWN_CONNECTED_SCORE * (int)r;
+			p_info->scores[c] += PAWN_SUPPORTED_SCORE * popcount(support);
+        }
+        else if (!neighbours){
+            if (opposed &&  (our_pawns & forward_files(~c, s)) && !(their_pawns & adjacent_files(s))){
+				p_info->scores[c] -= PAWN_DOUBLED_PENALTY;
+			} 
+            else{
+                p_info->scores[c] -=  PAWN_ISOLATED_PENALTY;
+			}
+        }
+
+        else if (backward){
+			p_info->scores[c] -=  PAWN_BACKWARDS_PENALTY;
+		}
+
+        if (!support){
+			p_info->scores[c] -= PAWN_DOUBLED_PENALTY * (int)doubled;
+			p_info->scores[c] -= PAWN_WEAK_LEVER_PENALTY * more_than_one(lever);
+		}
+        if (blocked && r >= RANK_5){
+			p_info->scores[c] += PAWN_ADVANCED_BLOCK_SCORE;
+		}       
+    }
+}
+PawnInfo* Position::get_pawn_info(Key key){
+	PawnInfo* p;
+	// p = pawn_hash_table[key];
+	// if (kay == p->key){
+	// 	return p;
+	// }
+
+	p->key = key;
+	p->blocked = 0;
+	pawn_info_init(WHITE,p);
+	pawn_info_init(BLACK,p);
+	return p;
+}
 Score Position::pawn_score(Color c){
 	Score total(0,0);
-
+    PawnInfo* current = get_pawn_info(state->pawn_key);
 	return total;
 }
 void Position::eval_init(){
@@ -409,13 +514,13 @@ Score Position::calculate_threats(Color c){
 	total +=  THREAT_CONTROLLED_SQUARE_SCORE * popcount(controlled_juicers);
 	Bitboard safe_squares_us = ~info.controlled_squares[~c] | info.controlled_squares[c];
 	Bitboard pawns = pieces[c][PAWN] & safe_squares_us;
-	Bitboard pawn_targets = get_pawn_moves(pawns,c) & enemy_pieces;
+	Bitboard pawn_targets = get_pawn_moves(c, pawns) & enemy_pieces;
 	total += THREAT_SAFE_PAWN_ATTACK * popcount(pawn_targets);
 	//push squares
 	pawns = shift(pieces[c][PAWN], info.push_direction[c]) & ~all_pieces;
 	pawns |= (pawns & info.third_rank[c]) &~all_pieces;
 	pawns &= ~info.controlled_by[~c][PAWN] & safe_squares_us;
-	pawn_targets = get_pawn_moves(pawns,c) & enemy_pieces;
+	pawn_targets = get_pawn_moves(c, pawns) & enemy_pieces;
 	std::cout << "THREATS BY PAWN PUSH:" << std::endl << bb_string(pawn_targets) <<std::endl;
 	total += THREAT_PAWN_PUSH_ATTACK * popcount(pawn_targets);
 	return total;

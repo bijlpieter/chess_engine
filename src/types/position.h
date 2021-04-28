@@ -33,9 +33,9 @@ struct PawnInfo {
 	Score scores[NUM_COLORS];
 	Bitboard passed[NUM_COLORS];
 	Bitboard pawn_attacks[NUM_COLORS];
-	Bitboard pawn_attack_spawn[NUM_COLORS];
+	Bitboard pawn_attack_span[NUM_COLORS];
 	int blocked;
-
+	Key key;
 };
 
 struct EvalInfo {
@@ -101,9 +101,16 @@ public:
 	Bitboard legal_rook_moves() const;
 	Bitboard legal_queen_moves() const;
 
-	Bitboard get_pawn_moves(Bitboard pawns, Color c);
+	Bitboard get_pawn_moves(Color c, Bitboard pawns);
+	Bitboard get_pawn_double_attacks(Color c, Bitboard pawns);
+	Bitboard forward_ranks(Color c, Square s);
+	Bitboard forward_files(Color c, Square s);
+	Bitboard adjacent_files(Square s);
+	Bitboard pawn_att_span(Color c, Square s);
+	Bitboard pass_pawn_span(Color c, Square s);
 	//Phase
 	Phase calculate_phase();
+
 	// Evaluation functions
 	Score knight_score(Color c);
 	Score bishop_score(Color c);
@@ -114,6 +121,8 @@ public:
 	Score pawn_score(Color c);
 	Score calculate_material();
 	Score calculate_threats(Color c);
+	void pawn_info_init(Color c, PawnInfo* p_info);
+	PawnInfo* get_pawn_info(Key key);
 	
 	Score control_score();
 	Score calculate_score();
