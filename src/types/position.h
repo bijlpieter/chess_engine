@@ -79,7 +79,7 @@ public:
 	void generate_castling(Move*& m);
 
 	// Generate all moves
-	Moves generate_moves();
+	Moves generate_moves(bool quiet);
 
 	// Function to play or unplay a move, or move a piece
 	void play_move(Move m, PositionInfo* info);

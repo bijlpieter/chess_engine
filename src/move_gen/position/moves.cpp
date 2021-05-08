@@ -214,7 +214,7 @@ void Position::generate_castling(Move*& m) {
 	}
 }
 
-Moves Position::generate_moves() {
+Moves Position::generate_moves(bool quiet) {
 	Moves moves;
 	const Square king = lsb(pieces[turn][KING]);
 	if (state->checkers) {
@@ -236,6 +236,9 @@ Moves Position::generate_moves() {
 		generate_pawn_captures(moves.end, colors[~turn]);
 		// All king captures
 		add_moves(moves.end, king, king_moves(king) & ~state->king_unsafe & colors[~turn]);
+
+		if (quiet)
+			return moves;
 		// Castling
 		generate_castling(moves.end);
 		// All regular piece moves
