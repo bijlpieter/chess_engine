@@ -10,7 +10,7 @@ uint64_t Position::perft(int depth) {
 	if (depth < 1)
 		return 1ULL;
 
-	Moves legal = legal_moves();
+	Moves legal = generate_moves();
 	MoveCount num = legal.size();
 
 	uint64_t nodes = 0;
@@ -30,7 +30,7 @@ uint64_t Position::divide(int depth) {
 	if (depth < 1)
 		return 1ULL;
 
-	Moves legal = legal_moves();
+	Moves legal = generate_moves();
 	MoveCount num = legal.size();
 
 	uint64_t nodes = 0;

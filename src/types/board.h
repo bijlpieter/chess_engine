@@ -1,6 +1,8 @@
 #ifndef _BOARD_H_
 #define _BOARD_H_
 
+#include <stdint.h>
+
 enum Rank : char {
 	RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8,
 	NUM_RANKS
@@ -23,7 +25,7 @@ enum Square : char {
 	NUM_SQUARES, NO_SQUARE
 };
 
-typedef char Castling;
+typedef uint8_t Castling;
 enum CastlingTypes : char {
 	NO_CASTLING,
 	WHITE_KINGSIDE = 1,

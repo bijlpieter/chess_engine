@@ -14,7 +14,7 @@ struct PositionInfo {
 	// Useful Bitboards and variables used through move generation and evaluation. These should all be precomputed by info_init().
 	Bitboard checkers;
 	Bitboard check_blocks;
-	Bitboard pinned;	
+	Bitboard pinned;
 	Bitboard king_unsafe;
 	Square king;
 	Color enemy;
@@ -27,7 +27,7 @@ struct PositionInfo {
 	PositionInfo* previous;
 	Key position_key;
 	Key pawn_key;
-	};
+};
 
 struct PawnInfo {
 	Score scores[NUM_COLORS];
@@ -35,13 +35,12 @@ struct PawnInfo {
 	Bitboard pawn_attacks[NUM_COLORS];
 	Bitboard pawn_attack_spawn[NUM_COLORS];
 	int blocked;
-
 };
 
 struct EvalInfo {
-	//const
-	const Rank promotion_rank[NUM_COLORS] = {RANK_8,RANK_1};
-	const Rank third_rank[NUM_COLORS] = {RANK_3,RANK_6};
+	// const
+	const Rank promotion_rank[NUM_COLORS] = {RANK_8, RANK_1};
+	const Rank third_rank[NUM_COLORS] = {RANK_3, RANK_6};
 	const Direction push_direction[NUM_COLORS] = {UP, DOWN};
 	const Direction left_pawn_attack[NUM_COLORS] = {UP_LEFT, DOWN_LEFT};
 	const Direction right_pawn_attack[NUM_COLORS] = {UP_RIGHT, DOWN_RIGHT};
@@ -73,14 +72,13 @@ public:
 	// Bitboard pinned_pieces(Color c) const;
 	// Bitboard fossilization_pieces(Color c) const;
 
-	// Move generation if king is not in check
+	void generate_pawn_captures(Move*& m, Bitboard target);
+	void generate_pawn_pushes(Move*& m, Bitboard target);
+	void generate_pieces(Move*& m, Bitboard target);
+	void generate_castling(Move*& m);
+
+	// Generate all moves
 	Moves generate_moves();
-
-	// Move generation if king is in check
-	Moves generate_blockers();
-
-	// Generates all moves in the position
-	Moves legal_moves();
 
 	// Function to play or unplay a move, or move a piece
 	void play_move(Move m, PositionInfo* info);
