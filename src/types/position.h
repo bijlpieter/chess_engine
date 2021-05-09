@@ -35,6 +35,7 @@ struct PawnInfo {
 	Bitboard pawn_attacks[NUM_COLORS] = {0};
 	Bitboard pawn_attack_span[NUM_COLORS] = {0};
 	Key key = 0;
+	int blocked;
 	PawnInfo(){};
 };
 
@@ -54,6 +55,7 @@ struct EvalInfo {
     Bitboard controlled_squares[NUM_COLORS] = {0};
     Bitboard mobility[NUM_COLORS];
 	Bitboard blocked_pawns[NUM_COLORS];
+	Phase phase = 0;
 };
 
 class Position {
@@ -111,7 +113,6 @@ public:
 	Bitboard get_pseudo_legal_moves(PieceType p, Square s);
 	bool is_open_file(Color c, File f);
 	bool is_outpost(Color c, Square s);
-	Score calculate_material();
 	Score knight_score(Color c);
 	Score bishop_score(Color c);
 	Score rook_score(Color c);
@@ -122,9 +123,12 @@ public:
 	Score pawn_score(Color c);
 	void pawn_info_init(Color c, PawnInfo* p_info);
 	PawnInfo* get_pawn_info(Key key);
-	//threats
+	//func
 	Score calculate_threats(Color c);
+	Score calculate_material();
 	Score calculate_score();
+	Score calculate_space(Color c, PawnInfo* p_info);
+	Score calculate_passed(Color c, PawnInfo* p_info);
 
 	void info_init();
 	void key_init();

@@ -366,7 +366,7 @@ void Position::pawn_info_init(Color c, PawnInfo* p_info){
 	p_info->passed[c] = 0;
 	p_info->pawn_attacks[c] = p_info->pawn_attack_span[c] = get_pawn_moves(c, our_pawns);
 
-	//p_info->blocked += popcount(shift(our_pawns, info.push_direction[c]) & (their_pawns | their_double_att));
+	p_info->blocked += popcount(shift(our_pawns, info.push_direction[c]) & (their_pawns | their_double_att));
 
     while (b){
         s = pop_lsb(b);
@@ -431,15 +431,21 @@ PawnInfo* Position::get_pawn_info(Key key){
 	// }
 
 	p->key = key;
+	p->blocked = 0;
 	pawn_info_init(WHITE, p);
 	pawn_info_init(BLACK, p);
 	return p;
 }
 Score Position::pawn_score(Color c){
     PawnInfo* current = get_pawn_info(state->pawn_key);
-	
 	Score total = current->scores[c];
-    Bitboard passed = current->passed[c];
+	total += calculate_passed(c, current);
+	total += calculate_space(c, current);
+    return total;
+}
+Score Position::calculate_passed(Color c, PawnInfo* p_info){
+	Score total(0,0);
+	Bitboard passed = p_info->passed[c];
 	//passed juicers blocked by enemy juicers
     Bitboard blocked_passed = passed & shift(pieces[~c][PAWN], info.push_direction[~c]);
 
@@ -447,7 +453,6 @@ Score Position::pawn_score(Color c){
         Bitboard helpers =  shift(pieces[c][PAWN], info.push_direction[c]) & ~colors[~c] & (info.controlled_twice[~c] | info.controlled_squares[c]);
 		passed &= ~blocked_passed | shift(helpers, LEFT) | shift(helpers,RIGHT);
     }
-
     while (passed){
         Square s = pop_lsb(passed);
         //assert(!(pos.pieces(Them, PAWN) & forward_file_bb(Us, s + Up)));
@@ -493,10 +498,10 @@ Score Position::pawn_score(Color c){
     }
 	return total;
 }
-
 void Position::eval_init(){
 	//do this seperately to get the bitboards attacked_by_pawns_twice[c] to subtract it from king_area[c];
 	Bitboard attacked_by_pawns_twice[NUM_COLORS];
+	info.phase = calculate_phase();
 	for (Color c : {WHITE,BLACK}){
 		Bitboard pawns = pieces[c][PAWN];
 		Bitboard left = shift(pawns, info.left_pawn_attack[c]);
@@ -508,7 +513,6 @@ void Position::eval_init(){
 		info.controlled_by[c][PAWN] |= single_att;
 		info.controlled_squares[c] |= single_att;
 	}
-	
 	for (Color c : {WHITE,BLACK}){
 		info.king_squares[c] = lsb(pieces[c][KING]);
 		info.king_area[c] = KING_AREA[info.king_squares[c]];
@@ -578,7 +582,17 @@ Score Position::calculate_threats(Color c){
 	total += THREAT_PAWN_PUSH_ATTACK * popcount(pawn_targets);
 	return total;
 }
-
+Score Position::calculate_space(Color c, PawnInfo* p_info){
+    Bitboard center = CENTRAL_FILES;
+	center |= c == WHITE ? (BB_RANKS[RANK_2] | BB_RANKS[RANK_3] | BB_RANKS[RANK_4]) : (BB_RANKS[RANK_7] | BB_RANKS[RANK_6] | BB_RANKS[RANK_5]);
+	Bitboard safe = center & ~pieces[c][PAWN] & ~info.controlled_by[~c][PAWN];
+    Bitboard pawn_space = pieces[c][PAWN];
+	pawn_space |= shift(pawn_space,info.push_direction[~c]);
+	pawn_space |= shift(pawn_space,info.push_direction[~c]);
+	int safe_count = popcount(safe) + popcount(safe & pawn_space & ~info.controlled_squares[~c]);
+    int relevancy = popcount(all_pieces) + p_info->blocked;
+    return PAWN_SPACE_SCORE * (safe_count * relevancy / 10);
+}
 Score Position::calculate_score() {
 	eval_init();
 	Score total(0,0);
