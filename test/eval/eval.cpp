@@ -340,16 +340,55 @@ void test_calculate_material(){
 
 } 
 
+void evaluation_info(std::string FEN){
+    std::cout << "----------------POSITION----------------" <<std::endl;
+    Position p = pos_fen(FEN);
+    std::cout << p << std::endl;
+
+    std::cout << "----------------KEY----------------" << std::endl;
+    std::cout << "Position key: " << p.state->position_key << std::endl;
+    std::cout << "Pawn key: " << p.state->pawn_key << std::endl;
+    std::cout << "----------------SCORE----------------" << std::endl;
+    std::cout << "----------------THREATS----------------" << std::endl;
+    std::cout << "WHITE: " << p.calculate_threats(WHITE) <<std::endl;
+    std::cout << "BLACK: " << p.calculate_threats(BLACK) <<std::endl;
+    std::cout << "----------------MATERIAL----------------" << std::endl;
+    std::cout << "---PAWNS---" << std::endl;
+    std::cout << "WHITE: " << p.pawn_score(WHITE) << std::endl;
+    std::cout << "BLACK: " << p.pawn_score(BLACK) << std::endl;
+    std::cout << "---KNIGHTS---" << std::endl; 
+    std::cout << "WHITE: " << p.knight_score(WHITE) << std::endl;
+    std::cout << "BLACK: " << p.knight_score(BLACK) << std::endl;
+    std::cout << "---BISHOPS---" << std::endl;
+    std::cout << "WHITE: " << p.bishop_score(WHITE) << std::endl;
+    std::cout << "BLACK: " << p.bishop_score(BLACK) << std::endl;
+    std::cout << "---ROOKS---" << std::endl;
+    std::cout << "WHITE: " << p.rook_score(WHITE) << std::endl;
+    std::cout << "BLACK: " << p.rook_score(BLACK) << std::endl;
+    std::cout << "---QUEENS---" << std::endl;
+    std::cout << "WHITE: " << p.queen_score(WHITE) << std::endl;
+    std::cout << "BLACK: " << p.queen_score(BLACK) << std::endl;
+    std::cout << "---KINGS---" << std::endl;
+    std::cout << "WHITE: " << p.king_score(WHITE) << std::endl;
+    std::cout << "BLACK: " << p.king_score(BLACK) << std::endl;
+
+    std::cout << "---MATERIAL TOTAL---:" << std::endl;
+    std::cout << p.calculate_material() << std::endl;
+    std::cout << "---TOTAL---:" << std::endl;
+    std::cout << p.calculate_score() << std::endl;
+
+}
 int main(){
     bb_init();
     bb_moves_init();
     bb_rays_init();
     test_calculate_material();
-    Position test = pos_fen("r1bqkbnr/pppppppp/8/1n1n1r1p/n1b1qr2/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-    std::cout << test << std::endl;
-    Score temp = test.calculate_threats(WHITE);
-    std::cout << temp << std::endl;
-    std::cout << test.state->position_key << std::endl;
+    std::string FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    FEN = "7k/P7/7r/7r/7p/4BB2/8/7K b - - 0 1";
+    evaluation_info(FEN);
+    
+    
+
     
     return 0;
 }

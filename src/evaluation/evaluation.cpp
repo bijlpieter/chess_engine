@@ -1,6 +1,36 @@
 #include "types.h"
 #include "move_generation.h"
 #include <iostream>
+Rank relevant_rank(Color c, Rank r){
+	return Rank(r ^ (c * 7));
+}
+Bitboard forward_ranks(Color c, Square s) {
+  return c == WHITE ? ~BB_RANKS[RANK_1] << 8 * relevant_rank(WHITE, rank(s))
+                    : ~BB_RANKS[RANK_8] >> 8 * relevant_rank(BLACK, rank(s));
+}
+Bitboard forward_files(Color c, Square s){
+	return forward_ranks(c, s) & BB_FILES[file(s)];
+}
+Bitboard adjacent_files(Square s){
+	return shift(BB_FILES[file(s)],LEFT) & shift(BB_FILES[file(s)], RIGHT);
+}
+Bitboard pawn_att_span(Color c, Square s){
+	return forward_ranks(c,s) & adjacent_files(s);
+}
+Bitboard pass_pawn_span(Color c, Square s){
+	return pawn_att_span(c,s) | forward_files(c,s);
+}
+bool more_than_one(Bitboard pieces){
+	return popcount(pieces) > 1;
+}
+
+Square farmost_square(Color c, Bitboard b){
+	if (!b){
+		std::cout << "ERROR: farmost_square requires a non-empty bitboard";
+		return NO_SQUARE;
+	}
+	return c == WHITE ? msb(b) : lsb(b);
+}
 
 Phase Position::calculate_phase() {
 	Phase total = 24;
@@ -9,6 +39,14 @@ Phase Position::calculate_phase() {
 	}
 	return (total * 256 + 12) / 12;
 }
+
+Bitboard Position::get_pawn_moves(Color c, Bitboard pawns){
+	return shift(pawns, info.left_pawn_attack[c]) | shift(pawns, info.right_pawn_attack[c]);
+}
+Bitboard Position::get_pawn_double_attacks(Color c, Bitboard pawns){
+	return shift(pawns, info.left_pawn_attack[c]) & shift(pawns, info.right_pawn_attack[c]);
+}
+
 Bitboard Position::get_pseudo_legal_moves(PieceType p, Square s){
 	switch (p){
 		case KNIGHT:
@@ -24,28 +62,6 @@ Bitboard Position::get_pseudo_legal_moves(PieceType p, Square s){
 		default:
 			return 0;
 	}
-}
-Bitboard Position::get_pawn_moves(Color c, Bitboard pawns){
-	return shift(pawns, info.left_pawn_attack[c]) | shift(pawns, info.right_pawn_attack[c]);
-}
-Bitboard Position::get_pawn_double_attacks(Color c, Bitboard pawns){
-	return shift(pawns, info.left_pawn_attack[c]) & shift(pawns, info.right_pawn_attack[c]);
-}
-Bitboard Position::forward_ranks(Color c, Square s) {
-  return c == WHITE ? ~BB_RANKS[RANK_1] << 8 * relevant_rank(WHITE, rank(s))
-                    : ~BB_RANKS[RANK_8] >> 8 * relevant_rank(BLACK, rank(s));
-}
-Bitboard Position::forward_files(Color c, Square s){
-	return forward_ranks(c,s) & BB_FILES[file(s)];
-}
-Bitboard Position::adjacent_files(Square s){
-	return shift(BB_FILES[file(s)],LEFT) & shift(BB_FILES[file(s)], RIGHT);
-}
-Bitboard Position::pawn_att_span(Color c, Square s){
-	return forward_ranks(c,s) & adjacent_files(s);
-}
-Bitboard Position::pass_pawn_span(Color c, Square s){
-	return pawn_att_span(c,s) | forward_files(c,s);
 }
 int Position::queen_pin_count(Color opp, Square q){
 	int pinned = 0;
@@ -85,19 +101,7 @@ bool Position::is_outpost(Color c, Square s) {
 bool Position::is_open_file(Color c, File f){
 	return (popcount(pieces[c][PAWN] & f) == 0);
 }
-bool Position::more_than_one(Bitboard pieces){
-	return popcount(pieces) > 1;
-}
-Rank Position::relevant_rank(Color c, Rank r){
-	return Rank(r ^ (c * 7));
-}
-Square Position::farmost_square(Color c, Bitboard b){
-	if (!b){
-		std::cout << "ERROR: farmost_square requires a non-empty bitboard";
-		return NO_SQUARE;
-	}
-	return c == WHITE ? msb(b) : lsb(b);
-}
+
 Score Position::knight_score(Color c) {
 	if (popcount(pieces[c][KNIGHT]) == 0) {
 		return Score(0,0);
@@ -141,7 +145,7 @@ Score Position::bishop_score(Color c) {
 		Square bishop = pop_lsb(bishops);
 		total -= BISHOP_KING_DISTANCE_PENALTY * SQUARE_DISTANCE[bishop][info.king_squares[c]];
 		total -= BISHOP_XRAY_PAWN_PENALTY * (info.controlled_by[c][BISHOP] & pieces[~c][PAWN]);
-		if (shift(pieces[c][PAWN],DOWN) & bishop){
+		if (shift(pieces[c][PAWN], info.push_direction[~c]) & bishop){
 			total += BISHOP_SHIELDED_SCORE;
 		}
 		if (bishop_moves(bishop, pieces[c][PAWN]) & KING_AREA[info.king_squares[~c]]){
@@ -354,31 +358,29 @@ void Position::pawn_info_init(Color c, PawnInfo* p_info){
     Bitboard lever, lever_push, blocked;
     Square s;
     bool backward, passed, doubled;
-
     Bitboard b = pieces[c][PAWN];
 
     Bitboard our_pawns   = b;
     Bitboard their_pawns = pieces[~c][PAWN];
     Bitboard their_double_att = get_pawn_double_attacks(~c,their_pawns);
-
 	p_info->passed[c] = 0;
 	p_info->pawn_attacks[c] = p_info->pawn_attack_span[c] = get_pawn_moves(c, our_pawns);
-	p_info->blocked += popcount(shift(our_pawns, info.push_direction[c]) & (their_pawns | their_double_att));
+
+	//p_info->blocked += popcount(shift(our_pawns, info.push_direction[c]) & (their_pawns | their_double_att));
 
     while (b){
         s = pop_lsb(b);
         Rank r = relevant_rank(c, rank(s));
-
         opposed     = their_pawns & forward_files(c, s);
-        blocked     = their_pawns & (s + UP);
+        blocked     = their_pawns & (s + info.push_direction[c]);
         stoppers    = their_pawns & pass_pawn_span(c, s);
         lever       = their_pawns & get_pawn_moves(c, BB_SQUARES[s]);
-        lever_push  = their_pawns & get_pawn_moves(c, BB_SQUARES[s + UP]);
-        doubled     = our_pawns   & (s - UP);
+        lever_push  = their_pawns & get_pawn_moves(c, BB_SQUARES[s + info.push_direction[c]]);
+        doubled     = our_pawns   & (s + info.push_direction[~c]);
         neighbours  = our_pawns   & adjacent_files(s);
         phalanx     = neighbours & BB_RANKS[rank(s)];
-        support     = neighbours & BB_RANKS[rank(s - UP)];
-		backward    = !(neighbours & forward_ranks(~c, s + UP)) && (lever_push | blocked);
+        support     = neighbours & BB_RANKS[rank(s + info.push_direction[~c])];
+		backward    = !(neighbours & forward_ranks(~c, s + info.push_direction[~c])) && (lever_push | blocked);
 
         if (doubled && !(our_pawns & shift(their_pawns | get_pawn_moves(~c,their_pawns),DOWN))){
 			p_info->scores[c] -= PAWN_EARLY_DOUBLE_PENALTY;
@@ -387,15 +389,15 @@ void Position::pawn_info_init(Color c, PawnInfo* p_info){
 			p_info->pawn_attack_span[c] |= pawn_att_span(c,s);
 		}
 
-        passed =   !(stoppers ^ lever)
+        passed =  !(stoppers ^ lever)
 		|| (!(stoppers ^ lever_push) && popcount(phalanx) >= popcount(lever_push))
-        || (stoppers == blocked && r >= RANK_5 && (shift(support,UP) & ~(their_pawns | their_double_att)));
+        || (stoppers == blocked && r >= RANK_5 && (shift(support, info.push_direction[c]) & ~(their_pawns | their_double_att)));
         passed &= !(forward_files(c, s) & our_pawns);
 
-        if (passed)
-            p_info->passed[c] |= s;
-
-
+        if (passed){
+			p_info->passed[c] |= BB_SQUARES[s];
+		}
+            
         if (support | phalanx){
            	p_info->scores[c] += PAWN_CONNECTED_SCORE * (int)r;
 			p_info->scores[c] += PAWN_SUPPORTED_SCORE * popcount(support);
@@ -412,7 +414,6 @@ void Position::pawn_info_init(Color c, PawnInfo* p_info){
         else if (backward){
 			p_info->scores[c] -=  PAWN_BACKWARDS_PENALTY;
 		}
-
         if (!support){
 			p_info->scores[c] -= PAWN_DOUBLED_PENALTY * (int)doubled;
 			p_info->scores[c] -= PAWN_WEAK_LEVER_PENALTY * more_than_one(lever);
@@ -423,23 +424,76 @@ void Position::pawn_info_init(Color c, PawnInfo* p_info){
     }
 }
 PawnInfo* Position::get_pawn_info(Key key){
-	PawnInfo* p;
+	PawnInfo* p = new PawnInfo();
 	//PawnInfo* p = pawn_hash_table[key];
-	// if (kay == p->key){
+	// if (key == p->key){
 	// 	return p;
 	// }
 
 	p->key = key;
-	p->blocked = 0;
 	pawn_info_init(WHITE, p);
 	pawn_info_init(BLACK, p);
 	return p;
 }
 Score Position::pawn_score(Color c){
-	Score total(0,0);
     PawnInfo* current = get_pawn_info(state->pawn_key);
+	
+	Score total = current->scores[c];
+    Bitboard passed = current->passed[c];
+	//passed juicers blocked by enemy juicers
+    Bitboard blocked_passed = passed & shift(pieces[~c][PAWN], info.push_direction[~c]);
+
+    if (blocked_passed){
+        Bitboard helpers =  shift(pieces[c][PAWN], info.push_direction[c]) & ~colors[~c] & (info.controlled_twice[~c] | info.controlled_squares[c]);
+		passed &= ~blocked_passed | shift(helpers, LEFT) | shift(helpers,RIGHT);
+    }
+
+    while (passed){
+        Square s = pop_lsb(passed);
+        //assert(!(pos.pieces(Them, PAWN) & forward_file_bb(Us, s + Up)));
+        int r = relevant_rank(c, rank(s));
+		int f = file(s);
+    	total += PAWN_PASSED_RANK[r];
+		total += PAWN_PASSED_EDGE_DIST_SCORE *  (4 - (int)std::min(f, FILE_H - f));
+
+        if (r > RANK_3){
+            Square next_square = s + UP;
+			// king prox - enemy king prox of next square
+			total += PAWN_KING_PROX_SCORE * (SQUARE_DISTANCE[next_square][info.king_squares[c]] - SQUARE_DISTANCE[next_square][info.king_squares[~c]]);
+            if (piece_on(next_square) == NO_PIECE){
+                Bitboard queen_path = forward_files(c, s);
+                Bitboard unsafe = pass_pawn_span(c,s);
+				Bitboard behind = forward_files(~c, s) & (pieces[c][ROOK] | pieces[~c][ROOK] | pieces[c][QUEEN] | pieces[~c][QUEEN]);
+
+                if (!(colors[~c] & unsafe)){
+					unsafe &= info.controlled_squares[~c] | colors[~c];
+				}
+				//uncontested passed_pawn_span
+				if (!unsafe){
+					total += PAWN_PASSED_UNCONTESTED_SCORE;
+				}
+				//contested but defended by pawn
+				else if (!(unsafe & ~info.controlled_by[c][PAWN])){
+					total += PAWN_PASSED_CONTESTED_SUPPORTED_SCORE;
+				}
+				//queen_path uncontested
+				else if (!(unsafe & queen_path)){
+					total += PAWN_PASSED_QUEENPATH_UNCONTESTED_SCORE;
+				}
+				//next_square uncontested
+				else if (!(unsafe & next_square)){
+					total += PAWN_PASSED_NEXTSQUARE_UNCONTESTED_SCORE;
+				}
+				//next square defended
+				if (colors[c] & behind || (info.controlled_squares[c] & next_square)){
+					total += PAWN_PASSED_NEXTSQUARE_DEFENDED_SCORE;
+				}
+            }
+        } 
+    }
 	return total;
 }
+
 void Position::eval_init(){
 	//do this seperately to get the bitboards attacked_by_pawns_twice[c] to subtract it from king_area[c];
 	Bitboard attacked_by_pawns_twice[NUM_COLORS];
@@ -458,8 +512,8 @@ void Position::eval_init(){
 	for (Color c : {WHITE,BLACK}){
 		info.king_squares[c] = lsb(pieces[c][KING]);
 		info.king_area[c] = KING_AREA[info.king_squares[c]];
-		info.blocked_pawns[c] = pieces[c][PAWN] & shift(all_pieces, DOWN);
-		info.pinned[c] = blockers(info.king_squares[c],c,~c);
+		info.blocked_pawns[c] = pieces[c][PAWN] & shift(all_pieces, info.push_direction[~c]);
+		info.pinned[c] = blockers(info.king_squares[c], c ,~c);
 		for (PieceType p : {PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING}){
 			if (pieces[c][p]){
 				Bitboard all = pieces[c][p];
@@ -482,8 +536,8 @@ void Position::eval_init(){
 Score Position::calculate_material(){
 	Score total(0,0);
 	total += knight_score(WHITE) - knight_score(BLACK);
-	total += bishop_score(WHITE) - knight_score(BLACK);
-	total += rook_score(WHITE) - knight_score(BLACK);
+	total += bishop_score(WHITE) - bishop_score(BLACK);
+	total += rook_score(WHITE) - rook_score(BLACK);
 	total += queen_score(WHITE) - queen_score(BLACK);
 	total += king_score(WHITE) - king_score(BLACK);
 	total += pawn_score(WHITE) - pawn_score(BLACK);
@@ -496,7 +550,7 @@ Score Position::calculate_threats(Color c){
 	Bitboard defended_enemy_pieces = enemy_pieces & safe_squares_enemy;
 	Bitboard weak_enemy_pieces = colors[~c] &~ safe_squares_enemy & info.controlled_squares[c];
 	if(defended_enemy_pieces | weak_enemy_pieces){
-		Bitboard attacked = (info.controlled_by[c][KNIGHT] | info.controlled_by[c][KNIGHT]) & (defended_enemy_pieces | weak_enemy_pieces);
+		Bitboard attacked = (info.controlled_by[c][BISHOP] | info.controlled_by[c][KNIGHT]) & (defended_enemy_pieces | weak_enemy_pieces);
 		while(attacked){
 			total += THREAT_MINOR_SCORE[piece_type(piece_on(pop_lsb(attacked)))];
 		}
@@ -521,7 +575,6 @@ Score Position::calculate_threats(Color c){
 	pawns |= (pawns & info.third_rank[c]) &~all_pieces;
 	pawns &= ~info.controlled_by[~c][PAWN] & safe_squares_us;
 	pawn_targets = get_pawn_moves(c, pawns) & enemy_pieces;
-	std::cout << "THREATS BY PAWN PUSH:" << std::endl << bb_string(pawn_targets) <<std::endl;
 	total += THREAT_PAWN_PUSH_ATTACK * popcount(pawn_targets);
 	return total;
 }
@@ -530,7 +583,6 @@ Score Position::calculate_score() {
 	eval_init();
 	Score total(0,0);
 	total += calculate_material();
-	
-   
+	total += calculate_threats(WHITE) - calculate_threats(BLACK);
 	return total;
 }

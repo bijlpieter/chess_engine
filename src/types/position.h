@@ -30,12 +30,12 @@ struct PositionInfo {
 };
 
 struct PawnInfo {
-	Score scores[NUM_COLORS];
-	Bitboard passed[NUM_COLORS];
-	Bitboard pawn_attacks[NUM_COLORS];
-	Bitboard pawn_attack_span[NUM_COLORS];
-	int blocked;
-	Key key;
+	Score scores[NUM_COLORS] = {Score(0,0), Score(0,0)};
+	Bitboard passed[NUM_COLORS] = {0};
+	Bitboard pawn_attacks[NUM_COLORS] = {0};
+	Bitboard pawn_attack_span[NUM_COLORS] = {0};
+	Key key = 0;
+	PawnInfo(){};
 };
 
 struct EvalInfo {
@@ -100,40 +100,31 @@ public:
 	Bitboard legal_rook_moves() const;
 	Bitboard legal_queen_moves() const;
 
+	// Evaluation functions
+	void eval_init();
+	Phase calculate_phase();
+	//eval pawns
 	Bitboard get_pawn_moves(Color c, Bitboard pawns);
 	Bitboard get_pawn_double_attacks(Color c, Bitboard pawns);
-	Bitboard forward_ranks(Color c, Square s);
-	Bitboard forward_files(Color c, Square s);
-	Bitboard adjacent_files(Square s);
-	Bitboard pawn_att_span(Color c, Square s);
-	Bitboard pass_pawn_span(Color c, Square s);
-	//Phase
-	Phase calculate_phase();
-
-	// Evaluation functions
+	//material
+	int queen_pin_count(Color opp, Square q);
+	Bitboard get_pseudo_legal_moves(PieceType p, Square s);
+	bool is_open_file(Color c, File f);
+	bool is_outpost(Color c, Square s);
+	Score calculate_material();
 	Score knight_score(Color c);
 	Score bishop_score(Color c);
 	Score rook_score(Color c);
 	Score queen_score(Color c);
 	Score pawn_storm_safety(Color c);
 	Score king_score(Color c);
+	//pawns
 	Score pawn_score(Color c);
-	Score calculate_material();
-	Score calculate_threats(Color c);
 	void pawn_info_init(Color c, PawnInfo* p_info);
 	PawnInfo* get_pawn_info(Key key);
-	
-	Score control_score();
+	//threats
+	Score calculate_threats(Color c);
 	Score calculate_score();
-	
-	Square farmost_square(Color c, Bitboard b);
-	bool is_open_file(Color c, File f);
-	bool is_outpost(Color c, Square s);
-	bool more_than_one(Bitboard pieces);
-	void eval_init();
-	int queen_pin_count(Color opp, Square q);
-	Rank relevant_rank(Color c, Rank r);
-	Bitboard get_pseudo_legal_moves(PieceType p, Square s);
 
 	void info_init();
 	void key_init();

@@ -246,7 +246,7 @@ std::ostream& operator<<(std::ostream& os, const Position& p) {
 	os << "\n +---+---+---+---+---+---+---+---+\n";
 	for (Rank r = RANK_8; r >= RANK_1; r--) {
 		for (File f = FILE_A; f <= FILE_H; f++)
-			os << " | " << "PNBRQK  pnbrqk "[p.piece_on(square(r, f))];
+			os << " | " << "PNBRQK  pnbrqk  "[p.piece_on(square(r, f))];
 		os << " | " << (1 + r) << "\n +---+---+---+---+---+---+---+---+\n";
 	}
 	os << "   a   b   c   d   e   f   g   h\n";
