@@ -350,27 +350,39 @@ void evaluation_info(std::string FEN){
     std::cout << "Pawn key: " << p.state->pawn_key << std::endl;
     std::cout << "----------------SCORE----------------" << std::endl;
     std::cout << "----------------THREATS----------------" << std::endl;
-    std::cout << "WHITE: " << p.calculate_threats(WHITE) <<std::endl;
-    std::cout << "BLACK: " << p.calculate_threats(BLACK) <<std::endl;
+    std::cout << "WHITE: " << p.calculate_threats(WHITE);
+    std::cout << " BLACK: " << p.calculate_threats(BLACK) <<std::endl;
     std::cout << "----------------MATERIAL----------------" << std::endl;
     std::cout << "---PAWNS---" << std::endl;
+    PawnInfo* p_info = p.get_pawn_info(p.state->pawn_key);
+    std::cout << "STATIC" << std::endl;
+    std::cout << "WHITE: " << p_info->scores[WHITE]; 
+    std::cout << " BLACK: " << p_info->scores[BLACK] << std::endl;
+    std::cout << "PASSED" << std::endl;
+    std::cout << "WHITE: " << p.calculate_passed(WHITE,p_info);
+    std::cout << " BLACK: " << p.calculate_passed(BLACK,p_info) <<std::endl;
+    std::cout << "SPACE" << std::endl;
+    std::cout << "WHITE: " << p.calculate_space(WHITE,p_info);
+    std::cout << " BLACK: " << p.calculate_space(BLACK,p_info) <<std::endl;
+    std::cout << "TOTAL" << std::endl;
     std::cout << "WHITE: " << p.pawn_score(WHITE) << std::endl;
-    std::cout << "BLACK: " << p.pawn_score(BLACK) << std::endl;
+    std::cout << " BLACK: " << p.pawn_score(BLACK) << std::endl;
+
     std::cout << "---KNIGHTS---" << std::endl; 
-    std::cout << "WHITE: " << p.knight_score(WHITE) << std::endl;
-    std::cout << "BLACK: " << p.knight_score(BLACK) << std::endl;
+    std::cout << "WHITE: " << p.knight_score(WHITE);
+    std::cout << " BLACK: " << p.knight_score(BLACK) << std::endl;
     std::cout << "---BISHOPS---" << std::endl;
-    std::cout << "WHITE: " << p.bishop_score(WHITE) << std::endl;
-    std::cout << "BLACK: " << p.bishop_score(BLACK) << std::endl;
+    std::cout << "WHITE: " << p.bishop_score(WHITE);
+    std::cout << " BLACK: " << p.bishop_score(BLACK) << std::endl;
     std::cout << "---ROOKS---" << std::endl;
-    std::cout << "WHITE: " << p.rook_score(WHITE) << std::endl;
-    std::cout << "BLACK: " << p.rook_score(BLACK) << std::endl;
+    std::cout << "WHITE: " << p.rook_score(WHITE);
+    std::cout << " BLACK: " << p.rook_score(BLACK) << std::endl;
     std::cout << "---QUEENS---" << std::endl;
-    std::cout << "WHITE: " << p.queen_score(WHITE) << std::endl;
-    std::cout << "BLACK: " << p.queen_score(BLACK) << std::endl;
+    std::cout << "WHITE: " << p.queen_score(WHITE);
+    std::cout << " BLACK: " << p.queen_score(BLACK) << std::endl;
     std::cout << "---KINGS---" << std::endl;
-    std::cout << "WHITE: " << p.king_score(WHITE) << std::endl;
-    std::cout << "BLACK: " << p.king_score(BLACK) << std::endl;
+    std::cout << "WHITE: " << p.king_score(WHITE);
+    std::cout << " BLACK: " << p.king_score(BLACK) << std::endl;
 
     std::cout << "---MATERIAL TOTAL---:" << std::endl;
     std::cout << p.calculate_material() << std::endl;
@@ -384,11 +396,8 @@ int main(){
     bb_rays_init();
     test_calculate_material();
     std::string FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    FEN = "7k/P7/7r/7r/7p/4BB2/8/7K b - - 0 1";
+    FEN = "rnbqkbnr/pppppppp/8/8/2PPPP2/1P1BNBP1/P3Q2P/RN3RK1 w - - 0 1";
     evaluation_info(FEN);
-    
-    
-
     
     return 0;
 }
