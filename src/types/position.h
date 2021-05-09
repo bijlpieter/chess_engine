@@ -87,7 +87,7 @@ public:
 	void move_piece(Square from, Square to);
 	void remove_piece(Square s);
 	void place_piece(Piece p, Square s);
-	void castle(Square to);
+	Square castle(Square to);
 	void uncastle(Square to);
 
 	// Functions to test move generation
@@ -143,6 +143,8 @@ public:
 	// Bitboard current_legal_moves[NUM_PIECE_TYPES] = {0};
 	Bitboard colors[NUM_COLORS] = {0};
 	Bitboard all_pieces = 0;
+
+	Castling castlingMask[NUM_SQUARES];
 
 	PositionInfo* state;
     EvalInfo info;

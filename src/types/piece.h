@@ -6,7 +6,7 @@ enum PieceType : char {
 	NUM_PIECE_TYPES
 };
 
-const PieceType AllPieceTypes[] = {PAWN,KNIGHT,BISHOP,ROOK,QUEEN,KING};
+const PieceType AllPieceTypes[] = {PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING};
 
 enum Color : char {
 	WHITE, BLACK,
@@ -16,8 +16,7 @@ enum Color : char {
 enum Piece : char {
 	WHITE_PAWN = 0, WHITE_KNIGHT = 1, WHITE_BISHOP = 2, WHITE_ROOK = 3, WHITE_QUEEN = 4, WHITE_KING = 5,
 	BLACK_PAWN = 8, BLACK_KNIGHT = 9, BLACK_BISHOP = 10, BLACK_ROOK = 11, BLACK_QUEEN = 12, BLACK_KING = 13,
-	NO_PIECE = 14,
-	NUM_PIECES = 12
+	NUM_PIECES = 14, NO_PIECE = 15
 };
 
 inline constexpr Color operator~(Color c) {

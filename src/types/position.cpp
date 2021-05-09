@@ -130,7 +130,7 @@ Position::Position(PositionInfo* info, std::string fen) {
         return;
     }
 	std::string fields[6];
-		int ls = 0, index = 0;
+	int ls = 0, index = 0;
 	for (unsigned int i = 0; i < fen.length() + 1; i++){
 		if (fen[i] == ' ' || i == fen.length()){
 			fields[index] = fen.substr(ls, i - ls);
@@ -140,10 +140,32 @@ Position::Position(PositionInfo* info, std::string fen) {
 	}
 	turn = (fields[1] == "w") ? WHITE : BLACK;
 	//castling
-	if (fields[2].find('k') != std::string::npos) state->castling |= BLACK_KINGSIDE;
-	if (fields[2].find('K') != std::string::npos) state->castling |= WHITE_KINGSIDE;
-	if (fields[2].find('q') != std::string::npos) state->castling |= BLACK_QUEENSIDE;
-	if (fields[2].find('Q') != std::string::npos) state->castling |= WHITE_QUEENSIDE;
+
+    for (Square s = A1; s <= H8; s++) {
+        castlingMask[s] = 0;
+    }
+
+	if (fields[2].find('k') != std::string::npos) {
+        state->castling |= BLACK_KINGSIDE;
+        castlingMask[E8] |= BLACK_KINGSIDE;
+        castlingMask[H8] |= BLACK_KINGSIDE;
+    }
+	if (fields[2].find('K') != std::string::npos) {
+        state->castling |= WHITE_KINGSIDE;
+        castlingMask[E1] |= WHITE_KINGSIDE;
+        castlingMask[H1] |= WHITE_KINGSIDE;
+    }
+	if (fields[2].find('q') != std::string::npos) {
+        state->castling |= BLACK_QUEENSIDE;
+        castlingMask[E8] |= BLACK_QUEENSIDE;
+        castlingMask[A8] |= BLACK_QUEENSIDE;
+    }
+	if (fields[2].find('Q') != std::string::npos) {
+        state->castling |= WHITE_QUEENSIDE;
+        castlingMask[E1] |= WHITE_QUEENSIDE;
+        castlingMask[A1] |= WHITE_QUEENSIDE;
+    }
+
 	//en peasant xd
 	if (fields[3] != "-")
         state->en_peasant = square(Rank(fields[3][1] - '1'), File(fields[3][0] - 'a'));
@@ -155,40 +177,41 @@ Position::Position(PositionInfo* info, std::string fen) {
     //rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
     Square s = A8;
 	for (unsigned i = 0; i < fields[0].length(); i++) {
-        if (fields[0][i] == '/'){
+        if (fields[0][i] == '/') {
             s += -16;
             continue;
         } 
-        if (fields[0][i] > 65){
-        Color color = (fields[0][i] > 97) ? BLACK : WHITE;
-        PieceType type;
-        switch (fields[0][i]){
-            case 'b': case 'B':
-                type = BISHOP;
-                break;
-            case 'k': case 'K':
-                type = KING;
-                break;
-            case 'n': case 'N':
-                type = KNIGHT;
-                break;
-            case 'p': case 'P':
-                type = PAWN;
-                break;
-            case 'q': case 'Q':
-                type = QUEEN;
-                break;
-            case 'r': case 'R':
-                type = ROOK;
-                break;
-            default:
-                std::cout << "nani";
-                return;
-        }
-        board[s] = piece_init(type, color);
-        Bitboard bitboard = 0 | BB_SQUARES[s];
-        pieces[color][type] |= bitboard;
-        s++;
+
+        if (fields[0][i] > 65) {
+            Color color = (fields[0][i] > 97) ? BLACK : WHITE;
+            PieceType type;
+            switch (fields[0][i]){
+                case 'b': case 'B':
+                    type = BISHOP;
+                    break;
+                case 'k': case 'K':
+                    type = KING;
+                    break;
+                case 'n': case 'N':
+                    type = KNIGHT;
+                    break;
+                case 'p': case 'P':
+                    type = PAWN;
+                    break;
+                case 'q': case 'Q':
+                    type = QUEEN;
+                    break;
+                case 'r': case 'R':
+                    type = ROOK;
+                    break;
+                default:
+                    std::cout << "nani";
+                    return;
+            }
+            board[s] = piece_init(type, color);
+            Bitboard bitboard = 0 | BB_SQUARES[s];
+            pieces[color][type] |= bitboard;
+            s++;
         }
         else{
             for (int j = 0; j < fields[0][i] - '0'; j++){
@@ -205,6 +228,7 @@ Position::Position(PositionInfo* info, std::string fen) {
 	}
 	//set all
 	all_pieces = colors[WHITE] | colors[BLACK];
+
 	info_init();
     key_init();
     // phase = calculate_phase();

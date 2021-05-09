@@ -7,7 +7,8 @@ void Position::play_move(Move m, PositionInfo* info) {
 	info->previous = state;
 	state = info;
 	state->en_peasant = NO_SQUARE;
-	// Key k = state->position_key ^ zobrist.side;
+	state->position_key = state->previous->position_key;
+	state->position_key ^= zobrist.side;
 
 	Square from = move_from(m);
 	Square to = move_to(m);
@@ -19,26 +20,30 @@ void Position::play_move(Move m, PositionInfo* info) {
 	Square capped = type == S_MOVE_EN_PASSANT ? to - forward : to;
 
 	if (type == S_MOVE_CASTLING) {
-		castle(to);
+		to = castle(to);
 		state->captured = NO_PIECE;
 	}
 
 	state->castling = state->previous->castling;
-	if (from == H1 || to == H1)
-		state->castling &= ~WHITE_KINGSIDE;
-	if (from == A1 || to == A1)
-		state->castling &= ~WHITE_QUEENSIDE;
-	if (from == H8 || to == H8)
-		state->castling &= ~BLACK_KINGSIDE;
-	if (from == A8 || to == A8)
-		state->castling &= ~BLACK_QUEENSIDE;
-	if (from == E1)
-		state->castling &= BLACK_BOTH;
-	if (from == E8)
-		state->castling &= WHITE_BOTH;
 
-	if (state->captured != NO_PIECE)
+	if (state->castling && (castlingMask[from] | castlingMask[to])) {
+		state->position_key ^= zobrist.castling[state->castling];
+		state->castling &= ~(castlingMask[from] | castlingMask[to]);
+		state->position_key ^= zobrist.castling[state->castling];
+	}
+
+	if (state->captured != NO_PIECE) {
 		remove_piece(capped);
+		state->position_key ^= zobrist.piece_square[p][capped];
+		if (piece_type(state->captured) == PAWN)
+			state->pawn_key ^= zobrist.piece_square[p][capped];
+	}
+
+	state->position_key ^= zobrist.piece_square[p][to] ^ zobrist.piece_square[p][from];
+
+	Square prev_en_passant = state->previous->en_peasant;
+	if (prev_en_passant != NO_SQUARE)
+		state->position_key ^= zobrist.en_passant[file(prev_en_passant)];
 
 	if (type != S_MOVE_CASTLING)
 		move_piece(from, to);
@@ -47,12 +52,19 @@ void Position::play_move(Move m, PositionInfo* info) {
 		board[capped] = NO_PIECE;
 
 	if (piece_type(p) == PAWN) {
-		if ((int(from) ^ int(to)) == 16)
+		state->pawn_key ^= zobrist.piece_square[p][from] ^ zobrist.piece_square[p][to];
+
+		if ((int(from) ^ int(to)) == 16) {
 			state->en_peasant = to - forward;
+			state->position_key ^= zobrist.en_passant[file(state->en_peasant)];
+		}
 		else if (type == S_MOVE_PROMOTION) {
 			remove_piece(to);
 			Piece promo = piece_init(PieceType((move_promo(m) >> 12) + 1), turn);
 			place_piece(promo, to);
+
+			state->position_key ^= zobrist.piece_square[p][to] ^ zobrist.piece_square[promo][to];
+			state->pawn_key ^= zobrist.piece_square[p][to];
 		}
 	}
 
@@ -109,13 +121,14 @@ void Position::place_piece(Piece p, Square s) {
 	all_pieces |= BB_SQUARES[s];
 }
 
-void Position::castle(Square to) {
+// Returns the actual square the king moves to
+Square Position::castle(Square to) {
 	switch(to) {
-	case H1: move_piece(E1, G1); move_piece(H1, F1); return; // White kingside
-	case A1: move_piece(E1, C1); move_piece(A1, D1); return; // White queenside
-	case H8: move_piece(E8, G8); move_piece(H8, F8); return; // Black kingside
-	case A8: move_piece(E8, C8); move_piece(A8, D8); return; // Black queenside
-	default: return; // WTF
+	case H1: move_piece(E1, G1); move_piece(H1, F1); state->position_key ^= zobrist.piece_square[state->captured][H1] ^ zobrist.piece_square[state->captured][F1]; return G1; // White kingside
+	case A1: move_piece(E1, C1); move_piece(A1, D1); state->position_key ^= zobrist.piece_square[state->captured][A1] ^ zobrist.piece_square[state->captured][D1]; return C1; // White queenside
+	case H8: move_piece(E8, G8); move_piece(H8, F8); state->position_key ^= zobrist.piece_square[state->captured][H8] ^ zobrist.piece_square[state->captured][F8]; return G8; // Black kingside
+	case A8: move_piece(E8, C8); move_piece(A8, D8); state->position_key ^= zobrist.piece_square[state->captured][A8] ^ zobrist.piece_square[state->captured][D8]; return C8; // Black queenside
+	default: return NO_SQUARE; // WTF
 	}
 }
 
