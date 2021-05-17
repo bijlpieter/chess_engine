@@ -29,6 +29,8 @@ extern Bitboard WHITE_RIGHT_FIANCHETTO;
 extern Bitboard BLACK_LEFT_FIANCHETTO;
 extern Bitboard BLACK_RIGHT_FIANCHETTO;
 extern Bitboard CENTRAL_FILES;
+extern Bitboard KING_SIDE;
+extern Bitboard QUEEN_SIDE;
 
 extern int SQUARE_DISTANCE[NUM_SQUARES][NUM_SQUARES];
 

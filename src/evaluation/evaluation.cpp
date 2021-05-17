@@ -35,9 +35,9 @@ Square farmost_square(Color c, Bitboard b){
 Phase Position::calculate_phase() {
 	Phase total = 24;
 	for (Color c : {WHITE,BLACK}) {
-		total -= popcount(pieces[c][1]) + popcount(pieces[c][2]) + popcount(pieces[c][3]) * 2 + popcount(pieces[c][4]) * 4;
+		total -= popcount(pieces[c][KNIGHT]) + popcount(pieces[c][BISHOP]) + popcount(pieces[c][ROOK]) * 2 + popcount(pieces[c][QUEEN]) * 4;
 	}
-	return (total * 256 + 12) / 12;
+	return (total * 256 + 12) / 24;
 }
 
 Bitboard Position::get_pawn_moves(Color c, Bitboard pawns){
@@ -290,7 +290,7 @@ Score Position::pawn_storm_safety(Color c){
 }
 Score Position::king_score(Color c){
 	Score total(0,0);
-	//if pawns/king has moved.{pawnstorm}
+	//pawn storm
 	total += pawn_storm_safety(c);
 	if (is_open_file(c,file(info.king_squares[c]))){
 		total -= KING_ON_OPEN_FILE_PENALTY;
@@ -582,6 +582,29 @@ Score Position::calculate_threats(Color c){
 	total += THREAT_PAWN_PUSH_ATTACK * popcount(pawn_targets);
 	return total;
 }
+Score Position::calculate_initiative(Score score){
+	int outflanking = std::abs(file(info.king_squares[WHITE]) - file(info.king_squares[BLACK])) + int(rank(info.king_squares[WHITE]) - rank(info.king_squares[BLACK]));
+	Bitboard pawns = pieces[WHITE][PAWN] | pieces[BLACK][PAWN];
+	bool flank_pawns = (pawns & QUEEN_SIDE) && (pawns & KING_SIDE);
+	bool drawn = outflanking < 0 && !flank_pawns;
+	bool infiltration = rank(info.king_squares[WHITE]) > RANK_4 || rank(info.king_squares[BLACK]) < RANK_5;
+	PawnInfo* p_info = get_pawn_info(state->pawn_key);
+	int initiative = PASSED_PAWN_MODIFIER * popcount(p_info->passed[WHITE] | p_info->passed[BLACK]) +
+					PAWN_COUNT_MODIFIER * popcount(pawns) +
+					OUTFLANKING_MODIFIER * outflanking +
+					FLANK_PAWNS_MODIFIER * flank_pawns +
+					INFILTRATION_MODIFIER * infiltration +
+					DRAWN_MODIFIER * drawn +
+					INITIATIVE_BALANCING;
+
+	int middle = score.middle_game;
+	int end = score.end_game;
+	int m_bonus = ((middle > 0 ) - (middle < 0)) * initiative;
+	int e_bonus = ((end > 0 ) - (end < 0)) *initiative;
+	middle = middle > 0 ? std::max(0, middle + m_bonus) : std::min(0, middle + m_bonus);
+	end = end > 0 ? std::max(0, end + e_bonus) : std::min(0, end + e_bonus);
+	return Score(middle, end);
+}
 Score Position::calculate_space(Color c, PawnInfo* p_info){
     Bitboard center = CENTRAL_FILES;
 	center |= c == WHITE ? (BB_RANKS[RANK_2] | BB_RANKS[RANK_3] | BB_RANKS[RANK_4]) : (BB_RANKS[RANK_7] | BB_RANKS[RANK_6] | BB_RANKS[RANK_5]);
@@ -598,5 +621,8 @@ Score Position::calculate_score() {
 	Score total(0,0);
 	total += calculate_material();
 	total += calculate_threats(WHITE) - calculate_threats(BLACK);
-	return total;
+	return calculate_initiative(total);
+}
+int Position::interpolate_score(Score score){
+	return ((score.middle_game * (256 - info.phase)) + (score.end_game * info.phase)) / 256;
 }

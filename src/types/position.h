@@ -124,9 +124,12 @@ public:
 	void pawn_info_init(Color c, PawnInfo* p_info);
 	PawnInfo* get_pawn_info(Key key);
 	//func
+	Score calculate_score();
 	Score calculate_threats(Color c);
 	Score calculate_material();
-	Score calculate_score();
+	Score calculate_initiative(Score score);
+	int interpolate_score(Score score);
+	
 	Score calculate_space(Color c, PawnInfo* p_info);
 	Score calculate_passed(Color c, PawnInfo* p_info);
 
