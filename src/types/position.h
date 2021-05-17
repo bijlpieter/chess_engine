@@ -84,6 +84,8 @@ public:
 	void generate_quiets(Move*& m) const;
 	Moves generate_legal();
 
+	bool static_exchange_evaluation(Move m, Value threshold) const;
+
 	// Function to play or unplay a move, or move a piece
 	void play_move(Move m, PositionInfo* info);
 	void unplay_move(Move m);

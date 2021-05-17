@@ -8,6 +8,7 @@ typedef int16_t Value;
 #define VALUE_MATE 31000
 #define VALUE_INIFINITY 32000
 #define VALUE_DRAW 0
+#define VALUE_ZERO 0
 #define VALUE_INVALID 33000
 
 #endif
