@@ -589,18 +589,18 @@ Score Position::calculate_initiative(Score score){
 	bool drawn = outflanking < 0 && !flank_pawns;
 	bool infiltration = rank(info.king_squares[WHITE]) > RANK_4 || rank(info.king_squares[BLACK]) < RANK_5;
 	PawnInfo* p_info = get_pawn_info(state->pawn_key);
-	int initiative = PASSED_PAWN_MODIFIER * popcount(p_info->passed[WHITE] | p_info->passed[BLACK]) +
-					PAWN_COUNT_MODIFIER * popcount(pawns) +
-					OUTFLANKING_MODIFIER * outflanking +
-					FLANK_PAWNS_MODIFIER * flank_pawns +
-					INFILTRATION_MODIFIER * infiltration +
-					DRAWN_MODIFIER * drawn +
-					INITIATIVE_BALANCING;
+	Score initiative = INITIATIVE_PASSED_PAWN_SCORE * popcount(p_info->passed[WHITE] | p_info->passed[BLACK]) +
+					INITIATIVE_PAWN_COUNT_SCORE * popcount(pawns) +
+					INITIATIVE_OUTFLANKING_SCORE * outflanking +
+					INITIATIVE_FLANK_PAWNS_SCORE * flank_pawns +
+					INITIATIVE_INFILTRATION_SCORE * infiltration +
+					INITIATIVE_DRAWN_SCORE * drawn +
+					INITIATIVE_BALANCING_SCORE;
 
 	int middle = score.middle_game;
 	int end = score.end_game;
-	int m_bonus = ((middle > 0 ) - (middle < 0)) * initiative;
-	int e_bonus = ((end > 0 ) - (end < 0)) *initiative;
+	int m_bonus = ((middle > 0 ) - (middle < 0)) * initiative.middle_game;
+	int e_bonus = ((end > 0 ) - (end < 0)) *initiative.end_game;
 	middle = middle > 0 ? std::max(0, middle + m_bonus) : std::min(0, middle + m_bonus);
 	end = end > 0 ? std::max(0, end + e_bonus) : std::min(0, end + e_bonus);
 	return Score(middle, end);

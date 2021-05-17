@@ -6,6 +6,7 @@
 #include "move.h"
 #include "score.h"
 #include "zobrist.h"
+#include "value.h"
 
 #include <string>
 const std::string defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";

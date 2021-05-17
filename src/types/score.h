@@ -3,6 +3,11 @@
 
 #include "bitboard.h"
 #include <iostream>
+#include <fstream>
+#include <vector>
+#include <iterator>
+#include <unistd.h>
+
 
 class Score {
     public:
@@ -13,6 +18,8 @@ class Score {
         int middle_game;
         int end_game;
 };
+extern bool score_init();
+extern std::vector<Score> default_scores;
 
 typedef uint16_t Phase;
 // Pawn, Knight, Bishop, Rook, Queen, King
@@ -56,13 +63,13 @@ extern Score THREAT_CONTROLLED_SQUARE_SCORE;
 extern Score THREAT_SAFE_PAWN_ATTACK;
 extern Score THREAT_PAWN_PUSH_ATTACK;
 //initiative
-extern int PASSED_PAWN_MODIFIER;
-extern int PAWN_COUNT_MODIFIER;
-extern int OUTFLANKING_MODIFIER;
-extern int FLANK_PAWNS_MODIFIER;
-extern int INFILTRATION_MODIFIER;
-extern int DRAWN_MODIFIER;
-extern int INITIATIVE_BALANCING;
+extern Score INITIATIVE_PASSED_PAWN_SCORE;
+extern Score INITIATIVE_PAWN_COUNT_SCORE;
+extern Score INITIATIVE_OUTFLANKING_SCORE;
+extern Score INITIATIVE_FLANK_PAWNS_SCORE;
+extern Score INITIATIVE_INFILTRATION_SCORE;
+extern Score INITIATIVE_DRAWN_SCORE;
+extern Score INITIATIVE_BALANCING_SCORE;
 
 inline Score operator+(Score a, Score b) { return Score((a.middle_game + b.middle_game),(a.end_game + b.end_game));}
 inline Score operator-(Score a, Score b) { return Score((a.middle_game - b.middle_game),(a.end_game - b.end_game));}

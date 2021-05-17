@@ -390,8 +390,6 @@ void evaluation_info(std::string FEN){
     std::cout << "---KINGS---" << std::endl;
     std::cout << "WHITE: " << p.king_score(WHITE);
     std::cout << " BLACK: " << p.king_score(BLACK) << std::endl;
-    
-    
 
     std::cout << "---MATERIAL TOTAL---:" << std::endl;
     std::cout << material << std::endl;
@@ -414,6 +412,5 @@ int main(){
     std::string FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     FEN = "rnb1kb1r/pppp1ppp/8/8/2B1P3/5P2/P4P1P/RN2K1NR w - - 0 1";
     evaluation_info(FEN);
-    
     return 0;
 }
