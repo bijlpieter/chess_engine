@@ -75,13 +75,14 @@ public:
 	// Bitboard pinned_pieces(Color c) const;
 	// Bitboard fossilization_pieces(Color c) const;
 
-	void generate_pawn_captures(Move*& m, Bitboard target);
-	void generate_pawn_pushes(Move*& m, Bitboard target);
-	void generate_pieces(Move*& m, Bitboard target);
-	void generate_castling(Move*& m);
+	void generate_pawn_captures(Move*& m, Bitboard target) const;
+	void generate_pawn_pushes(Move*& m, Bitboard target) const;
+	void generate_pieces(Move*& m, Bitboard target) const;
+	void generate_castling(Move*& m) const;
 
-	// Generate all moves
-	Moves generate_moves(bool quiet);
+	void generate_captures(Move*& m) const;
+	void generate_quiets(Move*& m) const;
+	Moves generate_legal();
 
 	// Function to play or unplay a move, or move a piece
 	void play_move(Move m, PositionInfo* info);

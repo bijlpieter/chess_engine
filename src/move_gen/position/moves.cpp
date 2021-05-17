@@ -95,7 +95,7 @@ inline void add_promotions(Move*& m, Bitboard moves, Direction D) {
 	}
 }
 
-void Position::generate_pawn_captures(Move*& m, Bitboard target) {
+void Position::generate_pawn_captures(Move*& m, Bitboard target) const {
 	const Square king = lsb(pieces[turn][KING]);
 	const Direction forward_left = turn ? DOWN_LEFT : UP_LEFT;
 	const Direction forward_right = turn ? DOWN_RIGHT : UP_RIGHT;
@@ -131,7 +131,7 @@ void Position::generate_pawn_captures(Move*& m, Bitboard target) {
 	}
 }
 
-void Position::generate_pawn_pushes(Move*& m, Bitboard target) {
+void Position::generate_pawn_pushes(Move*& m, Bitboard target) const {
 	const Square king = lsb(pieces[turn][KING]);
 	const Direction forward = turn ? DOWN : UP;
 
@@ -153,7 +153,7 @@ void Position::generate_pawn_pushes(Move*& m, Bitboard target) {
 	add_pawn_moves(m, single_push & ~promotions & target, forward);
 }
 
-void Position::generate_pieces(Move*& m, Bitboard target) {
+void Position::generate_pieces(Move*& m, Bitboard target) const {
 	const Square king = lsb(pieces[turn][KING]);
 
 	Bitboard bb = pieces[turn][KNIGHT] & ~state->pinned;
@@ -199,7 +199,7 @@ void Position::generate_pieces(Move*& m, Bitboard target) {
 	}
 }
 
-void Position::generate_castling(Move*& m) {
+void Position::generate_castling(Move*& m) const {
 	if (turn == WHITE) {
 		if ((state->castling & WHITE_KINGSIDE) && !(all_pieces & BB_CASTLING_ROOK[WHITE_KINGSIDE]) && !(state->king_unsafe & BB_CASTLING_KING[WHITE_KINGSIDE]))
 			*m++ = move_init(E1, H1) | S_MOVE_CASTLING;
@@ -214,40 +214,53 @@ void Position::generate_castling(Move*& m) {
 	}
 }
 
-Moves Position::generate_moves(bool quiet) {
-	Moves moves;
+void Position::generate_captures(Move*& m) const {
 	const Square king = lsb(pieces[turn][KING]);
 	const Color enemy = ~turn;
+	// Check if we are in check
 	if (state->checkers) {
-		add_moves(moves.end, king, king_moves(king) & ~state->king_unsafe & ~colors[turn]);
-
-		// If there is more than one checker, return all possible moves of the king.
+		// If more than one checker, return just the king captures
 		if (popcount(state->checkers) > 1)
-			return moves;
+			goto king_captures;
+		// We only have one checker, so try to capture the checker with the remaining pieces
+		generate_pawn_captures(m, state->checkers);
+		generate_pieces(m, state->checkers);
+	}
+	// If we're not in check, just try to target all of the enemy pieces
+	else {
+		generate_pieces(m, colors[enemy]);
+		generate_pawn_captures(m, colors[enemy]);
+	}
+king_captures:
+	add_moves(m, king, king_moves(king) & ~state->king_unsafe & colors[enemy]);
+}
 
-		// Generate all piece moves that block or capture the checker
-		const Bitboard blocks = bb_ray(king, lsb(state->checkers));
-		generate_pawn_captures(moves.end, blocks & colors[enemy]);
-		generate_pieces(moves.end, blocks);
-		generate_pawn_pushes(moves.end, blocks);
+void Position::generate_quiets(Move*& m) const {
+	const Square king = lsb(pieces[turn][KING]);
+	// Check if we are in check
+	if (state->checkers) {
+		// If more than one checker, add just the king moves
+		if (popcount(state->checkers) > 1)
+			goto king_quiets;
+		const Bitboard blocks = bb_ray(king, lsb(state->checkers)) & ~state->checkers; // Exclude the checker itself, it will have been generated among the captures
+		generate_pieces(m, blocks);
+		generate_pawn_pushes(m, blocks);
 	}
 	else {
-		// All piece captures
-		generate_pieces(moves.end, colors[enemy]);
-		generate_pawn_captures(moves.end, colors[enemy]);
-		// All king captures
-		add_moves(moves.end, king, king_moves(king) & ~state->king_unsafe & colors[enemy]);
-
-		if (quiet)
-			return moves;
 		// Castling
-		generate_castling(moves.end);
+		generate_castling(m);
 		// All regular piece moves
-		generate_pieces(moves.end, ~all_pieces);
-		generate_pawn_pushes(moves.end, ~all_pieces);
-		// All regular king moves
-		add_moves(moves.end, king, king_moves(king) & ~state->king_unsafe & ~all_pieces);
+		generate_pieces(m, ~all_pieces);
+		generate_pawn_pushes(m, ~all_pieces);
 	}
+king_quiets:
+	add_moves(m, king, king_moves(king) & ~state->king_unsafe & ~all_pieces);
+}
+
+Moves Position::generate_legal() {
+	Moves moves;
+	generate_captures(moves.end);
+	generate_quiets(moves.end);
 	return moves;
 }
 
