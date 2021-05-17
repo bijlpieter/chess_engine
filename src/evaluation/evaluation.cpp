@@ -290,7 +290,7 @@ Score Position::pawn_storm_safety(Color c){
 }
 Score Position::king_score(Color c){
 	Score total(0,0);
-	//if pawns/king has moved.{pawnstorm}
+	//pawn storm
 	total += pawn_storm_safety(c);
 	if (is_open_file(c,file(info.king_squares[c]))){
 		total -= KING_ON_OPEN_FILE_PENALTY;
