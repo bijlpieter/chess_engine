@@ -365,7 +365,7 @@ void evaluation_info(std::string FEN){
     std::cout << "WHITE: " << p.calculate_space(WHITE,p_info);
     std::cout << " BLACK: " << p.calculate_space(BLACK,p_info) <<std::endl;
     std::cout << "TOTAL" << std::endl;
-    std::cout << "WHITE: " << p.pawn_score(WHITE) << std::endl;
+    std::cout << "WHITE: " << p.pawn_score(WHITE);
     std::cout << " BLACK: " << p.pawn_score(BLACK) << std::endl;
 
     std::cout << "---KNIGHTS---" << std::endl; 
@@ -396,7 +396,7 @@ int main(){
     bb_rays_init();
     test_calculate_material();
     std::string FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    FEN = "rnbqkbnr/pppppppp/8/8/2PPPP2/1P1BNBP1/P3Q2P/RN3RK1 w - - 0 1";
+    FEN = "rnbqkbnr/1p3p1p/1p1p1p2/1p6/2PPPPp1/1P1BNBP1/P3Q2P/RN3RK1 w - - 0 1";
     evaluation_info(FEN);
     
     return 0;
