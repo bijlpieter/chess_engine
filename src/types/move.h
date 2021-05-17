@@ -4,6 +4,8 @@
 #include <cstdint>
 #include "board.h"
 
+#define NULL_MOVE 0
+
 typedef uint16_t Move;
 
 inline constexpr Square move_to(Move m) {

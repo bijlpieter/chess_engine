@@ -1,41 +1,73 @@
-// #include <cstring>
+#include <cstring>
 
-// #include "tt.h"
+#include "tt.h"
 
-// // Adapted from stockfish's transposition table
+// Global transposition table
+TT tt;
 
-// // Global transposition table
-// TT tt;
+TT::TT() {
+	table = nullptr;
+}
 
-// void TTEntry::save(Key k, Bound b, Depth d, Move m, Value ev) {
-// 	// Preserve any existing move for the same position
-// 	if (m || (uint16_t)k != key16)
-// 		move16 = (uint16_t)m;
+TT::~TT() {
+	if (table)
+		delete[] table;
+}
 
-// 	// Overwrite less valuable entries (cheapest checks first)
-// 	if (b == EXACT_BOUND || (uint16_t)k != key || d - DEPTH_OFFSET > depth8 - 4) {
-// 		key       = (uint16_t)k;
-// 		depth     = (uint8_t)(d - DEPTH_OFFSET);
-// 		gen       = (uint8_t)(tt.generation | uint8_t(pv) << 2 | b);
-// 		eval16    = (int16_t)ev;
-// 	}
+void TT::init() {
+	if (table)
+		delete[] table;
 
-// }
+	table = new TTEntry[NUM_BUCKETS * ENTRIES_IN_BUCKET];
 
-// TT::TT() {
-// 	table = nullptr;
-// }
+	memset(table, 0, sizeof(TTEntry) * NUM_BUCKETS * ENTRIES_IN_BUCKET);
+}
 
-// TT::~TT() {
-// 	if (table)
-// 		delete[] table;
-// }
+bool TT::probe(Key k, TTEntry& entry) {
+	uint64_t ind = (k & entries) * ENTRIES_IN_BUCKET;
+	TTEntry* bucket = table + ind;
 
-// void TT::init() {
-// 	if (table)
-// 		delete[] table;
+	for (int i = 0; i < ENTRIES_IN_BUCKET; i++) {
+		if (bucket[i].hash == k) {
+			bucket[i].refresh(gen);
+			entry = bucket[i];
+			return 1;
+		}
+	}
 
-// 	table = new Bucket[NUM_BUCKETS];
+	return 0;
+}
 
-// 	memset(table, 0, sizeof(Bucket) * NUM_BUCKETS);
-// }
+void TT::prefetch(Key k) {
+	__builtin_prefetch(table + (k & entries) * ENTRIES_IN_BUCKET);
+}
+
+void TT::save(Key k, Value score, Value eval, Depth d, int ply, Bound bound, Move m) {
+	TTEntry* bucket = table + (k & entries) * ENTRIES_IN_BUCKET;
+
+	if (score >= VALUE_MATE)
+		score += ply;
+	else if (score <= -VALUE_MATE)
+		score -= ply;
+
+	TTEntry* replace = bucket;
+	TTEntry temp = {};
+	temp.hash = k;
+	temp.info.move = m;
+	temp.info.about = uint16_t(bound | (d << 2u) | (gen << 10u));
+	temp.info.eval = eval;
+	temp.info.score = score;
+
+	for (int i = 0; i < ENTRIES_IN_BUCKET; i++) {
+		if (bucket[i].hash == k) {
+			if (bound == EXACT_BOUND || d > bucket[i].depth() - 3)
+				bucket[i] = temp;
+			return;
+		}
+		else if (bucket[i].info.about < replace->info.about) {
+			replace = bucket + i;
+		}
+	}
+
+	*replace = temp;
+}

@@ -62,12 +62,14 @@ bool alternative() {
 
 void testing() {
 	PositionInfo info = {0};
-	Position pos = Position(&info, "rnbqkbnr/ppp1pppp/3p4/8/Q1P5/8/PP1PPPPP/RNB1KBNR b KQkq - 0 1"); // , "rnbqkbnr/pppppppp/8/8/2P5/8/PP1PPPPP/RNBQKBNR b KQkq - 0 1"
+	Position pos = Position(&info); // , "rnbqkbnr/pppppppp/8/8/2P5/8/PP1PPPPP/RNBQKBNR b KQkq - 0 1"
 	auto t1 = std::chrono::high_resolution_clock::now();
 
+	std::cout << pos << std::endl;
+
 	// for (int i = 0; i < 1000000; i++) {
-		// PositionInfo info2 = {0};
-		// pos.play_move(move_init(E2, E4), &info2);
+		PositionInfo info2 = {0};
+		pos.play_move(move_init(E2, E4), &info2);
 		// pos.unplay_move(move_init(E2, E4));
 		// pos.info_init();
 		// pos.generate_moves();
@@ -76,7 +78,7 @@ void testing() {
 	// std::cout << pos << std::endl;
 	// std::cout << bb_string(pos.state->pinned) << std::endl;
 
-	pos.divide(1);
+	std::cout << pos.divide(1) << std::endl;
 
 	auto t2 = std::chrono::high_resolution_clock::now();
 	auto sec = std::chrono::duration<double>(t2 - t1).count();

@@ -4,7 +4,7 @@
 #include <cstdint>
 
 typedef uint8_t Depth;
-typedef int16_t Value;
+typedef uint8_t Generation;
 
 enum Bound { NO_BOUND, UPPER_BOUND, LOWER_BOUND, EXACT_BOUND };
 

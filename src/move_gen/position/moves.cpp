@@ -217,6 +217,7 @@ void Position::generate_castling(Move*& m) {
 Moves Position::generate_moves(bool quiet) {
 	Moves moves;
 	const Square king = lsb(pieces[turn][KING]);
+	const Color enemy = ~turn;
 	if (state->checkers) {
 		add_moves(moves.end, king, king_moves(king) & ~state->king_unsafe & ~colors[turn]);
 
@@ -226,16 +227,16 @@ Moves Position::generate_moves(bool quiet) {
 
 		// Generate all piece moves that block or capture the checker
 		const Bitboard blocks = bb_ray(king, lsb(state->checkers));
-		generate_pawn_captures(moves.end, blocks & colors[~turn]);
+		generate_pawn_captures(moves.end, blocks & colors[enemy]);
 		generate_pieces(moves.end, blocks);
 		generate_pawn_pushes(moves.end, blocks);
 	}
 	else {
 		// All piece captures
-		generate_pieces(moves.end, colors[~turn]);
-		generate_pawn_captures(moves.end, colors[~turn]);
+		generate_pieces(moves.end, colors[enemy]);
+		generate_pawn_captures(moves.end, colors[enemy]);
 		// All king captures
-		add_moves(moves.end, king, king_moves(king) & ~state->king_unsafe & colors[~turn]);
+		add_moves(moves.end, king, king_moves(king) & ~state->king_unsafe & colors[enemy]);
 
 		if (quiet)
 			return moves;
