@@ -16,11 +16,13 @@ const Value static_exchange_values[NUM_PIECE_TYPES] = {
 	100, 310, 330, 500, 900, 6969
 };
 
-MovePick::MovePick(const Position* pos, Move ttm, Move p_counter) {
+MovePick::MovePick(const Position* pos, Move ttm, Move k1, Move k2, Move p_counter, Value threshold) {
+	see_threshold = threshold;
 	position = pos;
 	ttMove = ttm;
-	possible_counter = p_counter;
-	killer1 = killer2 = counter = NULL_MOVE;
+	counter = p_counter;
+	killer1 = k1;
+	killer2 = k2;
 	nCaptures = nQuiets = nBadCaptures = 0;
 	memset(scores, 0, sizeof(scores));
 }
@@ -57,11 +59,57 @@ start:
 		if (nCaptures > 0) {
 			int best = best_index(nCaptures);
 			Move best_move = captures[best];
+
+			if (scores[best] >= 0) {
+				if (!position->static_exchange_evaluation(best_move, see_threshold)) {
+					*bad_captures.end++ = best_move;
+					scores[best] = -1;
+					goto start;
+				}
+
+				nCaptures--;
+				captures.end--;
+				captures[best] = captures[nCaptures];
+				scores[best] = scores[nCaptures];
+
+				if (best == ttMove)
+					goto start;
+				return best;
+			}
+
+			if (skipQuiet) {
+				stage = STAGE_BAD_CAPTURES;
+				goto start;
+			}
+			++stage;
 		}
-	case STAGE_GENERATE_QUIETS:
+	
 	case STAGE_KILLER_1:
+		++stage;
+		if (!skipQuiet && killer1 && killer1 != ttMove)
+			return killer1;
+
 	case STAGE_KILLER_2:
+		++stage;
+		if (!skipQuiet && killer2 && killer2 != ttMove)
+			return killer2;
+
 	case STAGE_COUNTER:
+		++stage;
+		if (!skipQuiet && counter && counter != ttMove && counter != killer1 && counter != killer2)
+			return counter;
+
+	case STAGE_GENERATE_QUIETS:
+		// CONTINUE HERE:::::
+		
+		// position->generate_quiets(quiets.end);
+		// nQuiets = quiets.size();
+		// int ply = position->ply;
+
+		// uint16_t counterMove = (ply >= 1 ? searcher->Stack[ply - 1].move : NULLMOVE), followMove = (ply >= 2 ? searcher->Stack[ply - 2].move : NULLMOVE);
+		// int counterPiece = (ply >= 1 ? searcher->Stack[ply - 1].piece : 0), followPiece = (ply >= 2 ? searcher->Stack[ply - 2].piece : 0);
+		// int counterTo = sqTo(counterMove), followTo = sqTo(followMove);
+
 	case STAGE_QUIETS: 
 	case STAGE_BAD_CAPTURES: 
 	case STAGE_DONE:

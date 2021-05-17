@@ -154,6 +154,8 @@ public:
 	MoveCount halfMoves;
 	Color turn;
 
+	int ply = 0;
+
 	uint64_t perft_speed = 0;
 };
 
