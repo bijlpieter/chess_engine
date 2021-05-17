@@ -6,8 +6,9 @@
 enum MovepickStage {
 	STAGE_TABLE_LOOKUP,
 	STAGE_GENERATE_CAPTURES, STAGE_GOOD_CAPTURES,
-	STAGE_GENERATE_QUIETS, STAGE_KILLER_1, STAGE_KILLER_2, STAGE_COUNTER,
-	STAGE_QUIETS, STAGE_BAD_CAPTURES, STAGE_DONE
+	STAGE_KILLER_1, STAGE_KILLER_2, STAGE_COUNTER,
+	STAGE_GENERATE_QUIETS, STAGE_QUIETS,
+	STAGE_BAD_CAPTURES, STAGE_DONE
 };
 
 inline MovepickStage& operator++(MovepickStage& s) { return s = MovepickStage(int(s) + 1); }
@@ -15,15 +16,17 @@ inline MovepickStage& operator++(MovepickStage& s) { return s = MovepickStage(in
 typedef int MoveScore;
 
 struct MovePick {
-	MovePick(const Position* pos, Move ttm, Move p_counter);
+	MovePick(const Position* pos, Move ttm, Move k1, Move k2, Move p_counter, Value threshold);
 
 	MovepickStage stage;
-	Move ttMove, killer1, killer2, counter, possible_counter;
+	Move ttMove, killer1, killer2, counter;
 	const Position* position;
 
 	Moves captures, quiets, bad_captures; 
 	MoveCount nCaptures, nQuiets, nBadCaptures;
 	MoveScore scores[MAX_MOVES];
+
+	Value see_threshold;
 
 	int best_index(MoveCount len);
 	Move next_move(bool skipQuiet);

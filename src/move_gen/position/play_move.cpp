@@ -10,6 +10,8 @@ void Position::play_move(Move m, PositionInfo* info) {
 	state->position_key = state->previous->position_key;
 	state->position_key ^= zobrist.side;
 
+	++ply;
+
 	Square from = move_from(m);
 	Square to = move_to(m);
 	MoveType type = move_type(m);
@@ -95,6 +97,7 @@ void Position::unplay_move(Move m) {
 		}
 	}
 	state = state->previous;
+	--ply;
 }
 
 void Position::move_piece(Square from, Square to) {
