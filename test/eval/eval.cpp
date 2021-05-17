@@ -345,13 +345,20 @@ void evaluation_info(std::string FEN){
     Position p = pos_fen(FEN);
     std::cout << p << std::endl;
 
+    Score white_threats = p.calculate_threats(WHITE);
+    Score black_threats = p.calculate_threats(BLACK);
+    Score total = p.calculate_score();
+    Score material = p.calculate_material();
+    Score threats = white_threats - black_threats;
+
     std::cout << "----------------KEY----------------" << std::endl;
     std::cout << "Position key: " << p.state->position_key << std::endl;
     std::cout << "Pawn key: " << p.state->pawn_key << std::endl;
+
     std::cout << "----------------SCORE----------------" << std::endl;
     std::cout << "----------------THREATS----------------" << std::endl;
-    std::cout << "WHITE: " << p.calculate_threats(WHITE);
-    std::cout << " BLACK: " << p.calculate_threats(BLACK) <<std::endl;
+    std::cout << "WHITE: " << white_threats;
+    std::cout << " BLACK: " << black_threats <<std::endl;
     std::cout << "----------------MATERIAL----------------" << std::endl;
     std::cout << "---PAWNS---" << std::endl;
     PawnInfo* p_info = p.get_pawn_info(p.state->pawn_key);
@@ -383,11 +390,20 @@ void evaluation_info(std::string FEN){
     std::cout << "---KINGS---" << std::endl;
     std::cout << "WHITE: " << p.king_score(WHITE);
     std::cout << " BLACK: " << p.king_score(BLACK) << std::endl;
+    
+    
 
     std::cout << "---MATERIAL TOTAL---:" << std::endl;
-    std::cout << p.calculate_material() << std::endl;
+    std::cout << material << std::endl;
+    std::cout << "---THREAT TOTAL---:" << std::endl;
+    std::cout <<  threats << std::endl;
+    std::cout << "---INITIATIVE BONUS---" << std::endl;
+    std::cout << total - (material + threats) <<std::endl;
     std::cout << "---TOTAL---:" << std::endl;
-    std::cout << p.calculate_score() << std::endl;
+    std::cout << total << std::endl;
+    std::cout << "---INTERPOLATION---" << std::endl;
+    std::cout << "PHASE: " << p.info.phase << std::endl;
+    std::cout << "FINAL INTERPOLATED SCORE: "  << p.interpolate_score(total) << std::endl;
 
 }
 int main(){
@@ -396,7 +412,7 @@ int main(){
     bb_rays_init();
     test_calculate_material();
     std::string FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    FEN = "rnbqkbnr/1p3p1p/1p1p1p2/1p6/2PPPPp1/1P1BNBP1/P3Q2P/RN3RK1 w - - 0 1";
+    FEN = "rnb1kb1r/pppp1ppp/8/8/2B1P3/5P2/P4P1P/RN2K1NR w - - 0 1";
     evaluation_info(FEN);
     
     return 0;
