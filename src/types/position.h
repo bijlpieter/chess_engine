@@ -13,21 +13,19 @@ const std::string defaultFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQ
 
 struct PositionInfo {
 	// Useful Bitboards and variables used through move generation and evaluation. These should all be precomputed by info_init().
-	Bitboard checkers;
-	Bitboard check_blocks;
-	Bitboard pinned;
-	Bitboard king_unsafe;
-	Square king;
-	Color enemy;
+	Bitboard checkers = 0;
+	Bitboard check_blocks = 0;
+	Bitboard pinned = 0;
+	Bitboard king_unsafe = 0;
 
 	Piece captured = NO_PIECE; // The piece that was captured last move
-	Square en_peasant;
-	Castling castling;
-	Phase phase;
+	Square en_peasant = NO_SQUARE;
+	Castling castling = 0;
+	Phase phase = 0;
 
-	PositionInfo* previous;
-	Key position_key;
-	Key pawn_key;
+	PositionInfo* previous = nullptr;
+	Key position_key = 0;
+	Key pawn_key = 0;
 };
 
 struct PawnInfo {

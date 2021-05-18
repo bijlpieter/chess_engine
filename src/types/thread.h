@@ -15,8 +15,12 @@ struct SearchEntry {
 
 class SearchThread {
 public:
+	SearchThread();
+	~SearchThread();
+
 	Value search(Value alpha, Value beta, Depth depth);
 	Value qsearch(Value alpha, Value beta);
+	uint64_t mp_perft(int depth);
 
 	Move pvTable[MAX_DEPTH + 5][MAX_DEPTH + 5];
 	Move killers[MAX_DEPTH + 5][NUM_COLORS];
@@ -27,6 +31,7 @@ public:
 	SearchEntry stack[MAX_DEPTH + 5];
 
 	Position* pos;
+	PositionInfo* info;
 };
 
 #endif

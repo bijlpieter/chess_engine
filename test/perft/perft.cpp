@@ -87,6 +87,11 @@ void testing() {
 
 }
 
+void test_movepicker() {
+	SearchThread thread;
+	std::cout << thread.mp_perft(3) << std::endl;
+}
+
 int main() {
 	bb_init();
 	bb_moves_init();
@@ -94,12 +99,14 @@ int main() {
 
 	// testing();
 
-	if (!default_position()) return 1;
-	if (!kiwipete()) return 1;
-	if (!en_passant()) return 1;
-	if (!weird()) return 1;
-	if (!talkchess()) return 1;
-	if (!alternative()) return 1;
+	test_movepicker();
+
+	// if (!default_position()) return 1;
+	// if (!kiwipete()) return 1;
+	// if (!en_passant()) return 1;
+	// if (!weird()) return 1;
+	// if (!talkchess()) return 1;
+	// if (!alternative()) return 1;
 
 	return 0;
 }

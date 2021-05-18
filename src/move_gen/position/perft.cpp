@@ -16,7 +16,7 @@ uint64_t Position::perft(int depth) {
 	uint64_t nodes = 0;
 	for (int i = 0; i < num; i++) {
 		// output << indent << move_notation(*this, legal[i]) << std::endl;
-		PositionInfo info = {0};
+		PositionInfo info;
 		play_move(legal[i], &info);
 		// output << *this << std::endl;
 		nodes += perft(depth - 1);
@@ -36,7 +36,7 @@ uint64_t Position::divide(int depth) {
 	uint64_t nodes = 0;
 	for (int i = 0; i < num; i++) {
 		// output << indent << move_notation(*this, legal[i]) << std::endl;
-		PositionInfo info = {0};
+		PositionInfo info;
 		play_move(legal[i], &info);
 		// output << *this << std::endl;
 		uint64_t count = perft(depth - 1);

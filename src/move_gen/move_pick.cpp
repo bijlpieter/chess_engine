@@ -1,7 +1,9 @@
 #include "move_pick.h"
 #include "move_generation.h"
+#include "uci.h"
 
 #include <cstring>
+#include <iostream>
 
 const Value capture_values[NUM_PIECE_TYPES][NUM_PIECE_TYPES] = {
 	{9, 19, 29, 39, 49, 59},
@@ -24,6 +26,7 @@ MovePick::MovePick(const SearchThread* st, Move ttm, Move k1, Move k2, Move p_co
 	killer1 = k1;
 	killer2 = k2;
 	nCaptures = nQuiets = nBadCaptures = 0;
+	stage = STAGE_TABLE_LOOKUP;
 	memset(scores, 0, sizeof(scores));
 }
 
@@ -39,11 +42,15 @@ Move MovePick::next_move(bool skipQuiet, bool skipBadCaptures) {
 mp_start:
 	switch(stage) {
 	case STAGE_TABLE_LOOKUP:
+		// std::cout << "TABLE_LOOKUP" << std::endl;
 		++stage;
-		return ttMove;
+		if (ttMove)
+			return ttMove;
 	case STAGE_GENERATE_CAPTURES:
+		// std::cout << "GENERATING CAPTURES..." << std::endl;
 		search->pos->generate_captures(captures.end);
 		nCaptures = captures.size();
+		std::cout << "GENERATED " << nCaptures << " MOVES" << std::endl;
 		for (int i = 0; i < nCaptures; i++) {
 			Move m = captures[i];
 			PieceType moved = piece_type(search->pos->piece_on(move_from(m)));
@@ -56,13 +63,15 @@ mp_start:
 		++stage;
 
 	case STAGE_GOOD_CAPTURES:
+		// std::cout << "GOOD CAPTURES" << std::endl;
 		if (nCaptures > 0) {
 			int best = best_index(nCaptures);
-			Move best_move = captures[best];
 
 			if (scores[best] >= 0) {
+				Move best_move = captures[best];
 				if (!search->pos->static_exchange_evaluation(best_move, see_threshold)) {
 					*bad_captures.end++ = best_move;
+					nBadCaptures++;
 					scores[best] = -1;
 					goto mp_start;
 				}
@@ -74,34 +83,40 @@ mp_start:
 
 				if (best == ttMove)
 					goto mp_start;
+
+				// std::cout << "RETURNING A GOOD CAPTURE: " << move_notation(*search->pos, best_move) << std::endl;
 				return best;
 			}
-
-			if (skipQuiet) {
-				stage = STAGE_BAD_CAPTURES;
-				goto mp_start;
-			}
-			++stage;
 		}
+		if (skipQuiet) {
+			stage = STAGE_BAD_CAPTURES;
+			goto mp_start;
+		}
+		++stage;
 	
 	case STAGE_KILLER_1:
+		// std::cout << "KILLER 1" << std::endl;
 		++stage;
 		if (!skipQuiet && killer1 && killer1 != ttMove)
 			return killer1;
 
 	case STAGE_KILLER_2:
+		// std::cout << "KILLER 2" << std::endl;
 		++stage;
 		if (!skipQuiet && killer2 && killer2 != ttMove)
 			return killer2;
 
 	case STAGE_COUNTER:
+		// std::cout << "COUNTER" << std::endl;
 		++stage;
 		if (!skipQuiet && counter && counter != ttMove && counter != killer1 && counter != killer2)
 			return counter;
 
 	case STAGE_GENERATE_QUIETS:	
+		// std::cout << "GENERATING QUIETS..." << std::endl;
 		search->pos->generate_quiets(quiets.end);
 		nQuiets = quiets.size();
+		// std::cout << "GENERATED " << nQuiets << " MOVES" << std::endl;
 
 		for (int i = 0; i < nQuiets; i++) {
 			Move m = quiets[i];
@@ -136,6 +151,7 @@ mp_start:
 		++stage;
 
 	case STAGE_QUIETS:
+		// std::cout << "QUIET MOVE SELECTION" << std::endl;
 		if (!skipQuiet && nQuiets) {
 			int best = best_index(nQuiets);
 			Move m = quiets[best];
@@ -148,26 +164,30 @@ mp_start:
 			if (m == ttMove || m == killer1 || m == killer2 || m == counter)
 				goto mp_start;
 			
+			// std::cout << "RETURNING A GOOD QUIET: " << move_notation(*search->pos, m) << std::endl;
 			return m;
 		}
 		else
 			++stage;
 
 	case STAGE_BAD_CAPTURES:
+		// std::cout << "BAD CAPTURE SELECTION" << std::endl;
 		if (!skipBadCaptures && nBadCaptures) {
 			nBadCaptures--;
-			bad_captures.end--;
+			bad_captures.end--; // Todo this line is unnecessary i believe (test to make sure)
 			Move m = bad_captures[nBadCaptures];
 
 			if (m == ttMove)
 				goto mp_start;
 			
+			std::cout << "RETURNING A BAD CAPTURE: " << move_notation(*search->pos, m) << std::endl;
 			return m;
 		}
 		else
 			++stage;
 
 	case STAGE_DONE:
+		// std::cout << "ALL MOVES GENERATED AND RETURNED... RETURNING NULL_MOVE" << std::endl;
 		return NULL_MOVE;
 	}
 
