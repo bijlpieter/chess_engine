@@ -21,6 +21,7 @@ public:
 	Value search(Value alpha, Value beta, Depth depth);
 	Value qsearch(Value alpha, Value beta);
 	uint64_t mp_perft(int depth);
+	uint64_t mp_divide(int depth);
 
 	Move pvTable[MAX_DEPTH + 5][MAX_DEPTH + 5];
 	Move killers[MAX_DEPTH + 5][NUM_COLORS];

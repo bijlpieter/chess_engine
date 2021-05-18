@@ -50,7 +50,7 @@ mp_start:
 		// std::cout << "GENERATING CAPTURES..." << std::endl;
 		search->pos->generate_captures(captures.end);
 		nCaptures = captures.size();
-		std::cout << "GENERATED " << nCaptures << " MOVES" << std::endl;
+		// std::cout << "GENERATED " << nCaptures << " MOVES" << std::endl;
 		for (int i = 0; i < nCaptures; i++) {
 			Move m = captures[i];
 			PieceType moved = piece_type(search->pos->piece_on(move_from(m)));
@@ -68,9 +68,9 @@ mp_start:
 			int best = best_index(nCaptures);
 
 			if (scores[best] >= 0) {
-				Move best_move = captures[best];
-				if (!search->pos->static_exchange_evaluation(best_move, see_threshold)) {
-					*bad_captures.end++ = best_move;
+				Move m = captures[best];
+				if (!search->pos->static_exchange_evaluation(m, see_threshold)) {
+					*bad_captures.end++ = m;
 					nBadCaptures++;
 					scores[best] = -1;
 					goto mp_start;
@@ -81,11 +81,11 @@ mp_start:
 				captures[best] = captures[nCaptures];
 				scores[best] = scores[nCaptures];
 
-				if (best == ttMove)
+				if (m == ttMove)
 					goto mp_start;
 
-				// std::cout << "RETURNING A GOOD CAPTURE: " << move_notation(*search->pos, best_move) << std::endl;
-				return best;
+				// std::cout << "RETURNING A GOOD CAPTURE: " << move_notation(*search->pos, m) << std::endl;
+				return m;
 			}
 		}
 		if (skipQuiet) {
@@ -180,7 +180,7 @@ mp_start:
 			if (m == ttMove)
 				goto mp_start;
 			
-			std::cout << "RETURNING A BAD CAPTURE: " << move_notation(*search->pos, m) << std::endl;
+			// std::cout << "RETURNING A BAD CAPTURE: " << move_notation(*search->pos, m) << std::endl;
 			return m;
 		}
 		else

@@ -89,7 +89,7 @@ void testing() {
 
 void test_movepicker() {
 	SearchThread thread;
-	std::cout << thread.mp_perft(3) << std::endl;
+	std::cout << thread.mp_perft(6) << std::endl;
 }
 
 int main() {
