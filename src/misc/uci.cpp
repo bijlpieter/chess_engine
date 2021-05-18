@@ -13,6 +13,6 @@ std::string move_notation(const Position& pos, Move m) {
 			ss << "O-O-O";
 	}
 	if (move_type(m) == S_MOVE_PROMOTION)
-		ss << "=" << "NBRQ"[move_promo(m) >> 12];
+		ss << "=" << "NBRQ"[move_promo(m)];
 	return ss.str();
 }

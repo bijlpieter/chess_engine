@@ -99,10 +99,10 @@ public:
 	uint64_t divide(int depth);
 
 	// Get legal move bitboards for evaluation
-	Bitboard legal_knight_moves() const;
-	Bitboard legal_bishop_moves() const;
-	Bitboard legal_rook_moves() const;
-	Bitboard legal_queen_moves() const;
+	// Bitboard legal_knight_moves() const;
+	// Bitboard legal_bishop_moves() const;
+	// Bitboard legal_rook_moves() const;
+	// Bitboard legal_queen_moves() const;
 
 	// Evaluation functions
 	void eval_init();

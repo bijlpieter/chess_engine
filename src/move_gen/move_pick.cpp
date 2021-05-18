@@ -66,13 +66,13 @@ mp_start:
 		// std::cout << "GOOD CAPTURES" << std::endl;
 		if (nCaptures > 0) {
 			int best = best_index(nCaptures);
-
 			if (scores[best] >= 0) {
 				Move m = captures[best];
 				if (!search->pos->static_exchange_evaluation(m, see_threshold)) {
 					*bad_captures.end++ = m;
 					nBadCaptures++;
 					scores[best] = -1;
+					// std::cout << "BAD CAPTURE DETECTED LULW: " << move_notation(*search->pos, m) << std::endl;
 					goto mp_start;
 				}
 

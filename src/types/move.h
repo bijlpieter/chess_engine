@@ -24,7 +24,7 @@ enum PromotionPiece {
 };
 
 inline constexpr PromotionPiece move_promo(Move m) {
-	return PromotionPiece(m & 0x3000);  // 0011000000000000
+	return PromotionPiece((m & 0x3000) >> 12);  // 0011000000000000
 }
 
 enum MoveType {

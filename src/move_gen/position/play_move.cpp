@@ -62,7 +62,7 @@ void Position::play_move(Move m, PositionInfo* info) {
 		}
 		else if (type == S_MOVE_PROMOTION) {
 			remove_piece(to);
-			Piece promo = piece_init(PieceType((move_promo(m) >> 12) + 1), turn);
+			Piece promo = piece_init(PieceType(move_promo(m) + 1), turn);
 			place_piece(promo, to);
 
 			state->position_key ^= zobrist.piece_square[p][to] ^ zobrist.piece_square[promo][to];
