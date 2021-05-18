@@ -16,11 +16,11 @@ inline MovepickStage& operator++(MovepickStage& s) { return s = MovepickStage(in
 typedef int MoveScore;
 
 struct MovePick {
-	MovePick(const Position* pos, Move ttm, Move k1, Move k2, Move p_counter, Value threshold);
+	MovePick(const SearchThread* st, Move ttm, Move k1, Move k2, Move p_counter, Value threshold);
 
 	MovepickStage stage;
 	Move ttMove, killer1, killer2, counter;
-	const Position* position;
+	const SearchThread* search;
 
 	Moves captures, quiets, bad_captures; 
 	MoveCount nCaptures, nQuiets, nBadCaptures;
@@ -29,7 +29,7 @@ struct MovePick {
 	Value see_threshold;
 
 	int best_index(MoveCount len);
-	Move next_move(bool skipQuiet);
+	Move next_move(bool skipQuiet, bool skipBadCaptures);
 };
 
 #endif

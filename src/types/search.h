@@ -3,6 +3,8 @@
 
 #include <cstdint>
 
+#define MAX_DEPTH 255	
+
 typedef uint8_t Depth;
 typedef uint8_t Generation;
 

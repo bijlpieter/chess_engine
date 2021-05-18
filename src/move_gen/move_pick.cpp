@@ -16,9 +16,9 @@ const Value static_exchange_values[NUM_PIECE_TYPES] = {
 	100, 310, 330, 500, 900, 6969
 };
 
-MovePick::MovePick(const Position* pos, Move ttm, Move k1, Move k2, Move p_counter, Value threshold) {
+MovePick::MovePick(const SearchThread* st, Move ttm, Move k1, Move k2, Move p_counter, Value threshold) {
 	see_threshold = threshold;
-	position = pos;
+	search = st;
 	ttMove = ttm;
 	counter = p_counter;
 	killer1 = k1;
@@ -35,19 +35,19 @@ int MovePick::best_index(MoveCount len) {
 	return best;
 }
 
-Move MovePick::next_move(bool skipQuiet) {
-start:
+Move MovePick::next_move(bool skipQuiet, bool skipBadCaptures) {
+mp_start:
 	switch(stage) {
 	case STAGE_TABLE_LOOKUP:
 		++stage;
 		return ttMove;
 	case STAGE_GENERATE_CAPTURES:
-		position->generate_captures(captures.end);
+		search->pos->generate_captures(captures.end);
 		nCaptures = captures.size();
 		for (int i = 0; i < nCaptures; i++) {
 			Move m = captures[i];
-			PieceType moved = piece_type(position->piece_on(move_from(m)));
-			PieceType capped = (move_type(m) == S_MOVE_EN_PASSANT) ? PAWN : piece_type(position->piece_on(move_to(m)));
+			PieceType moved = piece_type(search->pos->piece_on(move_from(m)));
+			PieceType capped = (move_type(m) == S_MOVE_EN_PASSANT) ? PAWN : piece_type(search->pos->piece_on(move_to(m)));
 			Value v = capture_values[moved][capped];
 			if (move_type(m) == S_MOVE_PROMOTION)
 				v = v + (move_promo(m) + KNIGHT) * 10;
@@ -61,10 +61,10 @@ start:
 			Move best_move = captures[best];
 
 			if (scores[best] >= 0) {
-				if (!position->static_exchange_evaluation(best_move, see_threshold)) {
+				if (!search->pos->static_exchange_evaluation(best_move, see_threshold)) {
 					*bad_captures.end++ = best_move;
 					scores[best] = -1;
-					goto start;
+					goto mp_start;
 				}
 
 				nCaptures--;
@@ -73,13 +73,13 @@ start:
 				scores[best] = scores[nCaptures];
 
 				if (best == ttMove)
-					goto start;
+					goto mp_start;
 				return best;
 			}
 
 			if (skipQuiet) {
 				stage = STAGE_BAD_CAPTURES;
-				goto start;
+				goto mp_start;
 			}
 			++stage;
 		}
@@ -99,19 +99,74 @@ start:
 		if (!skipQuiet && counter && counter != ttMove && counter != killer1 && counter != killer2)
 			return counter;
 
-	case STAGE_GENERATE_QUIETS:
-		// CONTINUE HERE:::::
-		
-		// position->generate_quiets(quiets.end);
-		// nQuiets = quiets.size();
-		// int ply = position->ply;
+	case STAGE_GENERATE_QUIETS:	
+		search->pos->generate_quiets(quiets.end);
+		nQuiets = quiets.size();
 
-		// uint16_t counterMove = (ply >= 1 ? searcher->Stack[ply - 1].move : NULLMOVE), followMove = (ply >= 2 ? searcher->Stack[ply - 2].move : NULLMOVE);
-		// int counterPiece = (ply >= 1 ? searcher->Stack[ply - 1].piece : 0), followPiece = (ply >= 2 ? searcher->Stack[ply - 2].piece : 0);
-		// int counterTo = sqTo(counterMove), followTo = sqTo(followMove);
+		for (int i = 0; i < nQuiets; i++) {
+			Move m = quiets[i];
+			Value score = 0;
 
-	case STAGE_QUIETS: 
-	case STAGE_BAD_CAPTURES: 
+			if (m == ttMove || m == killer1 || m == killer2 || m == counter) {
+				score = -6969; // This might instead be possible to remove it from the list: test later
+			}
+			else {
+				int ply = search->pos->ply;
+				Move counter_move = (ply >= 1 ? search->stack[ply - 1].move : NULL_MOVE);
+				Move follow_move = (ply >= 2 ? search->stack[ply - 2].move : NULL_MOVE);
+				Piece counter_piece = (ply >= 1 ? search->stack[ply - 1].piece : NO_PIECE);
+				Piece follow_piece = (ply >= 2 ? search->stack[ply - 2].piece : NO_PIECE);
+				Square counter_to = move_to(counter_move);
+				Square follow_to = move_to(follow_move);
+				
+				Square m_from = move_from(m);
+				Square m_to = move_to(m);
+				Piece m_piece = search->pos->piece_on(m_from);
+
+				score = search->history[search->pos->turn][m_from][m_to];
+
+				if (counter_move)
+					score += search->follow[0][counter_piece][counter_to][m_piece][m_to];
+
+				if (follow_move)
+					score += search->follow[1][follow_piece][follow_to][m_piece][m_to];
+			}
+			scores[i] = score;
+		}
+		++stage;
+
+	case STAGE_QUIETS:
+		if (!skipQuiet && nQuiets) {
+			int best = best_index(nQuiets);
+			Move m = quiets[best];
+
+			nQuiets--;
+			quiets.end--;
+			quiets[best] = quiets[nQuiets];
+			scores[best] = scores[nQuiets];
+
+			if (m == ttMove || m == killer1 || m == killer2 || m == counter)
+				goto mp_start;
+			
+			return m;
+		}
+		else
+			++stage;
+
+	case STAGE_BAD_CAPTURES:
+		if (!skipBadCaptures && nBadCaptures) {
+			nBadCaptures--;
+			bad_captures.end--;
+			Move m = bad_captures[nBadCaptures];
+
+			if (m == ttMove)
+				goto mp_start;
+			
+			return m;
+		}
+		else
+			++stage;
+
 	case STAGE_DONE:
 		return NULL_MOVE;
 	}

@@ -10,6 +10,7 @@
 #include "../src/types/score.h"
 #include "../src/types/search.h"
 #include "../src/types/random.h"
+#include "../src/types/thread.h"
 #include "../src/types/value.h"
 #include "../src/types/zobrist.h"
 
