@@ -339,9 +339,12 @@ void test_calculate_material(){
     }
 
 } 
-
+void test_scores(){
+    std::cout << "--------------[TESTING SCORES]--------------" << std::endl;
+    //score_init("testing.txt");
+}
 void evaluation_info(std::string FEN){
-    std::cout << "----------------POSITION----------------" <<std::endl;
+    std::cout << "------------------POSITION INFORMATION----------------" <<std::endl;
     Position p = pos_fen(FEN);
     std::cout << p << std::endl;
 
@@ -351,49 +354,52 @@ void evaluation_info(std::string FEN){
     Score material = p.calculate_material();
     Score threats = white_threats - black_threats;
 
-    std::cout << "----------------KEY----------------" << std::endl;
+    std::cout << "------------------KEY------------------" << std::endl;
     std::cout << "Position key: " << p.state->position_key << std::endl;
     std::cout << "Pawn key: " << p.state->pawn_key << std::endl;
+    std::cout << "---------------------------------------" <<std::endl <<std::endl;
 
-    std::cout << "----------------SCORE----------------" << std::endl;
     std::cout << "----------------THREATS----------------" << std::endl;
     std::cout << "WHITE: " << white_threats;
     std::cout << " BLACK: " << black_threats <<std::endl;
+    std::cout << "---------------------------------------" <<std::endl <<std::endl;
+
     std::cout << "----------------MATERIAL----------------" << std::endl;
     std::cout << "---PAWNS---" << std::endl;
     PawnInfo* p_info = p.get_pawn_info(p.state->pawn_key);
-    std::cout << "STATIC" << std::endl;
+    std::cout << "STATIC_PAWN_EVALUATION:" << std::endl;
     std::cout << "WHITE: " << p_info->scores[WHITE]; 
-    std::cout << " BLACK: " << p_info->scores[BLACK] << std::endl;
-    std::cout << "PASSED" << std::endl;
+    std::cout << " BLACK: " << p_info->scores[BLACK] << std::endl <<std::endl;
+    std::cout << "PASSED_PAWN_EVALUATION:" << std::endl;
     std::cout << "WHITE: " << p.calculate_passed(WHITE,p_info);
-    std::cout << " BLACK: " << p.calculate_passed(BLACK,p_info) <<std::endl;
-    std::cout << "SPACE" << std::endl;
+    std::cout << " BLACK: " << p.calculate_passed(BLACK,p_info) <<std::endl << std::endl;;
+    std::cout << "SPACIAL_EVALUATION: " << std::endl;
     std::cout << "WHITE: " << p.calculate_space(WHITE,p_info);
-    std::cout << " BLACK: " << p.calculate_space(BLACK,p_info) <<std::endl;
-    std::cout << "TOTAL" << std::endl;
+    std::cout << " BLACK: " << p.calculate_space(BLACK,p_info) <<std::endl << std::endl;;
+    std::cout << "TOTAL: " << std::endl;
     std::cout << "WHITE: " << p.pawn_score(WHITE);
-    std::cout << " BLACK: " << p.pawn_score(BLACK) << std::endl;
+    std::cout << " BLACK: " << p.pawn_score(BLACK) << std::endl << std::endl;;
 
     std::cout << "---KNIGHTS---" << std::endl; 
     std::cout << "WHITE: " << p.knight_score(WHITE);
-    std::cout << " BLACK: " << p.knight_score(BLACK) << std::endl;
+    std::cout << " BLACK: " << p.knight_score(BLACK) << std::endl  << std::endl;;
     std::cout << "---BISHOPS---" << std::endl;
     std::cout << "WHITE: " << p.bishop_score(WHITE);
-    std::cout << " BLACK: " << p.bishop_score(BLACK) << std::endl;
+    std::cout << " BLACK: " << p.bishop_score(BLACK) << std::endl << std::endl;;
     std::cout << "---ROOKS---" << std::endl;
     std::cout << "WHITE: " << p.rook_score(WHITE);
-    std::cout << " BLACK: " << p.rook_score(BLACK) << std::endl;
+    std::cout << " BLACK: " << p.rook_score(BLACK) << std::endl << std::endl;;
     std::cout << "---QUEENS---" << std::endl;
     std::cout << "WHITE: " << p.queen_score(WHITE);
-    std::cout << " BLACK: " << p.queen_score(BLACK) << std::endl;
+    std::cout << " BLACK: " << p.queen_score(BLACK) << std::endl << std::endl;;
     std::cout << "---KINGS---" << std::endl;
     std::cout << "WHITE: " << p.king_score(WHITE);
-    std::cout << " BLACK: " << p.king_score(BLACK) << std::endl;
+    std::cout << " BLACK: " << p.king_score(BLACK) << std::endl << std::endl;;
+    std::cout << "---------------------------------------" <<std::endl <<std::endl;
 
-    std::cout << "---MATERIAL TOTAL---:" << std::endl;
+    std::cout << "---MATERIAL TOTAL---" << std::endl;
     std::cout << material << std::endl;
-    std::cout << "---THREAT TOTAL---:" << std::endl;
+    std::cout << "---THREAT TOTAL---" << std::endl;
     std::cout <<  threats << std::endl;
     std::cout << "---INITIATIVE BONUS---" << std::endl;
     std::cout << total - (material + threats) <<std::endl;
@@ -408,9 +414,11 @@ int main(){
     bb_init();
     bb_moves_init();
     bb_rays_init();
+    test_scores();
+    score_init("scores.txt");
     test_calculate_material();
     std::string FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    FEN = "rnb1kb1r/pppp1ppp/8/8/2B1P3/5P2/P4P1P/RN2K1NR w - - 0 1";
+    FEN = "rnbqkbnr/pppppppp/8/8/2PPPP2/1PNBBNP1/P3Q2P/R4RK1 w - - 0 1";
     evaluation_info(FEN);
     return 0;
 }

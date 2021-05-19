@@ -1,89 +1,82 @@
 #include "score.h"
-
-
-#define S(a,b)  Score(a,b)
 //PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING,
-Score material_scores[NUM_PIECE_TYPES] = {S(100, 100), S(350, 350),S(350, 350), S(525, 525), S(1000, 1000), S(100000,100000)};
-Score mobility_scores[NUM_PIECE_TYPES] = {S(5, 5), S(5, 5), S(5, 5), S(5, 5), S(5, 5), S(5, 5)};
+Score material_scores[NUM_PIECE_TYPES];
+Score mobility_scores[NUM_PIECE_TYPES];
 //pawn
-Score PAWN_PASSED_RANK[NUM_RANKS] = {S(0, 0), S(5, 15), S(10, 30), S(20, 50), S(50, 80), S(150, 200), S(250,250), S(0,0)}; 
-Score PAWN_CONNECTED_SCORE = S(5,5);
-Score PAWN_SUPPORTED_SCORE = S(5,5);
-Score PAWN_ADVANCED_BLOCK_SCORE = S(5,15);
-Score PAWN_KING_PROX_SCORE = S(0,10);
-Score PAWN_PASSED_UNCONTESTED_SCORE = S(100,100);
-Score PAWN_PASSED_CONTESTED_SUPPORTED_SCORE = S(80,80);
-Score PAWN_PASSED_QUEENPATH_UNCONTESTED_SCORE = S(50,50);
-Score PAWN_PASSED_NEXTSQUARE_UNCONTESTED_SCORE = S(10,10);
-Score PAWN_PASSED_NEXTSQUARE_DEFENDED_SCORE= S(10,10);
-Score PAWN_PASSED_EDGE_DIST_SCORE = S(10,10);
-Score PAWN_SPACE_SCORE = S(2,0);
-
-Score PAWN_EARLY_DOUBLE_PENALTY = S(15,20);
-Score PAWN_DOUBLED_PENALTY = S(20,20);
-Score PAWN_ISOLATED_PENALTY = S(10,10);
-Score PAWN_BACKWARDS_PENALTY = S(10,10);
-Score PAWN_WEAK_LEVER_PENALTY = S(10,20);
+Score PAWN_PASSED_RANK[NUM_RANKS];
+Score PAWN_CONNECTED_SCORE;
+Score PAWN_SUPPORTED_SCORE;
+Score PAWN_ADVANCED_BLOCK_SCORE;
+Score PAWN_KING_PROX_SCORE;
+Score PAWN_PASSED_UNCONTESTED_SCORE;
+Score PAWN_PASSED_CONTESTED_SUPPORTED_SCORE;
+Score PAWN_PASSED_QUEENPATH_UNCONTESTED_SCORE;
+Score PAWN_PASSED_NEXTSQUARE_UNCONTESTED_SCORE;
+Score PAWN_PASSED_NEXTSQUARE_DEFENDED_SCORE;
+Score PAWN_PASSED_EDGE_DIST_SCORE;
+Score PAWN_SPACE_SCORE;
+Score PAWN_EARLY_DOUBLE_PENALTY;
+Score PAWN_DOUBLED_PENALTY;
+Score PAWN_ISOLATED_PENALTY;
+Score PAWN_BACKWARDS_PENALTY;
+Score PAWN_WEAK_LEVER_PENALTY;
 //bishop
-Score BISHOP_PAIR_SCORE = S(50, 50);
-Score BISHOP_DEFENDED_SCORE = S(10, 10);
-Score BISHOP_OUTPOST_SCORE = S(20, 20);
-Score BISHOP_FIANCHETTO_SCORE = S(20,0);
-Score BISHOP_KING_DISTANCE_PENALTY = S(1, 1);
-Score BISHOP_XRAY_PAWN_PENALTY = S(10, 10);
-Score BISHOP_SHIELDED_SCORE = S(10, 10);
-Score BISHOP_ATTACKING_KING_SCORE = S(10, 10);
+Score BISHOP_PAIR_SCORE;
+Score BISHOP_DEFENDED_SCORE;
+Score BISHOP_OUTPOST_SCORE;
+Score BISHOP_FIANCHETTO_SCORE;
+Score BISHOP_KING_DISTANCE_PENALTY;
+Score BISHOP_XRAY_PAWN_PENALTY;
+Score BISHOP_SHIELDED_SCORE;
+Score BISHOP_ATTACKING_KING_SCORE;
 //knights
-Score KNIGHT_DEFENDED_SCORE = S(10, 10);
-Score KNIGHT_OUTPOST_SCORE = S(20, 20);
-Score KNIGHT_KING_DISTANCE_PENALTY = S(1, 1);
-Score KNIGHT_SHIELDED_SCORE = S(10, 10);
+Score KNIGHT_DEFENDED_SCORE;
+Score KNIGHT_OUTPOST_SCORE;
+Score KNIGHT_KING_DISTANCE_PENALTY;
+Score KNIGHT_SHIELDED_SCORE;
 //rook
-Score ROOK_ON_KING_FILE_SCORE = S(10, 10);
-Score ROOK_ON_KING_RANK_SCORE = S (10, 10);
-Score ROOK_ON_QUEEN_LINE_SCORE = S(15, 15);
-Score ROOK_ON_OPEN_SCORE = S(20, 5);
-Score ROOK_STACKED_SCORE = S (20,20);
-Score ROOK_ON_SEVENTH_SCORE = S (100, 20);
-Score ROOK_ON_BLOCKED_PENALTY = S(5, 50);
-Score ROOK_TRAPPED_BY_KING_PENALTY = S(100, 100);
+Score ROOK_ON_KING_FILE_SCORE;
+Score ROOK_ON_KING_RANK_SCORE;
+Score ROOK_ON_QUEEN_LINE_SCORE;
+Score ROOK_ON_OPEN_SCORE;
+Score ROOK_STACKED_SCORE;
+Score ROOK_ON_SEVENTH_SCORE;
+Score ROOK_ON_BLOCKED_PENALTY;
+Score ROOK_TRAPPED_BY_KING_PENALTY;
 //queen
-Score QUEEN_PINNED_PENALTY = S(30,30);
+Score QUEEN_PINNED_PENALTY;
 //king
-Score PAWN_STORM_BLOCKED_FILE_PENALTY[NUM_FILES] = {S(0,0), S(0,0), S(30, 30), S (-10,20), S (-10, 20), S(-10, 20), S(0, 10), S(0,0)};
-Score PAWN_STORM_UNBLOCKED_FILE_PENALTY[NUM_FILES] = {S(0,0), S(0,0), S(30, 30), S (-10,20), S (-10, 20), S(-10, 20), S(0, 10), S(0,0)};
-Score KING_PAWN_DISTANCE_SCORE[7] = {S(0,0), S(0,50) ,S(0,40), S(0,30), S(0,0), S(0,-20), S(0,-50)};
-Score KING_ON_OPEN_FILE_PENALTY = S(50,0);
-Score KING_AREA_WEAK_SQUARE_PENALTY = S(10,5);
-Score KING_NO_ENEMY_QUEEN_SCORE = S(100,100);
-Score UNSAFE_CHECKS_PENALTY = S(50,50);
-//PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING, 0 for single checks 1 for multiple checks
-Score SAFE_CHECKS_PENALTY[2][NUM_PIECE_TYPES] = 
-{{S(0,0), S(100,100), S(100,100), S(200,200), S(150,150), S(0,0)},
-{S(0,0), S(200,200),S(200,200), S(400,400), S(300,300), S(0,0)}};
+Score PAWN_STORM_BLOCKED_FILE_PENALTY[NUM_FILES];
+Score PAWN_STORM_UNBLOCKED_FILE_PENALTY[NUM_FILES];
+Score KING_PAWN_DISTANCE_SCORE[7];
+Score KING_ON_OPEN_FILE_PENALTY;
+Score KING_AREA_WEAK_SQUARE_PENALTY;
+Score KING_NO_ENEMY_QUEEN_SCORE;
+Score UNSAFE_CHECKS_PENALTY;
+//0 for single checks 1 for multiple checks
+Score SAFE_CHECKS_PENALTY[2][NUM_PIECE_TYPES];
 //Threats
-Score THREAT_MINOR_SCORE[NUM_PIECE_TYPES] = {S(0,0),S(20,40),S(20,40),S(50,70),S(100,100),S(150,150)};
-Score THREAT_ROOK_SCORE[NUM_PIECE_TYPES] = {S(0,0),S(10,20),S(10,20),S(30,30),S(120,120),S(150,150)};
-Score THREAT_KING_SCORE = S(10,70); 
-Score THREAT_HANGING_PIECE_SCORE = S(100,50);
-Score THREAT_CONTROLLED_SQUARE_SCORE = S(5,5);
-Score THREAT_SAFE_PAWN_ATTACK = S(10,10);
-Score THREAT_PAWN_PUSH_ATTACK = S(20,20);
+Score THREAT_MINOR_SCORE[NUM_PIECE_TYPES];
+Score THREAT_ROOK_SCORE[NUM_PIECE_TYPES];
+Score THREAT_KING_SCORE;
+Score THREAT_HANGING_PIECE_SCORE;
+Score THREAT_CONTROLLED_SQUARE_SCORE;
+Score THREAT_SAFE_PAWN_ATTACK;
+Score THREAT_PAWN_PUSH_ATTACK;
 //Initiative
-Score INITIATIVE_PASSED_PAWN_SCORE = S(10,10);
-Score INITIATIVE_PAWN_COUNT_SCORE = S(10,10);
-Score INITIATIVE_OUTFLANKING_SCORE = S(10,10);
-Score INITIATIVE_FLANK_PAWNS_SCORE = S(20,20);
-Score INITIATIVE_INFILTRATION_SCORE = S(20,20);
-Score INITIATIVE_DRAWN_SCORE = S(-40,-40);
-Score INITIATIVE_BALANCING_SCORE = S(0,0);
+Score INITIATIVE_PASSED_PAWN_SCORE;
+Score INITIATIVE_PAWN_COUNT_SCORE;
+Score INITIATIVE_OUTFLANKING_SCORE;
+Score INITIATIVE_FLANK_PAWNS_SCORE;
+Score INITIATIVE_INFILTRATION_SCORE;
+Score INITIATIVE_DRAWN_SCORE;
+Score INITIATIVE_BALANCING_SCORE;
 
 std::vector<Score> get_score_vector(std::string filename){
     std::string fp = "src/evaluation/" + filename;
     std::vector<Score> scores;
     std::ifstream input(fp);
     std::string s;
-    std::cout << "---------------------------------" << std::endl;
     while (std::getline(input, s)){
         if (s == ""){
             continue;
@@ -94,24 +87,134 @@ std::vector<Score> get_score_vector(std::string filename){
         int close = s.find("]");
         int middle_game = std::stoi(s.substr(open + 1, comma - 1));
         int end_game = std::stoi(s.substr(comma + 1, close - 1));
-        Score s = S(middle_game,end_game);
-        std::cout << s <<std::endl;
+        Score s = Score(middle_game, end_game);
         scores.push_back(s);
     }
     return scores;
 }
+void write_scores(std::vector<Score> scores, std::string filename){
+    std::string fp = "src/evaluation/" + filename;
+    std::string empty = "src/evaluation/empty.txt";
+    std::ifstream f(empty.c_str());
+    if (!f.good()){
+        std::cout << "empty.txt missing. Unable to write new scores file.";
+        return;
+    }
+    std::ifstream e(empty);
+    std::string s;
+    std::ofstream output(fp);
+    unsigned int index = 0;
+    while(std::getline(e, s)){
+        if (s == ""){
+            output << "\n";
+        }
+        else{
+            output << (s + " [" + std::to_string(scores.at(index).middle_game) + "," + std::to_string(scores.at(index).end_game) + "]\n");
+            index++;
+        }
+    }
+    //scores.size() must be equal to index, which is the amount of values in empty.txt
+    assert(index == scores.size());
+}
 
-bool score_init(){
-    std::string fp = "src/evaluation/scores.txt";
+void score_init(std::string filename){
+    std::string fp = "src/evaluation/" + filename; 
     std::ifstream f(fp.c_str());
     if (!f.good()){
+        //create filename(... .txt) and set the values to default.txt
         std::vector<Score> default_scores = get_score_vector("default.txt");
-        std::ofstream output(fp);
-        std::ostream_iterator<Score> output_i(output, "\n");
-        copy(default_scores.begin(), default_scores.end(), output_i );
+        write_scores(default_scores, filename);
     }
-    
-    return true;
+    std::vector<Score> scores = get_score_vector(filename);
+    unsigned int i = 0;
+    for (PieceType p : {PAWN,KNIGHT,BISHOP,ROOK,QUEEN,KING}){
+        material_scores[p] = scores.at(i++);
+    }
+    for (PieceType p : {PAWN,KNIGHT,BISHOP,ROOK,QUEEN,KING}){
+        mobility_scores[p] = scores.at(i++);
+    }
+    for(Rank r = RANK_1; r <= RANK_8; r++){
+        PAWN_PASSED_RANK[r] = scores.at(i++);
+    }
+    PAWN_CONNECTED_SCORE = scores.at(i++);
+    PAWN_SUPPORTED_SCORE = scores.at(i++);
+    PAWN_ADVANCED_BLOCK_SCORE = scores.at(i++);
+    PAWN_KING_PROX_SCORE = scores.at(i++);
+    PAWN_PASSED_UNCONTESTED_SCORE = scores.at(i++);
+    PAWN_PASSED_CONTESTED_SUPPORTED_SCORE = scores.at(i++);
+    PAWN_PASSED_QUEENPATH_UNCONTESTED_SCORE = scores.at(i++);
+    PAWN_PASSED_NEXTSQUARE_UNCONTESTED_SCORE = scores.at(i++);
+    PAWN_PASSED_NEXTSQUARE_DEFENDED_SCORE = scores.at(i++);
+    PAWN_PASSED_EDGE_DIST_SCORE = scores.at(i++);
+    PAWN_SPACE_SCORE = scores.at(i++);
+
+    PAWN_EARLY_DOUBLE_PENALTY = scores.at(i++);
+    PAWN_DOUBLED_PENALTY = scores.at(i++);
+    PAWN_ISOLATED_PENALTY = scores.at(i++);
+    PAWN_BACKWARDS_PENALTY = scores.at(i++);
+    PAWN_WEAK_LEVER_PENALTY = scores.at(i++);
+
+    BISHOP_PAIR_SCORE = scores.at(i++);
+    BISHOP_DEFENDED_SCORE = scores.at(i++);
+    BISHOP_OUTPOST_SCORE = scores.at(i++);
+    BISHOP_FIANCHETTO_SCORE = scores.at(i++);
+    BISHOP_KING_DISTANCE_PENALTY = scores.at(i++);
+    BISHOP_XRAY_PAWN_PENALTY = scores.at(i++);
+    BISHOP_SHIELDED_SCORE = scores.at(i++);
+    BISHOP_ATTACKING_KING_SCORE = scores.at(i++);
+
+    KNIGHT_DEFENDED_SCORE = scores.at(i++);
+    KNIGHT_OUTPOST_SCORE = scores.at(i++);
+    KNIGHT_KING_DISTANCE_PENALTY = scores.at(i++);
+    KNIGHT_SHIELDED_SCORE = scores.at(i++);
+
+    ROOK_ON_KING_FILE_SCORE = scores.at(i++);
+    ROOK_ON_KING_RANK_SCORE = scores.at(i++);
+    ROOK_ON_QUEEN_LINE_SCORE = scores.at(i++);
+    ROOK_ON_OPEN_SCORE = scores.at(i++);
+    ROOK_STACKED_SCORE = scores.at(i++);
+    ROOK_ON_SEVENTH_SCORE = scores.at(i++);
+    ROOK_ON_BLOCKED_PENALTY = scores.at(i++);
+    ROOK_TRAPPED_BY_KING_PENALTY = scores.at(i++);
+
+    QUEEN_PINNED_PENALTY = scores.at(i++);
+    for (File f = FILE_A; f <= FILE_H; f++){
+        PAWN_STORM_BLOCKED_FILE_PENALTY[f] = scores.at(i++);
+    } 
+    for (File f = FILE_A; f <= FILE_H; f++){
+        PAWN_STORM_UNBLOCKED_FILE_PENALTY[f] = scores.at(i++);
+    }
+    for (int d = 0; d < 7; d++){
+        KING_PAWN_DISTANCE_SCORE[d] = scores.at(i++);
+    }
+    KING_ON_OPEN_FILE_PENALTY = scores.at(i++);
+    KING_AREA_WEAK_SQUARE_PENALTY = scores.at(i++);
+    KING_NO_ENEMY_QUEEN_SCORE = scores.at(i++);
+    UNSAFE_CHECKS_PENALTY = scores.at(i++);
+    for(int d = 0; d < 2; d++){
+        for (PieceType p : {PAWN,KNIGHT,BISHOP,ROOK,QUEEN,KING}){
+         SAFE_CHECKS_PENALTY[d][p] = scores.at(i++);
+        }
+    }
+    for (PieceType p : {PAWN,KNIGHT,BISHOP,ROOK,QUEEN,KING}){
+        THREAT_MINOR_SCORE[p] = scores.at(i++);
+    }
+    for (PieceType p : {PAWN,KNIGHT,BISHOP,ROOK,QUEEN,KING}){
+        THREAT_ROOK_SCORE[p] = scores.at(i++);
+    }
+    THREAT_KING_SCORE = scores.at(i++);
+    THREAT_HANGING_PIECE_SCORE = scores.at(i++);
+    THREAT_CONTROLLED_SQUARE_SCORE = scores.at(i++);
+    THREAT_SAFE_PAWN_ATTACK = scores.at(i++);
+    THREAT_PAWN_PUSH_ATTACK = scores.at(i++);
+    INITIATIVE_PASSED_PAWN_SCORE = scores.at(i++);
+    INITIATIVE_PAWN_COUNT_SCORE = scores.at(i++);
+    INITIATIVE_OUTFLANKING_SCORE = scores.at(i++);
+    INITIATIVE_FLANK_PAWNS_SCORE = scores.at(i++);
+    INITIATIVE_INFILTRATION_SCORE = scores.at(i++);
+    INITIATIVE_DRAWN_SCORE = scores.at(i++);
+    INITIATIVE_BALANCING_SCORE = scores.at(i++);
+    assert(i == scores.size());
 }
 
 std::ostream& operator<<(std::ostream& os, const Score& s) {
