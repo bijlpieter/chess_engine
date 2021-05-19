@@ -1,4 +1,5 @@
 #include "types.h"
+#include ".../search/tt.h"
 #include <iostream>
 
 // Plays a move and updates all the member variables.
@@ -101,6 +102,33 @@ void Position::unplay_move(Move m) {
 	}
 	state = state->previous;
 	--ply;
+}
+
+void Position::play_null_move(PositionInfo* info) {
+	info->position_key = state->position_key;
+	info->pawn_key = state->pawn_key;
+	info->castling = state->castling;
+	info->rule50 = state->rule50 + 1;
+	info->en_peasant = state->en_peasant;
+	info->previous = state;
+	state = info;
+
+	if (state->en_peasant != NO_SQUARE) {
+		state->position_key ^= zobrist.en_passant[file_of(state->en_peasant)];
+		state->en_peasant = NO_SQUARE;
+	}
+
+	state->position_key ^= zobrist.side;
+
+	tt.prefetch(key);
+
+	turn = ~turn;
+	info_intit();
+}
+
+void Position::unplay_null_move() {
+	state = state->previous;
+	turn = ~turn;
 }
 
 void Position::move_piece(Square from, Square to) {
