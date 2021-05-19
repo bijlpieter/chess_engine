@@ -87,10 +87,15 @@ public:
 	bool static_exchange_evaluation(Move m, Value threshold) const;
 	bool insufficient_material() const;
 	bool is_repetition() const;
+	bool is_draw() const;
+
+	bool is_capture(Move m) const;
 
 	// Function to play or unplay a move, or move a piece
 	void play_move(Move m, PositionInfo* info);
 	void unplay_move(Move m);
+	void play_null_move(PositionInfo* info);
+	void unplay_null_move();
 	void move_piece(Square from, Square to);
 	void remove_piece(Square s);
 	void place_piece(Piece p, Square s);

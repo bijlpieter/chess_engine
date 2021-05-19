@@ -1,26 +1,19 @@
 #include <cstring>
 
-#include "tt.h"
+#include "types.h"
 
 // Global transposition table
 TT tt;
 
 TT::TT() {
-	table = nullptr;
+	table = new TTEntry[NUM_BUCKETS * ENTRIES_IN_BUCKET];
+
+	memset(table, 0, sizeof(TTEntry) * NUM_BUCKETS * ENTRIES_IN_BUCKET);
 }
 
 TT::~TT() {
 	if (table)
 		delete[] table;
-}
-
-void TT::init() {
-	if (table)
-		delete[] table;
-
-	table = new TTEntry[NUM_BUCKETS * ENTRIES_IN_BUCKET];
-
-	memset(table, 0, sizeof(TTEntry) * NUM_BUCKETS * ENTRIES_IN_BUCKET);
 }
 
 bool TT::probe(Key k, TTEntry& entry) {
@@ -45,9 +38,9 @@ void TT::prefetch(Key k) {
 void TT::save(Key k, Value score, Value eval, Depth d, int ply, Bound bound, Move m) {
 	TTEntry* bucket = table + (k & entries) * ENTRIES_IN_BUCKET;
 
-	if (score >= VALUE_MATE)
+	if (score >= VALUE_SCORE)
 		score += ply;
-	else if (score <= -VALUE_MATE)
+	else if (score <= -VALUE_SCORE)
 		score -= ply;
 
 	TTEntry* replace = bucket;

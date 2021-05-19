@@ -11,6 +11,7 @@
 #include "../src/types/search.h"
 #include "../src/types/random.h"
 #include "../src/types/thread.h"
+#include "../src/types/tt.h"
 #include "../src/types/value.h"
 #include "../src/types/zobrist.h"
 

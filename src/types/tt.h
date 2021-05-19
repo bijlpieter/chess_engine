@@ -25,9 +25,9 @@ struct TTEntry {
 	}
 
 	Value value(int ply) {
-		if (info.score >= VALUE_MATE)
+		if (info.score >= VALUE_SCORE)
 			return info.score - ply;
-		else if(info.score <= -VALUE_MATE)
+		else if(info.score <= -VALUE_SCORE)
 			return info.score + ply;
 		return info.score;
 	}
@@ -42,7 +42,6 @@ public:
 	TT();
 	~TT();
 
-	void init();
 	bool probe(Key k, TTEntry& entry);
 	void prefetch(Key k);
 	void save(Key k, Value score, Value eval, Depth d, int ply, Bound bound, Move m);

@@ -91,6 +91,14 @@ bool Position::is_repetition() const {
 	return false;
 }
 
+bool Position::is_capture(Move m) const {
+	return (piece_on(move_to(m)) != NO_PIECE && move_type(m) != S_MOVE_CASTLING) || move_type(m) == S_MOVE_EN_PASSANT;
+}
+
+bool Position::is_draw() const {
+	return state->rule50 >= 100 || insufficient_material() || is_repetition();
+}
+
 inline void add_moves(Move*& m, Square from, Bitboard to) {
 	while (to)
 		*m++ = move_init(from, pop_lsb(to));
