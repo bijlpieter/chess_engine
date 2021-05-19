@@ -423,21 +423,19 @@ void Position::pawn_info_init(Color c, PawnInfo* p_info){
 		}       
     }
 }
-PawnInfo* Position::get_pawn_info(Key key){
-	PawnInfo* p = new PawnInfo();
-	//PawnInfo* p = pawn_hash_table[key];
-	// if (key == p->key){
-	// 	return p;
-	// }
-
+PawnInfo* Position::get_pawn_info(Key key, std::vector<PawnInfo>* pawn_hash_table){
+	PawnInfo* p = &pawn_hash_table->at(key & 131071);
+	if(key == p->key){
+		return p;
+	}
 	p->key = key;
 	p->blocked = 0;
 	pawn_info_init(WHITE, p);
 	pawn_info_init(BLACK, p);
 	return p;
 }
-Score Position::pawn_score(Color c){
-    PawnInfo* current = get_pawn_info(state->pawn_key);
+Score Position::pawn_score(Color c, std::vector<PawnInfo>* pawn_hash_table){
+    PawnInfo* current = get_pawn_info(state->pawn_key, pawn_hash_table);
 	Score total = current->scores[c];
 	total += calculate_passed(c, current);
 	total += calculate_space(c, current);
@@ -537,14 +535,14 @@ void Position::eval_init(){
 	}
     
 }
-Score Position::calculate_material(){
+Score Position::calculate_material(std::vector<PawnInfo>* pawn_hash_table){
 	Score total(0,0);
 	total += knight_score(WHITE) - knight_score(BLACK);
 	total += bishop_score(WHITE) - bishop_score(BLACK);
 	total += rook_score(WHITE) - rook_score(BLACK);
 	total += queen_score(WHITE) - queen_score(BLACK);
 	total += king_score(WHITE) - king_score(BLACK);
-	total += pawn_score(WHITE) - pawn_score(BLACK);
+	total += pawn_score(WHITE, pawn_hash_table) - pawn_score(BLACK, pawn_hash_table);
 	return total;
 }
 Score Position::calculate_threats(Color c){
@@ -582,13 +580,13 @@ Score Position::calculate_threats(Color c){
 	total += THREAT_PAWN_PUSH_ATTACK * popcount(pawn_targets);
 	return total;
 }
-Score Position::calculate_initiative(Score score){
+Score Position::calculate_initiative(Score score, std::vector<PawnInfo>* pawn_hash_table){
 	int outflanking = std::abs(file(info.king_squares[WHITE]) - file(info.king_squares[BLACK])) + int(rank(info.king_squares[WHITE]) - rank(info.king_squares[BLACK]));
 	Bitboard pawns = pieces[WHITE][PAWN] | pieces[BLACK][PAWN];
 	bool flank_pawns = (pawns & QUEEN_SIDE) && (pawns & KING_SIDE);
 	bool drawn = outflanking < 0 && !flank_pawns;
 	bool infiltration = rank(info.king_squares[WHITE]) > RANK_4 || rank(info.king_squares[BLACK]) < RANK_5;
-	PawnInfo* p_info = get_pawn_info(state->pawn_key);
+	PawnInfo* p_info = get_pawn_info(state->pawn_key,pawn_hash_table);
 	Score initiative = INITIATIVE_PASSED_PAWN_SCORE * popcount(p_info->passed[WHITE] | p_info->passed[BLACK]) +
 					INITIATIVE_PAWN_COUNT_SCORE * popcount(pawns) +
 					INITIATIVE_OUTFLANKING_SCORE * outflanking +
@@ -616,18 +614,18 @@ Score Position::calculate_space(Color c, PawnInfo* p_info){
     int relevancy = popcount(all_pieces) + p_info->blocked;
     return PAWN_SPACE_SCORE * (safe_count * relevancy / 10);
 }
-Score Position::calculate_score() {
+Score Position::calculate_score(std::vector<PawnInfo>* pawn_hash_table) {
 	eval_init();
 	Score total(0,0);
-	total += calculate_material();
+	total += calculate_material(pawn_hash_table);
 	total += calculate_threats(WHITE) - calculate_threats(BLACK);
-	return calculate_initiative(total);
+	return calculate_initiative(total, pawn_hash_table);
 }
 
 Value Position::interpolate_score(Score score) {
 	return ((score.middle_game * (256 - info.phase)) + (score.end_game * info.phase)) / 256;
 }
 
-Value Position::evaluate() {
-	return interpolate_score(calculate_score());
+Value Position::evaluate(std::vector<PawnInfo>* pawn_hash_table) {
+	return interpolate_score(calculate_score(pawn_hash_table));
 }
