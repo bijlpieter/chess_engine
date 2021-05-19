@@ -623,6 +623,11 @@ Score Position::calculate_score() {
 	total += calculate_threats(WHITE) - calculate_threats(BLACK);
 	return calculate_initiative(total);
 }
-int Position::interpolate_score(Score score){
+
+Value Position::interpolate_score(Score score) {
 	return ((score.middle_game * (256 - info.phase)) + (score.end_game * info.phase)) / 256;
+}
+
+Value Position::evaluate() {
+	return interpolate_score(calculate_score());
 }

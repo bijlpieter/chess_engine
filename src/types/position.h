@@ -133,7 +133,8 @@ public:
 	Score calculate_threats(Color c);
 	Score calculate_material();
 	Score calculate_initiative(Score score);
-	int interpolate_score(Score score);
+	Value interpolate_score(Score score);
+	Value evaluate();
 	
 	Score calculate_space(Color c, PawnInfo* p_info);
 	Score calculate_passed(Color c, PawnInfo* p_info);
