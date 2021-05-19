@@ -24,11 +24,11 @@ bool TT::probe(Key k, TTEntry& entry) {
 		if (bucket[i].hash == k) {
 			bucket[i].refresh(gen);
 			entry = bucket[i];
-			return 1;
+			return true;
 		}
 	}
 
-	return 0;
+	return false;
 }
 
 void TT::prefetch(Key k) {

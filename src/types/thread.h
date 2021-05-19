@@ -32,9 +32,9 @@ public:
 	void update_pv(Move m, int ply);
 	Move killers[MAX_DEPTH + 5][NUM_COLORS];
 
-	Move cmTable[NUM_COLORS][NUM_PIECES][NUM_SQUARES];
+	Move cmTable[NUM_COLORS][NUM_PIECES + 2][NUM_SQUARES];
 	Value history[NUM_COLORS][NUM_SQUARES][NUM_SQUARES];
-	Value follow[2][NUM_PIECES][NUM_SQUARES][NUM_PIECES][NUM_SQUARES];
+	Value follow[2][NUM_PIECES + 2][NUM_SQUARES][NUM_PIECES + 2][NUM_SQUARES];
 	int lmrCnt[2][9];
     int lmrRed[64][64];
 

@@ -627,5 +627,11 @@ Value Position::interpolate_score(Score score) {
 }
 
 Value Position::evaluate(std::vector<PawnInfo>* pawn_hash_table) {
-	return interpolate_score(calculate_score(pawn_hash_table));
+	Bitboard before = all_pieces;
+	Score s = calculate_score(pawn_hash_table);
+	if (all_pieces != before) {
+		std::cout << "ALERT" << std::endl;
+		exit(1);
+	}
+	return interpolate_score(s);
 }
