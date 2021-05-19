@@ -10,6 +10,7 @@ void Position::play_move(Move m, PositionInfo* info) {
 	state->position_key = state->previous->position_key;
 	state->position_key ^= zobrist.side;
 
+	state->rule50 = state->previous->rule50 + 1;
 	++ply;
 
 	Square from = move_from(m);
@@ -39,6 +40,7 @@ void Position::play_move(Move m, PositionInfo* info) {
 		state->position_key ^= zobrist.piece_square[p][capped];
 		if (piece_type(state->captured) == PAWN)
 			state->pawn_key ^= zobrist.piece_square[p][capped];
+		state->rule50 = 0;
 	}
 
 	state->position_key ^= zobrist.piece_square[p][to] ^ zobrist.piece_square[p][from];
@@ -55,6 +57,7 @@ void Position::play_move(Move m, PositionInfo* info) {
 
 	if (piece_type(p) == PAWN) {
 		state->pawn_key ^= zobrist.piece_square[p][from] ^ zobrist.piece_square[p][to];
+		state->rule50 = 0;
 
 		if ((int(from) ^ int(to)) == 16) {
 			state->en_peasant = to - forward;

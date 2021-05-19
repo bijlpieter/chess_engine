@@ -172,8 +172,9 @@ Position::Position(PositionInfo* info, std::string fen) {
         state->en_peasant = square(Rank(fields[3][1] - '1'), File(fields[3][0] - 'a'));
 	else 
         state->en_peasant = NO_SQUARE;
-	fullMoves = std::stoi(fields[4]);
-	halfMoves = std::stoi(fields[4]);
+	
+	state->rule50 = halfMoves = std::stoi(fields[4]);
+    fullMoves = std::stoi(fields[5]);
 
     //rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
     Square s = A8;

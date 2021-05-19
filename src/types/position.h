@@ -23,6 +23,7 @@ struct PositionInfo {
 	Castling castling = 0;
 	Phase phase = 0;
 
+	MoveCount rule50 = 0;
 	PositionInfo* previous = nullptr;
 	Key position_key = 0;
 	Key pawn_key = 0;
@@ -84,6 +85,8 @@ public:
 	Moves generate_legal();
 
 	bool static_exchange_evaluation(Move m, Value threshold) const;
+	bool insufficient_material() const;
+	bool is_repetition() const;
 
 	// Function to play or unplay a move, or move a piece
 	void play_move(Move m, PositionInfo* info);

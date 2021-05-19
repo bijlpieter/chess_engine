@@ -71,6 +71,26 @@ Bitboard Position::blockers(Square s, Color blocking, Color attacking) const {
 	return blocks;
 }
 
+bool Position::insufficient_material() const {
+	int num = popcount(all_pieces);
+	return (num == 2)
+		|| (num == 3 && (pieces[WHITE][KNIGHT] || pieces[WHITE][BISHOP] || pieces[BLACK][KNIGHT] || pieces[BLACK][BISHOP]))
+		|| (num == 4 && (popcount(pieces[WHITE][KNIGHT] == 2) || popcount(pieces[BLACK][KNIGHT] == 2)));
+}
+
+bool Position::is_repetition() const {
+	int count = 0;
+	for (PositionInfo* s = state; s->previous && s->previous->previous; s = s->previous->previous) {
+		if (s->rule50 < 4)
+			return false;
+		if (s->position_key == state->position_key)
+			count++;
+		if (count == 3)
+			return true;
+	}
+	return false;
+}
+
 inline void add_moves(Move*& m, Square from, Bitboard to) {
 	while (to)
 		*m++ = move_init(from, pop_lsb(to));
