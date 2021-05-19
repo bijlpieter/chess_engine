@@ -37,7 +37,7 @@ Value SearchThread::qsearch(Value alpha, Value beta) {
 	}
 
 	if (eval == VALUE_INFINITY)
-		eval = (stack[ply - 1].move == NULL_MOVE ? -stack[ply - 1].eval + 2 * VALUE_TEMPO : pos->evaluate());
+		eval = (stack[ply - 1].move == NULL_MOVE ? -stack[ply - 1].eval + 2 * VALUE_TEMPO : pos->evaluate(&pawn_hash_table));
 
 	stack[ply].eval = eval;
 
@@ -136,7 +136,7 @@ Value SearchThread::search(Value alpha, Value beta, Depth depth, Move excluded) 
 
 	// No need to evaluate if last move was null
 	if (eval == VALUE_INFINITY)
-		stack[ply].eval = eval = (ply >= 1 && stack[ply - 1].move == NULL_MOVE ? -stack[ply - 1].eval + 2 * VALUE_TEMPO : pos->evaluate());
+		stack[ply].eval = eval = (ply >= 1 && stack[ply - 1].move == NULL_MOVE ? -stack[ply - 1].eval + 2 * VALUE_TEMPO : pos->evaluate(&pawn_hash_table));
 	else {
 		// ttValue might be a better evaluation
 
