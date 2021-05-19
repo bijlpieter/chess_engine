@@ -35,7 +35,7 @@ struct PawnInfo {
 	Bitboard pawn_attacks[NUM_COLORS] = {0};
 	Bitboard pawn_attack_span[NUM_COLORS] = {0};
 	Key key = 0;
-	int blocked;
+	int blocked = 0;
 	PawnInfo(){};
 };
 
@@ -130,16 +130,16 @@ public:
 	Score pawn_storm_safety(Color c);
 	Score king_score(Color c);
 	//pawns
-	Score pawn_score(Color c);
+	Score pawn_score(Color c, std::vector<PawnInfo>* pawn_hash_table);
 	void pawn_info_init(Color c, PawnInfo* p_info);
-	PawnInfo* get_pawn_info(Key key);
+	PawnInfo* get_pawn_info(Key key, std::vector<PawnInfo>* pawn_hash_table);
 	//func
-	Score calculate_score();
+	Score calculate_score(std::vector<PawnInfo>* pawn_hash_table);
 	Score calculate_threats(Color c);
-	Score calculate_material();
-	Score calculate_initiative(Score score);
+	Score calculate_material(std::vector<PawnInfo>* pawn_hash_table);
+	Score calculate_initiative(Score score, std::vector<PawnInfo>* pawn_hash_table);
 	Value interpolate_score(Score score);
-	Value evaluate();
+	Value evaluate(std::vector<PawnInfo>* pawn_hash_table);
 	
 	Score calculate_space(Color c, PawnInfo* p_info);
 	Score calculate_passed(Color c, PawnInfo* p_info);

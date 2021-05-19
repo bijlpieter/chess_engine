@@ -5,8 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <iterator>
-#include <unistd.h>
+#include <cassert>
 
 
 class Score {
@@ -15,11 +14,15 @@ class Score {
             middle_game = mg;  
             end_game = eg;
         }
+        Score(){
+            middle_game = 0;
+            end_game = 0;
+        }
         int middle_game;
         int end_game;
+        
 };
-extern bool score_init();
-extern std::vector<Score> default_scores;
+extern void score_init(std::string filename);
 
 typedef uint16_t Phase;
 // Pawn, Knight, Bishop, Rook, Queen, King

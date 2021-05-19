@@ -230,7 +230,6 @@ Position::Position(PositionInfo* info, std::string fen) {
 	}
 	//set all
 	all_pieces = colors[WHITE] | colors[BLACK];
-    score_init();
 	info_init();
     key_init();
     // phase = calculate_phase();

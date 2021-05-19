@@ -6,6 +6,7 @@
 #include "value.h"
 #include "search.h"
 #include "position.h"
+#include <vector>
 
 struct SearchEntry {
 	Move move;
@@ -48,6 +49,7 @@ public:
 
 	Position* pos;
 	PositionInfo* info;
+	std::vector<PawnInfo> pawn_hash_table;
 };
 
 #endif
