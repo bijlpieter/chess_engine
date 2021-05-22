@@ -145,8 +145,8 @@ bool test_bishops(){
     r = (white_bishop_complementing > white_bishop_notcomplementing) ? "PASSED\n" : "FAILED\n";
     std::cout << "[Complementing bishops > not complementing bishops (same mobility)] " + r;
     //xraying enemy pawns. Note that mobility is only restricted for other pieces in terms of pawn attacks not pawns themselves
-    Position white_bishop_c4_xray_enemy_pawn = pos_fen("4k3/5p2/8/8/2B5/8/8/4K3 w KQkq - 0 1");
-    Position white_bishop_c4_xray_enemy_pawns = pos_fen("4k1p1/5p2/4p3/8/2B5/8/8/4K3 w KQkq - 0 1");
+    Position white_bishop_c4_xray_enemy_pawn = pos_fen("k7/5p2/8/3P4/2B5/8/8/4K3 w KQkq - 0 1");
+    Position white_bishop_c4_xray_enemy_pawns = pos_fen("k5p1/5p2/8/3P4/2B5/8/8/4K3 w KQkq - 0 1");
     Score white_bishop_xray_single = white_bishop_c4_xray_enemy_pawn.bishop_score(WHITE);
     Score white_bishop_xray_multiple = white_bishop_c4_xray_enemy_pawns.bishop_score(WHITE);
     r = (white_bishop_xray_single < white_bishop) ? "PASSED\n" : "FAILED\n";
