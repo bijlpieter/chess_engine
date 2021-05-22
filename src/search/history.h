@@ -15,7 +15,7 @@ class History {
 
   public:
     static void updateHistory(SearchThread* search, Move* quiets, int nrQuiets, int ply, int bonus);
-    static void getHistory(SearchThread* search, Move move, int ply, Heuristics &H);
+    static void getHistory(SearchThread* search, Move move, int ply, Heuristics& H);
     static void updateHist(Value& hist, Value score);
   private:
     static constexpr int histMax = 400;
@@ -64,7 +64,7 @@ void History :: updateHistory(SearchThread* search, Move* quiets, int nrQuiets, 
 	}
 }
 
-void History :: getHistory(SearchThread* search, Move move, int ply, Heuristics &H) {
+void History :: getHistory(SearchThread* search, Move move, int ply, Heuristics& H) {
 	Square from = move_from(move), to = move_to(move);
 	Piece piece = search->pos->piece_on(from);
 

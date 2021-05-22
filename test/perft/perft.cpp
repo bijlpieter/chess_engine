@@ -27,7 +27,7 @@ bool test_position(std::string fen, const uint64_t* results, int depth = 5) {
 bool default_position() {
 	const uint64_t perft_results[] = {20, 400, 8902, 197281, 4865609, 119060324, 3195901860};
 	std::cout << "Default position: " << std::endl;
-	return test_position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", perft_results);
+	return test_position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", perft_results, 7);
 }
 
 bool kiwipete() {
@@ -99,9 +99,9 @@ int main() {
 
 	// testing();
 
-	test_movepicker();
+	// test_movepicker();
 
-	// if (!default_position()) return 1;
+	if (!default_position()) return 1;
 	// if (!kiwipete()) return 1;
 	// if (!en_passant()) return 1;
 	// if (!weird()) return 1;

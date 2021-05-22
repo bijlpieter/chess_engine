@@ -5,7 +5,7 @@
 
 #define MAX_DEPTH 255
 
-typedef uint8_t Depth;
+typedef int16_t Depth;
 typedef uint8_t Generation;
 
 enum Bound { NO_BOUND, UPPER_BOUND, LOWER_BOUND, EXACT_BOUND };

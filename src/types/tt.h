@@ -48,8 +48,8 @@ public:
 
 private:
 	TTEntry* table;
-	uint64_t entries;
-	Generation gen;
+	uint64_t entries = NUM_BUCKETS - 1;
+	Generation gen = 1;
 };
 
 extern TT tt;
