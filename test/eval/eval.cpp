@@ -420,7 +420,7 @@ int main(){
     score_init("scores.txt");
     test_calculate_material();
     std::string FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    FEN = "4rrk1/pbpqbppp/1pnp1n2/4p3/2BPP2P/2NQBNP1/PPP2P2/2KRR3 b - - 0 1";
+    FEN = "rnbqkbnr/3ppppp/1p6/1Np5/2PPP3/pP1BNP1B/P5PP/2QRR1K1 b - - 0 1";
     evaluation_info(FEN);
     return 0;
 }

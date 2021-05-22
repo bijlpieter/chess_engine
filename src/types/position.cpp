@@ -3,7 +3,6 @@
 #include <iostream>
 #include <string>
 #include <regex>
-
 bool validateFEN(std::string fen) {
 	std::string fields[6];
 	int ls = 0, index = 0;
