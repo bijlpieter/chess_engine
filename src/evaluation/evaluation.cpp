@@ -141,26 +141,20 @@ Score Position::bishop_score(Color c) {
 	//bonus for defended minor piece
 	total += popcount(bishops & info.controlled_squares[c]) * BISHOP_DEFENDED_SCORE;
 
-	// std::cout << "Before while: " << total << std::endl;
-	// std::cout << "Color : " << c << std::endl;
-	// std::cout << bb_string(bishops) << std::endl;
 	//distance, outposts and fianchettoes, xraying enemy pawns and attacking the enemy king_area
 	while (bishops) {
 		Square bishop = pop_lsb(bishops);
-		// std::cout << "Initial total: " << total << std::endl;
 		total -= BISHOP_KING_DISTANCE_PENALTY * SQUARE_DISTANCE[bishop][info.king_squares[c]];
-		// std::cout << "after king distance penalty: " << total << std::endl;
-		total -= BISHOP_XRAY_PAWN_PENALTY * popcount(info.controlled_by[c][BISHOP] & pieces[~c][PAWN]);
-		// std::cout << "after xray penalty: " << total << std::endl;
-		// std::cout << total << std::endl;
+		//xray penalty
+		total -= BISHOP_XRAY_PAWN_PENALTY * popcount(bishop_moves(bishop, 0) & pieces[~c][PAWN]);
+
 		if (shift(pieces[c][PAWN], info.push_direction[~c]) & bishop){
 			total += BISHOP_SHIELDED_SCORE;
 		}
-		// std::cout << "after shielded: " << total << std::endl;
+
 		if (bishop_moves(bishop, pieces[c][PAWN]) & KING_AREA[info.king_squares[~c]]){
 			total += BISHOP_ATTACKING_KING_SCORE;
 		}
-		// std::cout << "after attacking king: " << total << std::endl;
 
 		if (is_outpost(c, bishop)) {
 			total += BISHOP_OUTPOST_SCORE;
@@ -224,6 +218,7 @@ Score Position::rook_score(Color c) {
 		if ((r | f) & pieces[~c][QUEEN]){
 			total += ROOK_ON_QUEEN_LINE_SCORE;
 		}
+		//todo use relevant rank
 		if (r == RANK_7 && c == WHITE){
 			if ((pieces[~c][PAWN] & r) || (rank(info.king_squares[~c]) == RANK_8)){
 				total += ROOK_ON_SEVENTH_SCORE;
