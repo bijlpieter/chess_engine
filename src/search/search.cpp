@@ -49,32 +49,43 @@ Value SearchThread::qsearch(Value alpha, Value beta) {
 	stack[ply].eval = eval;
 
 	if (eval >= beta) {
-		std::cout << "exit qsearch after beta cut-off" << std::endl;
-		std::cout << "beta: " << int(beta) << " eval: " << int(eval) << std::endl;
+		// std::cout << "exit qsearch after beta cut-off" << std::endl;
 		return eval;
 	}
 
 	alpha = std::max(alpha, eval);
 	best_score = eval;
 
-	MovePick mp = MovePick(this, NULL_MOVE, NULL_MOVE, NULL_MOVE, NULL_MOVE, VALUE_DRAW);
+	MovePick mp = MovePick(NULL_MOVE, NULL_MOVE, NULL_MOVE, NULL_MOVE, VALUE_DRAW);
 
 	Move move = NULL_MOVE;
-	while ((move = mp.next_move(true, true)) != NULL_MOVE) {
-		std::cout << "stack ply" << std::endl;
+	while ((move = mp.next_move(this, true, true)) != NULL_MOVE) {
+		// if (move == move_init(E1, D2) && pos->state->checkers) {
+		// 	std::cout << *pos << std::endl;
+		// 	std::cout << bb_string(pos->state->checkers) << std::endl;
+		// 	for (PositionInfo* pi = pos->state; pi; pi = pi->previous)
+		// 		std::cout << sq_notation(move_from(pi->last_move)) << sq_notation(move_to(pi->last_move)) << std::endl;
+		// 	exit(1);
+		// }
+
+		// std::cout << sq_notation(move_from(pos->state->last_move)) << sq_notation(move_to(pos->state->last_move)) << std::endl;
+		// std::cout << sq_notation(move_from(move)) << sq_notation(move_to(move)) << std::endl;
+		// std::cout << bb_string(pos->all_pieces) << std::endl;
+		// if (pos->state->previous)
+		// 	std::cout << bb_string(pos->state->previous->pinned) << std::endl;
+		// std::cout << bb_string(pos->state->checkers) << std::endl;
+		// std::cout << *pos << std::endl;
+
+
 		stack[ply].move = move;
 		stack[ply].piece = pos->piece_on(move_from(move));
-		std::cout << "iterative qsearch" << std::endl;
 
 		PositionInfo info = {0};
 
-		std::cout << *pos << std::endl;
-		std::cout << pos->turn << std::endl;
+		// std::cout << pos->turn << std::endl;
 		// std::cout << bb_string(pos->all_pieces) << std::endl;
 
 		pos->play_move(move, &info);
-
-		std::cout << "played move" << std::endl;
 		
 		score = -qsearch(-beta, -alpha);
 		pos->unplay_move(move);
@@ -96,7 +107,7 @@ Value SearchThread::qsearch(Value alpha, Value beta) {
 	bound = (best_score >= beta ? LOWER_BOUND : (best_move > alpha_orig ? EXACT_BOUND : UPPER_BOUND));
 	tt.save(k, best_score, eval, 0, ply, bound, best_move);
 
-	std::cout << "exit qsearch best score: " << int(best_score) << std::endl;
+	// std::cout << "exit qsearch best score: " << int(best_score) << std::endl;
 	return best_score;
 }
 
@@ -132,7 +143,7 @@ Value SearchThread::search(Value alpha, Value beta, Depth depth, Move excluded) 
 	int ttHit = 0, ttValue = 0;
 
 	if (depth <= 0) {
-		std::cout << "depth is zero, diving into quiescence search" << std::endl;
+		// std::cout << "depth is zero, diving into quiescence search" << std::endl;
 		return qsearch(alpha, beta);
 	}
 
@@ -264,11 +275,23 @@ Value SearchThread::search(Value alpha, Value beta, Depth depth, Move excluded) 
 
 	Move counter = (ply == 0 || stack[ply - 1].move == NULL_MOVE ? NULL_MOVE : cmTable[~pos->turn][stack[ply - 1].piece][move_to(stack[ply - 1].move)]);
 
-	MovePick picker(this, tt_move, killers[ply][0], killers[ply][1], counter, 0);
+	MovePick picker(tt_move, NULL_MOVE, NULL_MOVE, NULL_MOVE, 0);
 
 	Move move;
 
-	while ((move = picker.next_move(skip, false)) != NULL_MOVE) {
+	while ((move = picker.next_move(this, skip, false)) != NULL_MOVE) {
+		if (pos->state->checkers && search_depth == 7) {
+			std::cout << *pos << std::endl;
+			std::cout << bb_string(pos->state->checkers) << std::endl;
+			std::cout << bb_string(pos->colors[WHITE]) << std::endl;
+			for (PositionInfo* pi = pos->state; pi; pi = pi->previous)
+				std::cout << sq_notation(move_from(pi->last_move)) << sq_notation(move_to(pi->last_move)) << std::endl;
+
+			std::cout << "Current move considered: " << sq_notation(move_from(move)) << sq_notation(move_to(move)) << std::endl;
+			
+			std::cout << "FUCKED IN SEARCH" << std::endl;
+		}
+
 		if (move == excluded)
 			continue;
 
@@ -461,10 +484,10 @@ void SearchThread::start() {
 
 	// Iterative deepening
 
-	for (Depth depth = 1; depth < MAX_DEPTH; depth++) {
-		std::cout << "entered iterative deepening loop: depth: " << int(depth) << std::endl;
+	for (search_depth = 1; search_depth < MAX_DEPTH; search_depth++) {
+		std::cout << "entered iterative deepening loop: depth: " << int(search_depth) << std::endl;
 		Value window = 10, alpha, beta;
-		if (depth >= 6) {
+		if (search_depth >= 6) {
 			alpha = std::max(-VALUE_INFINITY, last_score - window);
 			beta = std::min(VALUE_INFINITY, last_score + window);
 		}
@@ -475,7 +498,7 @@ void SearchThread::start() {
 
 		while (true) {
 			// std::cout << "started search" << std::endl;
-			score = search(alpha, beta, depth);
+			score = search(alpha, beta, search_depth);
 			// std::cout << "search returned: " << int(score) << std::endl;
 
 			if (-VALUE_INFINITY < score && score <= alpha) {
@@ -494,7 +517,7 @@ void SearchThread::start() {
 			window += window / 2;
 		}
 
-		std::cout << "Depth: " << int(depth) << " best move: " << move_notation(*pos, best_move) << std::endl;
+		std::cout << "Depth: " << int(search_depth) << " best move: " << move_notation(*pos, best_move) << std::endl;
 	}
 }
 
@@ -509,11 +532,11 @@ uint64_t SearchThread::mp_perft(int depth) {
 	if (depth < 1)
 		return 1ULL;
 
-	MovePick mp = MovePick(this, NULL_MOVE, NULL_MOVE, NULL_MOVE, NULL_MOVE, 0);
+	MovePick mp = MovePick(NULL_MOVE, NULL_MOVE, NULL_MOVE, NULL_MOVE, 0);
 
 	uint64_t nodes = 0;
 	Move move;
-	while ((move = mp.next_move(false, false)) != NULL_MOVE) {
+	while ((move = mp.next_move(this, false, false)) != NULL_MOVE) {
 		// std::cout << move_notation(*pos, move) << std::endl;
 		// output << move_notation(*this, legal[i]) << std::endl;
 		PositionInfo info = {0};
@@ -530,11 +553,11 @@ uint64_t SearchThread::mp_divide(int depth) {
 	if (depth < 1)
 		return 1ULL;
 
-	MovePick mp = MovePick(this, NULL_MOVE, NULL_MOVE, NULL_MOVE, NULL_MOVE, 0);
+	MovePick mp = MovePick(NULL_MOVE, NULL_MOVE, NULL_MOVE, NULL_MOVE, 0);
 
 	uint64_t nodes = 0;
 	Move move;
-	while ((move = mp.next_move(false, false)) != NULL_MOVE) {
+	while ((move = mp.next_move(this, false, false)) != NULL_MOVE) {
 		// output << indent << move_notation(*this, legal[i]) << std::endl;
 		PositionInfo info;
 		pos->play_move(move, &info);

@@ -50,6 +50,8 @@ public:
 	Position* pos;
 	PositionInfo* info;
 	std::vector<PawnInfo> pawn_hash_table;
+
+	Depth search_depth;
 };
 
 #endif

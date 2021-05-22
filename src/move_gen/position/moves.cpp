@@ -99,6 +99,99 @@ bool Position::is_draw() const {
 	return state->rule50 >= 100 || insufficient_material() || is_repetition();
 }
 
+bool Position::is_pseudo_legal(Move m) {
+	// if (!move)
+	// 	return false;
+
+	// Square from = move_from(move), to = move_to(move);
+	// MoveType t = move_type(move);
+	// PieceType pt = piece_type(piece_on(from))
+
+	// Bitboard own = colors[turn], enemy = colors[~turn], occ = all_pieces;
+
+	// if (piece_on(from) == NO_PIECE) /// there isn't a piece
+	// 	return false;
+
+	// if (turn != color(piece_on(from))) /// different color
+	// 	return false;
+
+	
+	// if(own & to) /// can't move piece on the same square as one of our pieces
+	// 	return false;
+
+	// /// check for normal moves
+
+	// if (pt == KNIGHT)
+	// 	return t == S_MOVE_NORMAL && (knight_moves(from) & to);
+
+	// if (pt == BISHOP)
+	// 	return t == S_MOVE_NORMAL && (bishop_moves(from, occ) & to);
+
+	// if (pt == ROOK)
+	// 	return t == S_MOVE_NORMAL && (rook_moves(from, occ) & to);
+
+	// if (pt == QUEEN)
+	// 	return t == S_MOVE_NORMAL && (queen_moves(from, occ) & to);
+
+	// /// pawn moves
+
+	// if (pt == PAWN) {
+
+	// 	Bitboard att = pawn_attack(from, turn);
+
+	// 	/// enpassant
+
+	// 	if (t == ENPASSANT)
+	// 		return to == state->en_peasant && (att & to);
+
+	// 	Direction forward = color ? DOWN : UP;
+	// 	Bitboard push = shift(BB_SQUARES[from], forward) & ~occ;
+
+	// 	/// promotion
+
+	// 	if (t == PROMOTION)
+	// 		return (to / 8 == 0 || to / 8 == 7) && (((att & enemy) | push) & (1ULL << to));
+
+	// 	/// add double push to mask
+
+	// 	if(from / 8 == 1 || from / 8 == 6)
+	// 		push |= shift(color, NORTH, push) & ~occ;
+
+	// 	return (to / 8 && to / 8 != 7) && t == NEUT && (((att & enemy) | push) & (1ULL << to));
+	// }
+
+	// /// king moves (normal or castle)
+
+	// if(t == NEUT)
+	// return kingBBAttacks[from] & (1ULL << to);
+
+	// int side = (to % 8 == 6); /// queen side or king side
+
+	// if(board.castleRights & (1 << (2 * color + side))) { /// can i castle
+	// if(isSqAttacked(board, color ^ 1, from) || isSqAttacked(board, color ^ 1, to))
+	// 	return 0;
+
+	// /// castle queen side
+
+	// if(!side) {
+	// 	return !(occ & (7ULL << (from - 3))) && !isSqAttacked(board, color ^ 1, Sq(between[from][to]));
+	// } else {
+	// 	return !(occ & (3ULL << (from + 1))) && !isSqAttacked(board, color ^ 1, Sq(between[from][to]));
+	// }
+	// }
+
+	// return 0;
+	return true;
+}
+
+bool Position::is_legal(Move m) {
+	PositionInfo info;
+	play_move(m, &info);
+	Bitboard checkers = attackers_to_sq(lsb(pieces[~turn][KING]), turn);
+	unplay_move(m);
+	return checkers;
+}
+
 inline void add_moves(Move*& m, Square from, Bitboard to) {
 	while (to)
 		*m++ = move_init(from, pop_lsb(to));

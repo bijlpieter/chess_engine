@@ -251,6 +251,7 @@ std::ostream& operator<<(std::ostream& os, const Position& p) {
 		os << " | " << (1 + r) << "\n +---+---+---+---+---+---+---+---+\n";
 	}
 	os << "   a   b   c   d   e   f   g   h\n";
+    os << (p.turn == WHITE ? "White to move" : "Black to move") << std::endl;
 
 	return os;
 }

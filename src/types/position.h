@@ -23,6 +23,7 @@ struct PositionInfo {
 	Castling castling = 0;
 	Phase phase = 0;
 
+	Move last_move;
 	MoveCount rule50 = 0;
 	PositionInfo* previous = nullptr;
 	Key position_key = 0;
@@ -88,8 +89,10 @@ public:
 	bool insufficient_material() const;
 	bool is_repetition() const;
 	bool is_draw() const;
-
 	bool is_capture(Move m) const;
+
+	bool is_pseudo_legal(Move m);
+	bool is_legal(Move m);
 
 	// Function to play or unplay a move, or move a piece
 	void play_move(Move m, PositionInfo* info);

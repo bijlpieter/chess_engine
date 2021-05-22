@@ -89,7 +89,7 @@ void testing() {
 
 void test_movepicker() {
 	SearchThread thread;
-	std::cout << thread.mp_divide(6) << std::endl;
+	std::cout << thread.mp_divide(7) << std::endl;
 }
 
 int main() {
@@ -99,9 +99,9 @@ int main() {
 
 	// testing();
 
-	// test_movepicker();
+	test_movepicker();
 
-	if (!default_position()) return 1;
+	// if (!default_position()) return 1;
 	// if (!kiwipete()) return 1;
 	// if (!en_passant()) return 1;
 	// if (!weird()) return 1;

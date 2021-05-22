@@ -140,17 +140,27 @@ Score Position::bishop_score(Color c) {
 	total += popcount(info.controlled_by[c][BISHOP] & info.mobility[c]) * mobility_scores[BISHOP];
 	//bonus for defended minor piece
 	total += popcount(bishops & info.controlled_squares[c]) * BISHOP_DEFENDED_SCORE;
+
+	// std::cout << "Before while: " << total << std::endl;
+	// std::cout << "Color : " << c << std::endl;
+	// std::cout << bb_string(bishops) << std::endl;
 	//distance, outposts and fianchettoes, xraying enemy pawns and attacking the enemy king_area
 	while (bishops) {
 		Square bishop = pop_lsb(bishops);
+		// std::cout << "Initial total: " << total << std::endl;
 		total -= BISHOP_KING_DISTANCE_PENALTY * SQUARE_DISTANCE[bishop][info.king_squares[c]];
-		total -= BISHOP_XRAY_PAWN_PENALTY * (info.controlled_by[c][BISHOP] & pieces[~c][PAWN]);
+		// std::cout << "after king distance penalty: " << total << std::endl;
+		total -= BISHOP_XRAY_PAWN_PENALTY * popcount(info.controlled_by[c][BISHOP] & pieces[~c][PAWN]);
+		// std::cout << "after xray penalty: " << total << std::endl;
+		// std::cout << total << std::endl;
 		if (shift(pieces[c][PAWN], info.push_direction[~c]) & bishop){
 			total += BISHOP_SHIELDED_SCORE;
 		}
+		// std::cout << "after shielded: " << total << std::endl;
 		if (bishop_moves(bishop, pieces[c][PAWN]) & KING_AREA[info.king_squares[~c]]){
 			total += BISHOP_ATTACKING_KING_SCORE;
 		}
+		// std::cout << "after attacking king: " << total << std::endl;
 
 		if (is_outpost(c, bishop)) {
 			total += BISHOP_OUTPOST_SCORE;
@@ -627,11 +637,6 @@ Value Position::interpolate_score(Score score) {
 }
 
 Value Position::evaluate(std::vector<PawnInfo>* pawn_hash_table) {
-	Bitboard before = all_pieces;
 	Score s = calculate_score(pawn_hash_table);
-	if (all_pieces != before) {
-		std::cout << "ALERT" << std::endl;
-		exit(1);
-	}
 	return interpolate_score(s);
 }

@@ -9,6 +9,7 @@ void Position::play_move(Move m, PositionInfo* info) {
 	state->en_peasant = NO_SQUARE;
 	state->position_key = state->previous->position_key;
 	state->position_key ^= zobrist.side;
+	state->last_move = m;
 
 	state->rule50 = state->previous->rule50 + 1;
 	++ply;
@@ -110,6 +111,7 @@ void Position::play_null_move(PositionInfo* info) {
 	info->rule50 = state->rule50 + 1;
 	info->en_peasant = state->en_peasant;
 	info->previous = state;
+	info->last_move = NULL_MOVE;
 	state = info;
 
 	if (state->en_peasant != NO_SQUARE) {

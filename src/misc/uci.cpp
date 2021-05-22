@@ -16,3 +16,9 @@ std::string move_notation(const Position& pos, Move m) {
 		ss << "=" << "NBRQ"[move_promo(m)];
 	return ss.str();
 }
+
+std::string sq_notation(Square s) {
+	std::stringstream ss("");
+	ss << "abcdefgh"[file(s)] << "12345678"[rank(s)];
+	return ss.str();
+}

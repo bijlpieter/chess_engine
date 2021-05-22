@@ -6,25 +6,22 @@
 #include <iostream>
 
 const Value capture_values[NUM_PIECE_TYPES][NUM_PIECE_TYPES] = {
-	{9, 19, 29, 39, 49, 59},
-	{8, 18, 28, 38, 48, 58},
-	{7, 17, 27, 37, 47, 57},
-	{6, 16, 26, 36, 46, 56},
-	{5, 15, 25, 35, 45, 55},
-	{4, 14, 24, 34, 44, 54},
+	{9, 109, 209, 309, 409, 509},
+	{8, 108, 208, 308, 408, 508},
+	{7, 107, 207, 307, 407, 507},
+	{6, 106, 206, 306, 406, 506},
+	{5, 105, 205, 305, 405, 505},
+	{4, 104, 204, 304, 404, 504},
 };
 
 const Value static_exchange_values[NUM_PIECE_TYPES] = {
 	100, 310, 330, 500, 900, 6969
 };
 
-MovePick::MovePick(const SearchThread* st, Move ttm, Move k1, Move k2, Move p_counter, Value threshold) {
+MovePick::MovePick(Move ttm, Value threshold) {
 	see_threshold = threshold;
-	search = st;
 	ttMove = ttm;
-	counter = p_counter;
-	killer1 = k1;
-	killer2 = k2;
+
 	nCaptures = nQuiets = nBadCaptures = 0;
 	stage = STAGE_TABLE_LOOKUP;
 	memset(scores, 0, sizeof(scores));
@@ -38,7 +35,7 @@ int MovePick::best_index(MoveCount len) {
 	return best;
 }
 
-Move MovePick::next_move(bool skipQuiet, bool skipBadCaptures) {
+Move MovePick::next_move(SearchThread* search, bool skipQuiet, bool skipBadCaptures) {
 mp_start:
 	switch(stage) {
 	case STAGE_TABLE_LOOKUP:
@@ -57,7 +54,7 @@ mp_start:
 			PieceType capped = (move_type(m) == S_MOVE_EN_PASSANT) ? PAWN : piece_type(search->pos->piece_on(move_to(m)));
 			Value v = capture_values[moved][capped];
 			if (move_type(m) == S_MOVE_PROMOTION)
-				v = v + (move_promo(m) + KNIGHT) * 10;
+				v = v + (move_promo(m) + KNIGHT) * 100;
 			scores[i] = v;
 		}
 		++stage;
@@ -94,26 +91,30 @@ mp_start:
 		}
 		++stage;
 	
-	case STAGE_KILLER_1:
-		// std::cout << "KILLER 1" << std::endl;
-		++stage;
-		if (!skipQuiet && killer1 && killer1 != ttMove)
-			return killer1;
+	// case STAGE_KILLER_1:
+	// 	++stage;
+	// 	if (!skipQuiet && killer1 && killer1 != ttMove && search->pos->is_legal(killer1))
+	// 		return killer1;
 
-	case STAGE_KILLER_2:
-		// std::cout << "KILLER 2" << std::endl;
-		++stage;
-		if (!skipQuiet && killer2 && killer2 != ttMove)
-			return killer2;
+	// case STAGE_KILLER_2:
+	// 	++stage;
+	// 	if (!skipQuiet && killer2 && killer2 != ttMove && search->pos->is_legal(killer2))
+	// 		return killer2;
 
-	case STAGE_COUNTER:
-		// std::cout << "COUNTER" << std::endl;
-		++stage;
-		if (!skipQuiet && counter && counter != ttMove && counter != killer1 && counter != killer2)
-			return counter;
+	// case STAGE_COUNTER:
+	// 	++stage;
+	// 	if (!skipQuiet && counter && counter != ttMove && counter != killer1 && counter != killer2 && search->pos->is_legal(counter))
+	// 		return counter;
 
 	case STAGE_GENERATE_QUIETS:	
 		// std::cout << "GENERATING QUIETS..." << std::endl;
+		// if (search->pos->piece_on(A5) == BLACK_QUEEN && search->pos->piece_on(H3) == WHITE_KNIGHT && search->pos->piece_on(C6) == BLACK_PAWN && search->pos->piece_on(D3) == WHITE_PAWN) {
+		// 	std::cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
+		// 	std::cout << bb_string(search->pos->all_pieces);
+		// 	std::cout << bb_string(search->pos->state->checkers);
+		// 	std::cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
+		// }
+		
 		search->pos->generate_quiets(quiets.end);
 		nQuiets = quiets.size();
 		// std::cout << "GENERATED " << nQuiets << " MOVES" << std::endl;
@@ -122,29 +123,29 @@ mp_start:
 			Move m = quiets[i];
 			Value score = 0;
 
-			if (m == ttMove || m == killer1 || m == killer2 || m == counter) {
+			if (m == ttMove) {
 				score = -6969; // This might instead be possible to remove it from the list: test later
 			}
 			else {
 				int ply = search->pos->ply;
-				Move counter_move = (ply >= 1 ? search->stack[ply - 1].move : NULL_MOVE);
-				Move follow_move = (ply >= 2 ? search->stack[ply - 2].move : NULL_MOVE);
-				Piece counter_piece = (ply >= 1 ? search->stack[ply - 1].piece : NO_PIECE);
-				Piece follow_piece = (ply >= 2 ? search->stack[ply - 2].piece : NO_PIECE);
-				Square counter_to = move_to(counter_move);
-				Square follow_to = move_to(follow_move);
+				// Move counter_move = (ply >= 1 ? search->stack[ply - 1].move : NULL_MOVE);
+				// Move follow_move = (ply >= 2 ? search->stack[ply - 2].move : NULL_MOVE);
+				// Piece counter_piece = (ply >= 1 ? search->stack[ply - 1].piece : NO_PIECE);
+				// Piece follow_piece = (ply >= 2 ? search->stack[ply - 2].piece : NO_PIECE);
+				// Square counter_to = move_to(counter_move);
+				// Square follow_to = move_to(follow_move);
 				
-				Square m_from = move_from(m);
-				Square m_to = move_to(m);
-				Piece m_piece = search->pos->piece_on(m_from);
+				// Square m_from = move_from(m);
+				// Square m_to = move_to(m);
+				// Piece m_piece = search->pos->piece_on(m_from);
 
-				score = search->history[search->pos->turn][m_from][m_to];
+				// score = search->history[search->pos->turn][m_from][m_to];
 
-				if (counter_move)
-					score += search->follow[0][counter_piece][counter_to][m_piece][m_to];
+				// if (counter_move)
+				// 	score += search->follow[0][counter_piece][counter_to][m_piece][m_to];
 
-				if (follow_move)
-					score += search->follow[1][follow_piece][follow_to][m_piece][m_to];
+				// if (follow_move)
+				// 	score += search->follow[1][follow_piece][follow_to][m_piece][m_to];
 			}
 			scores[i] = score;
 		}
@@ -161,7 +162,7 @@ mp_start:
 			quiets[best] = quiets[nQuiets];
 			scores[best] = scores[nQuiets];
 
-			if (m == ttMove || m == killer1 || m == killer2 || m == counter)
+			if (m == ttMove)
 				goto mp_start;
 			
 			// std::cout << "RETURNING A GOOD QUIET: " << move_notation(*search->pos, m) << std::endl;
