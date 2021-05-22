@@ -127,7 +127,7 @@ mp_start:
 				score = -6969; // This might instead be possible to remove it from the list: test later
 			}
 			else {
-				int ply = search->pos->ply;
+				// int ply = search->pos->ply;
 				// Move counter_move = (ply >= 1 ? search->stack[ply - 1].move : NULL_MOVE);
 				// Move follow_move = (ply >= 2 ? search->stack[ply - 2].move : NULL_MOVE);
 				// Piece counter_piece = (ply >= 1 ? search->stack[ply - 1].piece : NO_PIECE);

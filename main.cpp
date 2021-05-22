@@ -17,7 +17,11 @@ int main() {
 	// while ((m = mp.next_move(true, true)) != NULL_MOVE)
 	// 	std::cout << move_notation(*thread.pos, m) << std::endl;
 	// std::cout << thread.pos->evaluate(&thread.pawn_hash_table) << std::endl;
-	thread.start();
+	Value alpha = -VALUE_INFINITY;
+	Value beta = VALUE_INFINITY;
+	Value score = thread.search(alpha, beta, 5);
+
+	std::cout << int(score) << std::endl;
 
 	return 0;
 }
