@@ -4,7 +4,7 @@
 #include "types.h"
 
 enum MovepickStage {
-	STAGE_TABLE_LOOKUP,
+	// STAGE_TABLE_LOOKUP,
 	STAGE_GENERATE_CAPTURES, STAGE_GOOD_CAPTURES,
 	// STAGE_KILLER_1, STAGE_KILLER_2, STAGE_COUNTER,
 	STAGE_GENERATE_QUIETS, STAGE_QUIETS,
@@ -16,10 +16,9 @@ inline MovepickStage& operator++(MovepickStage& s) { return s = MovepickStage(in
 typedef int MoveScore;
 
 struct MovePick {
-	MovePick(Move ttm, Value threshold);
+	MovePick(Value threshold);
 
 	MovepickStage stage;
-	Move ttMove;
 
 	Moves captures, quiets, bad_captures; 
 	MoveCount nCaptures, nQuiets, nBadCaptures;

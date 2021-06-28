@@ -18,12 +18,12 @@ const Value static_exchange_values[NUM_PIECE_TYPES] = {
 	100, 310, 330, 500, 900, 6969
 };
 
-MovePick::MovePick(Move ttm, Value threshold) {
+MovePick::MovePick(Value threshold) {
 	see_threshold = threshold;
-	ttMove = ttm;
+	// ttMove = ttm;
 
 	nCaptures = nQuiets = nBadCaptures = 0;
-	stage = STAGE_TABLE_LOOKUP;
+	stage = STAGE_GENERATE_CAPTURES;
 	memset(scores, 0, sizeof(scores));
 }
 
@@ -38,11 +38,11 @@ int MovePick::best_index(MoveCount len) {
 Move MovePick::next_move(SearchThread* search, bool skipQuiet, bool skipBadCaptures) {
 mp_start:
 	switch(stage) {
-	case STAGE_TABLE_LOOKUP:
-		// std::cout << "TABLE_LOOKUP" << std::endl;
-		++stage;
-		if (ttMove)
-			return ttMove;
+	// case STAGE_TABLE_LOOKUP:
+	// 	// std::cout << "TABLE_LOOKUP" << std::endl;
+	// 	++stage;
+	// 	if (ttMove)
+	// 		return ttMove;
 	case STAGE_GENERATE_CAPTURES:
 		// std::cout << "GENERATING CAPTURES..." << std::endl;
 		search->pos->generate_captures(captures.end);
@@ -78,8 +78,8 @@ mp_start:
 				captures[best] = captures[nCaptures];
 				scores[best] = scores[nCaptures];
 
-				if (m == ttMove)
-					goto mp_start;
+				// if (m == ttMove)
+				// 	goto mp_start;
 
 				// std::cout << "RETURNING A GOOD CAPTURE: " << move_notation(*search->pos, m) << std::endl;
 				return m;
@@ -120,33 +120,33 @@ mp_start:
 		// std::cout << "GENERATED " << nQuiets << " MOVES" << std::endl;
 
 		for (int i = 0; i < nQuiets; i++) {
-			Move m = quiets[i];
+			// Move m = quiets[i];
 			Value score = 0;
 
-			if (m == ttMove) {
-				score = -6969; // This might instead be possible to remove it from the list: test later
-			}
-			else {
-				// int ply = search->pos->ply;
-				// Move counter_move = (ply >= 1 ? search->stack[ply - 1].move : NULL_MOVE);
-				// Move follow_move = (ply >= 2 ? search->stack[ply - 2].move : NULL_MOVE);
-				// Piece counter_piece = (ply >= 1 ? search->stack[ply - 1].piece : NO_PIECE);
-				// Piece follow_piece = (ply >= 2 ? search->stack[ply - 2].piece : NO_PIECE);
-				// Square counter_to = move_to(counter_move);
-				// Square follow_to = move_to(follow_move);
+			// if (m == ttMove) {
+			// 	score = -6969; // This might instead be possible to remove it from the list: test later
+			// }
+			// else {
+			// 	// int ply = search->pos->ply;
+			// 	// Move counter_move = (ply >= 1 ? search->stack[ply - 1].move : NULL_MOVE);
+			// 	// Move follow_move = (ply >= 2 ? search->stack[ply - 2].move : NULL_MOVE);
+			// 	// Piece counter_piece = (ply >= 1 ? search->stack[ply - 1].piece : NO_PIECE);
+			// 	// Piece follow_piece = (ply >= 2 ? search->stack[ply - 2].piece : NO_PIECE);
+			// 	// Square counter_to = move_to(counter_move);
+			// 	// Square follow_to = move_to(follow_move);
 				
-				// Square m_from = move_from(m);
-				// Square m_to = move_to(m);
-				// Piece m_piece = search->pos->piece_on(m_from);
+			// 	// Square m_from = move_from(m);
+			// 	// Square m_to = move_to(m);
+			// 	// Piece m_piece = search->pos->piece_on(m_from);
 
-				// score = search->history[search->pos->turn][m_from][m_to];
+			// 	// score = search->history[search->pos->turn][m_from][m_to];
 
-				// if (counter_move)
-				// 	score += search->follow[0][counter_piece][counter_to][m_piece][m_to];
+			// 	// if (counter_move)
+			// 	// 	score += search->follow[0][counter_piece][counter_to][m_piece][m_to];
 
-				// if (follow_move)
-				// 	score += search->follow[1][follow_piece][follow_to][m_piece][m_to];
-			}
+			// 	// if (follow_move)
+			// 	// 	score += search->follow[1][follow_piece][follow_to][m_piece][m_to];
+			// }
 			scores[i] = score;
 		}
 		++stage;
@@ -162,8 +162,8 @@ mp_start:
 			quiets[best] = quiets[nQuiets];
 			scores[best] = scores[nQuiets];
 
-			if (m == ttMove)
-				goto mp_start;
+			// if (m == ttMove)
+			// 	goto mp_start;
 			
 			// std::cout << "RETURNING A GOOD QUIET: " << move_notation(*search->pos, m) << std::endl;
 			return m;
@@ -178,8 +178,8 @@ mp_start:
 			bad_captures.end--; // Todo this line is unnecessary i believe (test to make sure)
 			Move m = bad_captures[nBadCaptures];
 
-			if (m == ttMove)
-				goto mp_start;
+			// if (m == ttMove)
+			// 	goto mp_start;
 			
 			// std::cout << "RETURNING A BAD CAPTURE: " << move_notation(*search->pos, m) << std::endl;
 			return m;
